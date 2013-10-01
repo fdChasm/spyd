@@ -38,6 +38,9 @@ class RoomMapModeState(object):
     def map_meta_data(self):
         return self._map_meta_data_accessor.get(self._map_name, {})
     
+    def get_map_names(self):
+        return self._map_meta_data_accessor.get_map_names()
+    
     @property
     def rotate_on_first_player(self):
         return self._map_rotation.rotate_on_first_player

@@ -1,7 +1,5 @@
 from twisted.internet import defer, reactor
 
-from sauerpyd.timing.exceptions import AlreadyPausedException, AlreadyResumedException
-
 
 class ScheduledCallbackWrapper(object):
     '''Holds a deferred and either delayed call or a delay seconds value.'''

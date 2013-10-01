@@ -2,7 +2,8 @@ from twisted.internet import reactor
 
 from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes
 from cube2common.cube_data_stream import CubeDataStream
-from sauerpyd.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer
+from sauerpyd.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer,\
+    GenericError
 from sauerpyd.protocol import swh
 from sauerpyd.room.client_collection import ClientCollection
 from sauerpyd.room.player_collection import PlayerCollection
@@ -13,6 +14,8 @@ from sauerpyd.server_message_formatter import smf, error
 from sauerpyd.timing.game_clock import GameClock
 from utils.truncate import truncate
 from utils.value_model import ValueModel
+from sauerpyd.gamemode import get_mode_name_from_num
+from utils.match_fuzzy import match_fuzzy
 
 
 class Room(object):
@@ -77,7 +80,7 @@ class Room(object):
     @property
     def players(self):
         return self._players.to_iterator()
-    
+
     @property
     def playing_count(self):
         count = 0
@@ -111,7 +114,7 @@ class Room(object):
     @property
     def mode_name(self):
         return self._map_mode_state.mode_name
-    
+
     def is_name_duplicate(self, name):
         return self._players.is_name_duplicate(name)
 
@@ -164,61 +167,66 @@ class Room(object):
     ###########################################################################
 
     def on_client_set_master(self, client, target_cn, password_hash, value):
-        #TODO: Implement setmaster support to elevate ones own permissions or give permissions to others
+        # TODO: Implement setmaster support to elevate ones own permissions or give permissions to others
         pass
 
     def on_client_set_master_mode(self, client, mastermode):
-        #TODO: Implement permissions for changing the mastermode
+        # TODO: Implement permissions for changing the mastermode
         can_set_mastermode = True
-        
+
         if not can_set_mastermode:
             raise InsufficientPermissions('Insufficient permissions to change mastermode.')
-        
+
         if mastermode < mastermodes.MM_OPEN or mastermode > mastermodes.MM_PRIVATE:
             client.send_server_message(error("Mastermode out of allowed range."))
             return
-        
+
         self.mastermode = mastermode
         self._update_current_masters()
 
     def on_client_set_team(self, client, target_pn, team_name):
-        #TODO: Implement permissions for changing player teams
+        # TODO: Implement permissions for changing player teams
         can_set_others_teams = True
-        
+
         if not can_set_others_teams:
             raise InsufficientPermissions('Insufficient permissions to change player teams.')
-            
+
         player = self.get_player(target_pn)
         if player is None:
             raise UnknownPlayer('No player with cn {cn#cn} found.')
-        
+
         self.gamemode.on_player_try_set_team(client.get_player(), player, player.team.name, team_name)
 
     def on_client_set_spectator(self, client, target_pn, spectate):
-        #TODO: Implement permissions for spectating players
+        # TODO: Implement permissions for spectating players
         can_spectate_others = True
-        
+
         if not can_spectate_others:
             raise InsufficientPermissions('Insufficient permissions to change who is spectating.')
-        
+
         player = self.get_player(target_pn)
         if player is None:
             raise UnknownPlayer('No player with cn {cn#cn} found.')
 
     def on_client_kick(self, client, target_pn, reason):
-        #TODO: Implement kicking of players and insertion of bans
+        # TODO: Implement kicking of players and insertion of bans
         pass
 
     def on_client_clear_bans(self, client):
-        #TODO: Implement clearing of bans
+        # TODO: Implement clearing of bans
         pass
 
     def on_client_map_vote(self, client, map_name, mode_num):
-        #TODO: Implement map voting and setting of the map when players have elevated permissions and the room is locked
-        pass
+        # TODO: Implement map voting and setting of the map when players have elevated permissions and the room is locked
+        mode_name = get_mode_name_from_num(mode_num)
+        valid_map_names = self._map_mode_state.get_map_names()
+        map_name_match = match_fuzzy(map_name, valid_map_names)
+        if map_name_match is None:
+            raise GenericError('Could not resolve map name to valid map. Please try again.')
+        self.change_map_mode(map_name_match, mode_name)
 
     def on_client_map_crc(self, client, crc):
-        #TODO: Implement optional spectating of clients without valid map CRC's
+        # TODO: Implement optional spectating of clients without valid map CRC's
         pass
 
     def on_client_item_list(self, client, item_list):
@@ -231,12 +239,12 @@ class Room(object):
         self.gamemode.on_client_flag_list(client, flag_list)
 
     def on_client_pause_game(self, client, pause):
-        #TODO: Implement permissions for pausing the game
+        # TODO: Implement permissions for pausing the game
         can_pause_game = True
-        
+
         if not can_pause_game:
             raise InsufficientPermissions('Insufficient permissions to pause game.')
-        
+
         if pause:
             self.pause()
         else:
@@ -427,10 +435,10 @@ class Room(object):
 
     def _on_game_clock_intermission(self):
         self._broadcaster.intermission()
-        self.broadcast_server_message("Intermission has started.")
+        self._broadcaster.server_message("Intermission has started.")
 
     def _on_game_clock_intermission_ended(self):
-        self.broadcast_server_message("Intermission has ended.")
+        self._broadcaster.server_message("Intermission has ended.")
 
     ###########################################################################
     #######################  Other private methods  ###########################
@@ -479,7 +487,7 @@ class Room(object):
             self._game_clock.start(self.gamemode.timeout, INTERMISSIONLEN)
         else:
             self._game_clock.start_untimed()
-            
+
         self._game_clock.resume(self.resume_delay)
 
         for player in self.players:
@@ -509,6 +517,6 @@ class Room(object):
     def _on_name_changed(self, *args):
         for client in self.clients:
             self._send_room_title(client)
-            
+
     def _update_current_masters(self):
         self._broadcaster.current_masters(self.mastermode, self.clients)

@@ -7,9 +7,9 @@ from sauerpyd.edit.selection import Selection
 from utils.dictionary_get import dictget
 from cube2common.vec import vec
 
-
-class InsufficientPermissions(Exception): pass
-class UnknownPlayer(Exception): pass
+class GenericError(Exception): pass
+class InsufficientPermissions(GenericError): pass
+class UnknownPlayer(GenericError): pass
 
 class ClientMessageHandlingBase(object):
     ':type room: sauerpyd.room.room.Room'
@@ -26,7 +26,7 @@ class ClientMessageHandlingBase(object):
                         handler(message)
                     except InsufficientPermissions as e:
                         self.send_server_message(denied(e.message))
-                    except UnknownPlayer as e:
+                    except GenericError as e:
                         self.send_server_message(error(e.message))
                 else:
                     print "Client received unhandled message type:", message_type, message
