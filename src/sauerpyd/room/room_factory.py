@@ -1,6 +1,9 @@
 from sauerpyd.room.room import Room
+import os
+from sauerpyd.map.map_meta_data_accessor import MapMetaDataAccessor
+from sauerpyd.map.map_rotation import MapRotation, test_rotation_dict
 
-#TODO: Implement
+# TODO: Implement
 
 class RoomFactory(object):
     """
@@ -11,6 +14,18 @@ class RoomFactory(object):
     """
     def __init__(self, config):
         self.config = config
-        
+        self.room_bindings = config.get('room_bindings', {})
+        self.room_types = config.get('room_types', {})
+
     def build_room(self, name, room_type='default'):
-        return Room()
+        room_config = {}
+        room_config.update(self.room_types.get(room_type, {}))
+        room_config.update(self.room_bindings.get(name, {}))
+
+        packages_directory = room_config.get('packages_directory', "{}/git/spyd/packages".format(os.environ['HOME']))
+        map_meta_data_accessor = MapMetaDataAccessor(packages_directory)
+
+        map_rotation_dictionary = room_config.get('map_rotation', test_rotation_dict)
+        map_rotation = MapRotation.from_dictionary(map_rotation_dictionary)
+
+        return Room(map_meta_data_accessor=map_meta_data_accessor, map_rotation=map_rotation)

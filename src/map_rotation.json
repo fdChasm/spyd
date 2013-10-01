@@ -1,0 +1,7 @@
+{
+	"rotations": {
+		"ctf": ["authentic", "dust2", "forge", "reissen"]
+	},
+	"modes": ["ctf"],
+	"rotate_modes": false
+}
