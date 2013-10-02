@@ -3,7 +3,7 @@ from mock import patch
 import re
 
 import spyd.protocol.server_write_helper
-import testutils.protocol.server_write_helper
+import testing_utils.protocol.server_write_helper
 from spyd.utils.exit_stack import ExitStack
 
 
@@ -18,8 +18,8 @@ def mock_server_write_helper():
         stack.enter_context(context)
         
         for put_message_method_name in put_message_method_names:
-            if hasattr(testutils.protocol.server_write_helper, put_message_method_name):
-                put_message_method = getattr(testutils.protocol.server_write_helper, put_message_method_name)
+            if hasattr(testing_utils.protocol.server_write_helper, put_message_method_name):
+                put_message_method = getattr(testing_utils.protocol.server_write_helper, put_message_method_name)
                 context = patch('spyd.protocol.server_write_helper.{}'.format(put_message_method_name), new=put_message_method)
                 stack.enter_context(context)
         yield stack

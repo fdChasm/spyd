@@ -6,9 +6,9 @@ from spyd.game.timing.game_clock import GameClock
 from spyd.game.timing.resume_countdown import ResumeCountdown
 from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 import spyd.game.room.room
-from testutils.create_mock_player import create_mock_player
-from testutils.dust2_meta_data import dust2_meta_data
-from testutils.protocol.mock_server_write_helper import mock_server_write_helper
+from testing_utils.create_mock_player import create_mock_player
+from testing_utils.dust2_meta_data import dust2_meta_data
+from testing_utils.protocol.mock_server_write_helper import mock_server_write_helper
 
 
 class TestRoomInstactf(unittest.TestCase):

@@ -6,8 +6,8 @@ import spyd.game.room.room
 from spyd.game.timing.game_clock import GameClock
 from spyd.game.timing.resume_countdown import ResumeCountdown
 from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
-from testutils.create_mock_player import create_mock_player
-from testutils.protocol.mock_server_write_helper import mock_server_write_helper
+from testing_utils.create_mock_player import create_mock_player
+from testing_utils.protocol.mock_server_write_helper import mock_server_write_helper
 from spyd.utils.value_model import ValueModel
 
 
