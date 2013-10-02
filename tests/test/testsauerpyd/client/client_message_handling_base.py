@@ -1,13 +1,14 @@
-import unittest
-from sauerpyd.protocol.server_read_stream_protocol import sauerbraten_stream_spec
-from cube2common.constants import message_types
-
-from sauerpyd.client.client_message_handling_base import ClientMessageHandlingBase
 from mock import MagicMock
 import re
-from sauerpyd.room.room import Room
-from sauerpyd.client.client import Client
-from utils.ping_buffer import PingBuffer
+import unittest
+
+from cube2common.constants import message_types
+from spyd.game.client.client import Client
+from spyd.game.client.client_message_handling_base import ClientMessageHandlingBase
+from spyd.game.room.room import Room
+from spyd.protocol.server_read_stream_protocol import sauerbraten_stream_spec
+from spyd.utils.ping_buffer import PingBuffer
+
 
 message_handler_method_pattern = re.compile("^N_")
 

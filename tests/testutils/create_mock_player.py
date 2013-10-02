@@ -1,8 +1,8 @@
 import contextlib
 from contextlib import contextmanager
 from mock import patch, MagicMock
-from sauerpyd.player.player_state import PlayerState
-from sauerpyd.client.client import Client
+from spyd.game.player.player_state import PlayerState
+from spyd.game.client.client import Client
 
 class PlayerTestContext(object):
     def __init__(self, test_case, player):
@@ -54,7 +54,7 @@ class PlayerTestContext(object):
 
 @contextmanager
 def create_mock_player(test_case, cn):
-    with patch('sauerpyd.player.player.Player', spec=True) as player:
+    with patch('spyd.game.player.player.Player', spec=True) as player:
         player.client = MagicMock(spec=Client)
         player.client.cn = cn
         player.client.get_player = lambda: player

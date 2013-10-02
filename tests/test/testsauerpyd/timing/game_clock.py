@@ -1,9 +1,9 @@
 import unittest
 
-from sauerpyd.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 from twisted.internet import task
-from sauerpyd.timing.game_clock import GameClock
-from sauerpyd.timing.resume_countdown import ResumeCountdown
+from spyd.game.timing.game_clock import GameClock
+from spyd.game.timing.resume_countdown import ResumeCountdown
 
 class Test(unittest.TestCase):
     """Unit tests for ScheduledCallbackWrapper."""

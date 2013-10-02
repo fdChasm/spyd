@@ -1,6 +1,6 @@
 import unittest
 
-from sauerpyd.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 from twisted.internet import task
 
 class Test(unittest.TestCase):

@@ -1,0 +1,2 @@
+#!/bin/bash
+twistd -no spyd --homedir=$(pwd)/data --bindingpath=$(pwd)/bin/spyd_binding

@@ -2,13 +2,13 @@ import unittest
 
 from twisted.internet import task
 
-import sauerpyd.room.room
-from sauerpyd.timing.game_clock import GameClock
-from sauerpyd.timing.resume_countdown import ResumeCountdown
-from sauerpyd.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+from spyd.game.timing.game_clock import GameClock
+from spyd.game.timing.resume_countdown import ResumeCountdown
+from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+import spyd.game.room.room
 from testutils.create_mock_player import create_mock_player
-from testutils.protocol.mock_server_write_helper import mock_server_write_helper
 from testutils.dust2_meta_data import dust2_meta_data
+from testutils.protocol.mock_server_write_helper import mock_server_write_helper
 
 
 class TestRoomInstactf(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestRoomInstactf(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             room.change_map_mode('dust2', 'instactf')
             
             player_test_context.enter_room(room)
@@ -37,7 +37,7 @@ class TestRoomInstactf(unittest.TestCase):
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             player = player_test_context.player
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             room.change_map_mode('dust2', 'instactf')
             
             player_test_context.enter_room(room)
@@ -61,7 +61,7 @@ class TestRoomInstactf(unittest.TestCase):
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             player = player_test_context.player
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
             room.change_map_mode('dust2', 'instactf')
             
             player_test_context.enter_room(room)
@@ -76,7 +76,7 @@ class TestRoomInstactf(unittest.TestCase):
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             player = player_test_context.player
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
             room.change_map_mode('dust2', 'instactf')
             
             player_test_context.enter_room(room)
@@ -92,7 +92,7 @@ class TestRoomInstactf(unittest.TestCase):
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             player = player_test_context.player
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
             room.change_map_mode('dust2', 'instactf')
             
             player_test_context.enter_room(room)

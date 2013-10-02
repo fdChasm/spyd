@@ -2,10 +2,10 @@ import unittest
 
 from twisted.internet import task
 
-import sauerpyd.room.room
-from sauerpyd.timing.game_clock import GameClock
-from sauerpyd.timing.resume_countdown import ResumeCountdown
-from sauerpyd.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+import spyd.game.room.room
+from spyd.game.timing.game_clock import GameClock
+from spyd.game.timing.resume_countdown import ResumeCountdown
+from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 from testutils.complex_meta_data import complex_meta_data
 from testutils.create_mock_player import create_mock_player
 from testutils.protocol.mock_server_write_helper import mock_server_write_helper
@@ -22,7 +22,7 @@ class TestRoomFFA(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={'complex': complex_meta_data})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'complex': complex_meta_data})
             room.change_map_mode('complex', 'traitors')
 
             player_test_context.enter_room(room)

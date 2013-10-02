@@ -1,0 +1,44 @@
+{
+    "packages_directory": "/opt/sauerbraten/packages",
+    "room_bindings": {
+        "bored": {
+            "maxclients": 512,
+            "maxdown": 0,
+            "masterserver": [
+                "localhost",
+                28787,
+                false
+            ],
+            "interface": "127.0.0.1",
+            "maxup": 0,
+            "type": "public",
+            "port": 10000,
+            "maxplayers": 16,
+            "public": true
+        },
+        "lobby": {
+            "maxclients": 512,
+            "maxdown": 0,
+            "masterserver": [
+                "localhost",
+                28787,
+                true
+            ],
+            "interface": "127.0.0.1",
+            "maxup": 0,
+            "type": "public",
+            "port": 28785,
+            "maxplayers": 16
+        }
+    },
+    "lan_findable": true,
+    "server_name": "Spyd Server",
+    "room_types": {
+        "default": {
+            "map_rotation": "file://map_rotation.json"
+        },
+        "public": {
+            "map_rotation": "file://map_rotation.json"
+        }
+    }
+}

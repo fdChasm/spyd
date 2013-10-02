@@ -1,5 +1,5 @@
 import unittest
-from sauerpyd.protocol import swh
+from spyd.protocol import swh
 from testutils.protocol.mock_server_write_helper import mock_server_write_helper
 import testutils.protocol.server_write_helper
 

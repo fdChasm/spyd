@@ -2,13 +2,13 @@ from contextlib import contextmanager
 from mock import patch
 import re
 
-import sauerpyd.protocol.server_write_helper
+import spyd.protocol.server_write_helper
 import testutils.protocol.server_write_helper
-from utils.exit_stack import ExitStack
+from spyd.utils.exit_stack import ExitStack
 
 
 put_message_method_pattern = re.compile("^put_")
-put_message_method_names = filter(put_message_method_pattern.match, dir(sauerpyd.protocol.server_write_helper))
+put_message_method_names = filter(put_message_method_pattern.match, dir(spyd.protocol.server_write_helper))
 
 @contextmanager
 def mock_server_write_helper():
@@ -20,6 +20,6 @@ def mock_server_write_helper():
         for put_message_method_name in put_message_method_names:
             if hasattr(testutils.protocol.server_write_helper, put_message_method_name):
                 put_message_method = getattr(testutils.protocol.server_write_helper, put_message_method_name)
-                context = patch('sauerpyd.protocol.server_write_helper.{}'.format(put_message_method_name), new=put_message_method)
+                context = patch('spyd.protocol.server_write_helper.{}'.format(put_message_method_name), new=put_message_method)
                 stack.enter_context(context)
         yield stack

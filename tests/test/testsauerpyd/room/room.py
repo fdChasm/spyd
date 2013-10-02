@@ -2,13 +2,13 @@ import unittest
 
 from twisted.internet import task
 
-import sauerpyd.room.room
-from sauerpyd.timing.game_clock import GameClock
-from sauerpyd.timing.resume_countdown import ResumeCountdown
-from sauerpyd.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
+import spyd.game.room.room
+from spyd.game.timing.game_clock import GameClock
+from spyd.game.timing.resume_countdown import ResumeCountdown
+from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 from testutils.create_mock_player import create_mock_player
 from testutils.protocol.mock_server_write_helper import mock_server_write_helper
-from utils.value_model import ValueModel
+from spyd.utils.value_model import ValueModel
 
 
 class TestRoom(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context.enter_room(room)
             
             player_test_context.assertHasReceivedMessageOfType('N_MAPCHANGE')
@@ -31,7 +31,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             room.change_map_mode('dust2', 'instactf')
             player_test_context.enter_room(room)
             
@@ -42,7 +42,7 @@ class TestRoom(unittest.TestCase):
             player_test_context1 = stack.enter_context(create_mock_player(self, 0))
             player_test_context2 = stack.enter_context(create_mock_player(self, 1))
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context1.enter_room(room)
             room.pause()
             player_test_context2.enter_room(room)
@@ -56,7 +56,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             room.resume_delay = 5
             player_test_context.enter_room(room)
             
@@ -69,7 +69,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             room.resume_delay = 5
             player_test_context.enter_room(room)
             player_test_context.clear_received_messages()
@@ -84,7 +84,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
 
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context.enter_room(room)
             room.pause()
             player_test_context.clear_received_messages()
@@ -101,7 +101,7 @@ class TestRoom(unittest.TestCase):
 
             server_name_model = ValueModel("123456789ABCD")
 
-            room = sauerpyd.room.room.Room(server_name_model, map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(server_name_model, map_meta_data_accessor={})
             player_test_context.enter_room(room)
             
             player_test_context.assertHasReceivedMessageOfType('N_SERVINFO')
@@ -119,7 +119,7 @@ class TestRoom(unittest.TestCase):
             player_test_context1 = stack.enter_context(create_mock_player(self, 0))
             player_test_context2 = stack.enter_context(create_mock_player(self, 1))
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
             
@@ -130,7 +130,7 @@ class TestRoom(unittest.TestCase):
             player_test_context1 = stack.enter_context(create_mock_player(self, 0))
             player_test_context2 = stack.enter_context(create_mock_player(self, 1))
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
@@ -143,7 +143,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context.enter_room(room)
             player_test_context.leave_room(room)
             player_test_context.clear_received_messages()
@@ -158,7 +158,7 @@ class TestRoom(unittest.TestCase):
             
             player_test_context2 = stack.enter_context(create_mock_player(self, 1))
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
@@ -173,28 +173,9 @@ class TestRoom(unittest.TestCase):
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             player = player_test_context.player
             
-            room = sauerpyd.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context.enter_room(room)
             
             room.on_player_suicide(player)
             
             self.assertFalse(player.state.is_alive)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
