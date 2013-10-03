@@ -4,7 +4,8 @@
 		           "spyd.server.connect", "spyd.client.change_playermodel", "spyd.client.change_name",
 		           "spyd.game.commands.room.execute", "spyd.game.commands.rooms.execute", 
 		           "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
-		           "spyd.game.room.team.switch"
+		           "spyd.game.room.team.switch",
+		           "spyd.game.room.claim_master_open"
 		           ]
 	},
 	"local.room.master": {
@@ -15,13 +16,16 @@
 		           "spyd.game.room.temporary.set_mastermode"
 		           ]
 	},
-	"local.admin": {
+	"local.room.auth": {
+		
+	},
+	"local.room.admin": {
 		"allows": ["*"],
 		"priority": 10
 	},
-	"org.sauerbraten.auth": {
+	"localhost.auth": {
 		"inherits": ["local.client"],
-		"allows": ["spyd.game.room.master.claim"],
+		"allows": ["spyd.game.room.claim_master_auth", "spyd.game.room.claim_master_also"],
 		"priority": 3
 	},
 	"org.sauerbraten.punitive.ban": {

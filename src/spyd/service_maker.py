@@ -50,7 +50,7 @@ def make_service(options):
     message_processor = MessageProcessor()
 
     client_number_provider = get_client_number_provider(config)
-    client_factory = ClientFactory(client_number_provider, room_bindings, master_client_bindings)
+    client_factory = ClientFactory(client_number_provider, room_bindings, master_client_bindings, permission_resolver)
     client_manager = ClientManager(client_factory, message_processor)
 
     binding_factory = BindingFactory(client_manager)

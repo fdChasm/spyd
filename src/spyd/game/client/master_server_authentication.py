@@ -3,5 +3,7 @@ class MasterServerAuthentication(object):
         self.domain = domain
         self.auth_name = auth_name
         
+        print self
+        
     def __repr__(self):
         return "<{authentication.auth_name}@{authentication.domain}>".format(authentication=self)

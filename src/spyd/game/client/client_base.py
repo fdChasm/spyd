@@ -5,7 +5,6 @@ class ClientBase(object):
         self.cn = clientnum
         self.room = room
         self.players = {}
-        self.privilege = 0
         
     @property
     def isconnected(self):

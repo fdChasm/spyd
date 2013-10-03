@@ -42,7 +42,11 @@ class Room(object):
         self.mastermode = 0
         self.resume_delay = None
 
+        self.temporary = False
         self.decommissioned = False
+        
+        self.masters = set()
+        self.admins = set()
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
@@ -143,6 +147,10 @@ class Room(object):
         self._clients.remove(client)
         for player in client.players.itervalues():
             self._player_disconnected(player)
+        if client in self.masters or client in self.admins:
+            self.masters.discard(client)
+            self.admins.discard(client)
+            
 
     def pause(self):
         self._game_clock.pause()
@@ -166,9 +174,42 @@ class Room(object):
     #######################  Client event handling  ###########################
     ###########################################################################
 
-    def on_client_set_master(self, client, target_cn, password_hash, value):
-        # TODO: Implement setmaster support to elevate ones own permissions or give permissions to others
-        pass
+    claim_master_open = Functionality("spyd.game.room.claim_master_open", "You aren't permitted to claim master.")
+    claim_master_also = Functionality("spyd.game.room.claim_master_also", "There is already a master; there can be only one.")
+    claim_master_auth = Functionality("spyd.game.room.claim_master_auth", "You must have auth to claim auth master in this room.")
+    claim_admin       = Functionality("spyd.game.room.claim_admin",       "Insufficent permissions to claim admin.")
+    relinquish        = Functionality("spyd.game.room.relinquish",        "You cannot relinquish permissions you don't have.")
+
+    def on_client_set_master(self, client, target_cn, password_hash, requested_privilege):
+        target = self.get_client(target_cn)
+        if target is None:
+            raise UnknownPlayer('No client with cn {cn#cn} found.')
+
+        functionality = None
+        if client is target:
+            if requested_privilege == 0:
+                functionality = Room.relinquish
+            if requested_privilege == 1:
+                if self.temporary:
+                    if self.masters:
+                        functionality = Room.claim_master_also
+                    else:
+                        functionality = Room.claim_master_open
+                else:
+                    functionality = Room.claim_master_auth
+            elif requested_privilege == 2:
+                functionality = Room.claim_admin
+                
+        print client, target, password_hash, requested_privilege, functionality
+                
+        if functionality is None:
+            raise InsufficientPermissions("You do not have permissions to do that.")
+                
+        if client.allowed(functionality):
+            self._client_change_privilege(client, target, requested_privilege)
+        else:
+            raise InsufficientPermissions(functionality.denied_message)
+        
 
     temporary_set_mastermode_functionality = Functionality("spyd.game.room.temporary.set_mastermode")
     set_mastermode_functionality = Functionality("spyd.game.room.set_mastermode")
