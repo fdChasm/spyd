@@ -15,6 +15,7 @@ from spyd.protocol import swh
 from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
+from spyd.permissions.functionality import Functionality
 
 
 class Room(object):
@@ -169,11 +170,13 @@ class Room(object):
         # TODO: Implement setmaster support to elevate ones own permissions or give permissions to others
         pass
 
+    temporary_set_mastermode_functionality = Functionality("spyd.game.room.temporary.set_mastermode")
+    set_mastermode_functionality = Functionality("spyd.game.room.set_mastermode")
+    
     def on_client_set_master_mode(self, client, mastermode):
-        # TODO: Implement permissions for changing the mastermode
-        can_set_mastermode = True
+        allowed_set_mastermode = client.allowed(Room.set_mastermode_functionality) or (self.temporary and client.allowed(Room.temporary_set_mastermode_functionality))
 
-        if not can_set_mastermode:
+        if not allowed_set_mastermode:
             raise InsufficientPermissions('Insufficient permissions to change mastermode.')
 
         if mastermode < mastermodes.MM_OPEN or mastermode > mastermodes.MM_PRIVATE:

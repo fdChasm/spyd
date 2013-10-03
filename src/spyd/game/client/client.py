@@ -10,16 +10,18 @@ from spyd.game.room.exceptions import RoomEntryFailure
 from spyd.game.server_message_formatter import error
 from spyd.protocol import swh
 from spyd.utils.filtertext import filtertext
+from spyd.game.client.client_permission_base import ClientPermissionBase
 
 
-class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHandlingBase):
+class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHandlingBase, ClientPermissionBase):
     '''
     Handles the per client networking, and distributes the messages out to the players (main, bots).
     '''
-    def __init__(self, identifier, protocol, host, port, clientnum, room, master_client):
+    def __init__(self, identifier, protocol, host, port, clientnum, room, master_client, permission_resolver):
         ClientBase.__init__(self, clientnum, room)
         ClientNetworkBase.__init__(self, identifier, protocol, host, port)
         ClientAuthableBase.__init__(self, master_client)
+        ClientPermissionBase.__init__(self, permission_resolver)
         
         self.is_connected = False
     

@@ -1,4 +1,5 @@
 {
+    "server_name": "Spyd Server",
     "packages_directory": "/opt/sauerbraten/packages",
     "room_bindings": {
         "bored": {
@@ -32,7 +33,6 @@
         }
     },
     "lan_findable": true,
-    "server_name": "Spyd Server",
     "room_types": {
         "default": {
             "map_rotation": "file://map_rotation.json"
@@ -40,5 +40,6 @@
         "public": {
             "map_rotation": "file://map_rotation.json"
         }
-    }
+    },
+    "permissions": "file://permissions.json"
 }

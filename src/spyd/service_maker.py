@@ -21,6 +21,7 @@ from spyd.master_client.master_client_bindings import MasterClientBindings
 from spyd.master_client.master_client_factory import MasterClientFactory
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
+from spyd.permissions.permission_resolver import PermissionResolver
 
 
 def make_service(options):
@@ -41,6 +42,8 @@ def make_service(options):
     room_bindings = RoomBindings()
 
     punitive_model = PunitiveModel()
+    
+    permission_resolver = PermissionResolver.from_dictionary(config.get('permissions'))
 
     master_client_bindings = MasterClientBindings()
 

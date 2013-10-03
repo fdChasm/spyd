@@ -1,0 +1,42 @@
+{
+	"local.client": {
+		"allows": [
+		           "spyd.server.connect", "spyd.client.change_playermodel", "spyd.client.change_name",
+		           "spyd.game.commands.room.execute", "spyd.game.commands.rooms.execute", 
+		           "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
+		           "spyd.game.room.team.switch"
+		           ]
+	},
+	"local.room.master": {
+		"allows": [
+		           "spyd.game.room.punitive.*.create",
+		           "spyd.game.room.temporary.set_team",
+		           "spyd.game.room.temporary.set_spectator",
+		           "spyd.game.room.temporary.set_mastermode"
+		           ]
+	},
+	"local.admin": {
+		"allows": ["*"],
+		"priority": 10
+	},
+	"org.sauerbraten.auth": {
+		"inherits": ["local.client"],
+		"allows": ["spyd.game.room.master.claim"],
+		"priority": 3
+	},
+	"org.sauerbraten.punitive.ban": {
+		"denies": ["spyd.server.connect"]
+	},
+	"local.punitive.ban": {
+		"denies": ["spyd.server.connect"]
+	},
+	"local.punitive.mute": {
+		"denies": ["spyd.game.room.chat.*"]
+	},
+	"local.punitive.bench": {
+		"denies": ["spyd.game.room.unspectate"]
+	},
+	"local.punitive.limit": {
+		"denies": ["spyd.game.room.team.switch"]
+	}
+}

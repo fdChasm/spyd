@@ -14,8 +14,6 @@ class InsufficientPermissions(GenericError): pass
 class UnknownPlayer(GenericError): pass
 
 class ClientMessageHandlingBase(object):
-    ':type room: sauerpyd.room.room.Room'
-    
     def message_received(self, message_type, message):
         try:
             if (not self.isconnected) and message_type != "N_CONNECT":
