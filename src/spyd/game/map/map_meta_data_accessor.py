@@ -18,7 +18,10 @@ class MapMetaDataAccessor(object):
     
     def get_map_data(self, map_name):
         map_path = self.get_map_path(map_name)
-        return read_map_data(map_path)
+        if os.path.exists(map_path):
+            return read_map_data(map_path)
+        else:
+            return None
         
     def __getitem__(self, map_name, default=None):
         if map_name not in self._cached_map_meta:

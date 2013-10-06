@@ -458,11 +458,12 @@ class Room(object):
         self._broadcaster.time_left(seconds)
 
     def _on_game_clock_intermission(self):
-        self._broadcaster.intermission()
         self._broadcaster.server_message("Intermission has started.")
+        self._broadcaster.intermission()
 
     def _on_game_clock_intermission_ended(self):
         self._broadcaster.server_message("Intermission has ended.")
+        self.rotate_map_mode()
 
     ###########################################################################
     #######################  Other private methods  ###########################
@@ -472,33 +473,37 @@ class Room(object):
         if not self.decommissioned:
             reactor.callLater(0, reactor.addSystemEventTrigger, 'before', 'flush_bindings', self._flush_messages)
         self._broadcaster.flush_messages()
+        
+    def _initialize_client_match_data(self, cds, client):
+        player = client.get_player()
+        
+        swh.put_mapchange(cds, self._map_mode_state.map_name, self._map_mode_state.mode_num, hasitems=False)
+
+        if self.gamemode.timed and self.timeleft is not None:
+            swh.put_timeup(cds, self.timeleft)
+
+        if self.is_paused:
+            swh.put_pausegame(cds, 1)
+
+        self.gamemode.initialize_player(cds, player)
+    
+        if player.state.can_spawn:
+            player.state.respawn(self.gamemode)
+            swh.put_spawnstate(cds, player)
 
     def _initialize_client(self, client):
         existing_players = list(self.players)
 
-        player = client.get_player()
         with client.sendbuffer(1, True) as cds:
             swh.put_welcome(cds)
             self._put_room_title(cds, client)
 
             swh.put_currentmaster(cds, self.mastermode, self.clients)
 
-            swh.put_mapchange(cds, self._map_mode_state.map_name, self._map_mode_state.mode_num, hasitems=False)
-
-            if self.gamemode.timed and self.timeleft is not None:
-                swh.put_timeup(cds, self.timeleft)
-
-            if self.is_paused:
-                swh.put_pausegame(cds, 1)
-
-            self.gamemode.initialize_player(cds, player)
+            self._initialize_client_match_data(cds, client)
 
             swh.put_resume(cds, existing_players)
             swh.put_initclients(cds, existing_players)
-
-            if player.state.can_spawn:
-                player.state.respawn(self.gamemode)
-                swh.put_spawnstate(cds, player)
 
     def _new_map_mode_initialize(self):
         with self._broadcaster.broadcastbuffer(1, True) as cds:
@@ -517,8 +522,12 @@ class Room(object):
         for player in self.players:
             player.state.reset()
             player.state.respawn(self.gamemode)
-            with player.client.sendbuffer(1, True) as cds:
-                swh.put_spawnstate(cds, player)
+            
+        for client in self.clients:
+            with client.sendbuffer(1, True) as cds:
+                self._initialize_client_match_data(cds, client)
+                for player in client.players.itervalues():
+                    swh.put_spawnstate(cds, player)
 
     def _player_disconnected(self, player):
         self._players.remove(player)

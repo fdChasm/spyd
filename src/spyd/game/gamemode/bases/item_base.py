@@ -8,13 +8,14 @@ class ItemBase(object):
         
         self.items = None
 
-        item_list = []
-        for ent in map_meta_data.get('ents', []):
-            if item_types.has_value(ent['type']):
-                item_dict = {'item_type': ent['type'], 'item_index': ent['id']}
-                item_list.append(item_dict)
-
-        self._load_item_list(item_list)
+        if map_meta_data is not None:
+            item_list = []
+            for ent in map_meta_data.get('ents', []):
+                if item_types.has_value(ent['type']):
+                    item_dict = {'item_type': ent['type'], 'item_index': ent['id']}
+                    item_list.append(item_dict)
+    
+            self._load_item_list(item_list)
         
     @property
     def got_items(self):

@@ -18,12 +18,13 @@ class CtfBase(object):
 
         self.scores = [0, 0]
         
-        flag_list = []
-        for ent in map_meta_data.get('ents', []):
-            if ent['type'] == game_entity_types.FLAG:
-                flag_list.append({'x': int(ent['x']*DMF), 'y': int(ent['y']*DMF), 'z': int(ent['z']*DMF), 'team': ent['attrs'][1]})
-
-        self._load_flag_list(flag_list)
+        if map_meta_data is not None:
+            flag_list = []
+            for ent in map_meta_data.get('ents', []):
+                if ent['type'] == game_entity_types.FLAG:
+                    flag_list.append({'x': int(ent['x']*DMF), 'y': int(ent['y']*DMF), 'z': int(ent['z']*DMF), 'team': ent['attrs'][1]})
+    
+            self._load_flag_list(flag_list)
 
     @property
     def got_flags(self):
@@ -32,7 +33,7 @@ class CtfBase(object):
     def on_player_connected(self, player):
         if not player.isai:
             with player.sendbuffer(1, True) as cds:
-                swh.put_initflags(cds, self.scores, self.flags)
+                swh.put_initflags(cds, self.scores, self.flags or ())
     
     def on_player_disconnected(self, player):
         self.on_player_try_drop_flag(player)
@@ -84,13 +85,16 @@ class CtfBase(object):
             swh.put_returnflag(cds, player, flag)
             
     def get_flag(self, flag_index):
-        for flag in self.flags:
+        for flag in self.flags or ():
             if flag.id == flag_index:
                 return flag
     
     def on_player_take_flag(self, player, flag_index, version):
         if player.state.is_spectator: return
         if not player.state.is_alive: return
+        
+        if self.flags is None:
+            return
         
         if flag_index < 0 or flag_index >= len(self.flags):
             return
@@ -109,7 +113,7 @@ class CtfBase(object):
                 self._return_flag(player, flag)
                 return
             # check if you are a flag carrier if so score
-            for other_flag in self.flags:
+            for other_flag in self.flags or ():
                 if other_flag != flag and other_flag.owner == player:
                     self._score_flag(player, flag, other_flag)
                     break
@@ -129,7 +133,7 @@ class CtfBase(object):
         return True
     
     def on_player_try_drop_flag(self, player):
-        for flag in self.flags:
+        for flag in self.flags or ():
             if flag.owner == player:
                 flag.drop(player.state.pos.copy(), RESETFLAGTIME/1000.0)
                 flag.return_deferred.addCallback(lambda _: self._reset_flag(flag))
