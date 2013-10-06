@@ -9,7 +9,7 @@ class ClientPermissionBase(object):
         self._group_name_providers.append(RoomGroupProvider(self))
         
     @property
-    def room_privilege(self):
+    def privilege(self):
         group_names = self.get_group_names()
         if 'local.room.admin' in group_names:
             return privileges.PRIV_ADMIN

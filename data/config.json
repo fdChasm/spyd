@@ -12,7 +12,6 @@
             ],
             "interface": "127.0.0.1",
             "maxup": 0,
-            "type": "public",
             "port": 10000,
             "maxplayers": 16,
             "public": true
@@ -27,7 +26,6 @@
             ],
             "interface": "127.0.0.1",
             "maxup": 0,
-            "type": "public",
             "port": 28785,
             "maxplayers": 16
         }
@@ -37,7 +35,10 @@
         "default": {
             "map_rotation": "file://map_rotation.json"
         },
-        "public": {
+        "permanent": {
+            "map_rotation": "file://map_rotation.json"
+        },
+        "temporary": {
             "map_rotation": "file://map_rotation.json"
         }
     },

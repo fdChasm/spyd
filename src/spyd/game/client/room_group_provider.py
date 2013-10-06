@@ -9,8 +9,17 @@ class RoomGroupProvider(object):
         
     def get_group_names(self):
         group_names = []
-        if self.client in self.client.room.masters:
+        
+        room = self.client.room
+        
+        if self.client in room.masters:
             group_names.append('local.room.master')
-        if self.client in self.client.room.admins:
+        if self.client in room.auths:
+            group_names.append('local.room.auth')
+        if self.client in room.admins:
             group_names.append('local.room.admin')
+            
+        if room.get_client(self.client.cn) is not None:
+            group_names.append('local.client')
+            
         return group_names

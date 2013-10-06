@@ -23,12 +23,14 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         ClientAuthableBase.__init__(self, master_client)
         ClientPermissionBase.__init__(self, permission_resolver)
         
+        self.command_context = {}
+        
         self.is_connected = False
     
     def connected(self):
         print "Client connected called."
         with self.sendbuffer(1, True) as cds:
-            swh.put_servinfo(cds, self, haspwd=False, description="Test Server", domain="")
+            swh.put_servinfo(cds, self, haspwd=False, description="", domain="")
             
         self.connect_timeout_deferred = reactor.callLater(1, self.connect_timeout)
 

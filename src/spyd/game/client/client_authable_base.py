@@ -43,4 +43,7 @@ class ClientAuthableBase(object):
         self.auth_deferred.errback(deferred_exception)
         
     def on_auth_success(self, authentication):
+        if authentication is not None:
+            self.add_group_name_provider(authentication)
+        
         self.auth_deferred.callback(authentication)

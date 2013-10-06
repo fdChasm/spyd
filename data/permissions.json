@@ -1,46 +1,47 @@
 {
-	"local.client": {
-		"allows": [
-		           "spyd.server.connect", "spyd.client.change_playermodel", "spyd.client.change_name",
-		           "spyd.game.commands.room.execute", "spyd.game.commands.rooms.execute", 
-		           "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
-		           "spyd.game.room.team.switch",
-		           "spyd.game.room.claim_master_open"
-		           ]
-	},
-	"local.room.master": {
-		"allows": [
-		           "spyd.game.room.punitive.*.create",
-		           "spyd.game.room.temporary.set_team",
-		           "spyd.game.room.temporary.set_spectator",
-		           "spyd.game.room.temporary.set_mastermode"
-		           ]
-	},
-	"local.room.auth": {
-		
-	},
-	"local.room.admin": {
-		"allows": ["*"],
-		"priority": 10
-	},
-	"localhost.auth": {
-		"inherits": ["local.client"],
-		"allows": ["spyd.game.room.claim_master_auth", "spyd.game.room.claim_master_also"],
-		"priority": 3
-	},
-	"org.sauerbraten.punitive.ban": {
-		"denies": ["spyd.server.connect"]
-	},
-	"local.punitive.ban": {
-		"denies": ["spyd.server.connect"]
-	},
-	"local.punitive.mute": {
-		"denies": ["spyd.game.room.chat.*"]
-	},
-	"local.punitive.bench": {
-		"denies": ["spyd.game.room.unspectate"]
-	},
-	"local.punitive.limit": {
-		"denies": ["spyd.game.room.team.switch"]
-	}
+    "local.client": {
+        "allows": [
+                   "spyd.server.connect",
+                   "spyd.game.commands.room.execute", "spyd.game.commands.room_create.execute",
+                   "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
+                   "spyd.game.room.team.switch",
+                   "spyd.game.room.temporary.claim_master"
+                   ]
+    },
+    "local.room.master": {
+        "allows": [
+                   "spyd.game.room.punitive.*.create",
+                   "spyd.game.room.temporary.set_team",
+                   "spyd.game.room.temporary.set_spectator",
+                   "spyd.game.room.temporary.set_mastermode"
+                   ]
+    },
+    "local.room.auth": {
+        "inherits": ["local.room.master"],
+        "allows": ["spyd.game.room.*.relinquish_auth"]
+    },
+    "local.room.admin": {
+        "allows": ["*"],
+        "priority": 10
+    },
+    "localhost.auth": {
+        "inherits": ["local.client"],
+        "allows": ["spyd.game.room.*.claim_auth"],
+        "priority": 3
+    },
+    "org.sauerbraten.punitive.ban": {
+        "denies": ["spyd.server.connect"]
+    },
+    "local.punitive.ban": {
+        "denies": ["spyd.server.connect"]
+    },
+    "local.punitive.mute": {
+        "denies": ["spyd.game.room.chat.*"]
+    },
+    "local.punitive.bench": {
+        "denies": ["spyd.game.room.unspectate"]
+    },
+    "local.punitive.limit": {
+        "denies": ["spyd.game.room.team.switch"]
+    }
 }

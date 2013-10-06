@@ -13,15 +13,18 @@ from server.lan_info.lan_info_service import LanInfoService
 from spyd.config_loader import config_loader
 from spyd.game.client.client_factory import ClientFactory
 from spyd.game.client.client_number_provider import get_client_number_provider
+from spyd.game.command.command_executer import CommandExecuter
+from spyd.game.map.map_meta_data_accessor import MapMetaDataAccessor
 from spyd.game.room.room_bindings import RoomBindings
 from spyd.game.room.room_factory import RoomFactory
 from spyd.game.room.room_manager import RoomManager
 from spyd.game.server_message_formatter import notice
 from spyd.master_client.master_client_bindings import MasterClientBindings
 from spyd.master_client.master_client_factory import MasterClientFactory
+from spyd.permissions.permission_resolver import PermissionResolver
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
-from spyd.permissions.permission_resolver import PermissionResolver
+from spyd.utils.value_model import ValueModel
 
 
 def make_service(options):
@@ -36,9 +39,16 @@ def make_service(options):
     logging.basicConfig(level=logging.DEBUG)
 
     root_service = service.MultiService()
+    
+    server_name_model = ValueModel(config.get('server_name', '123456789ABCD'))
+    
+    packages_directory = config.get('packages_directory', "{}/git/spyd/packages".format(os.environ['HOME']))
+    map_meta_data_accessor = MapMetaDataAccessor(packages_directory)
+    
+    command_executer = CommandExecuter()
 
-    room_factory = RoomFactory(config)
     room_manager = RoomManager()
+    room_factory = RoomFactory(config, room_manager, server_name_model, map_meta_data_accessor, command_executer)
     room_bindings = RoomBindings()
 
     punitive_model = PunitiveModel()
@@ -67,13 +77,12 @@ def make_service(options):
         maxclients = room_config['maxclients']
         maxdown = room_config.get('maxdown', 0)
         maxup = room_config.get('maxup', 0)
-        room_type = room_config.get('type', 'public')
+        room_type = room_config.get('type', 'permanent')
         default_room = room_config.get('default', True)
 
         room = room_factory.build_room(room_name, room_type)
 
         binding_service.add_binding(interface, port, maxclients, maxdown, maxup)
-        room_manager.add_room(room)
         room_bindings.add_room(port, room, default_room)
         lan_info_service.add_lan_info_for_room(room, interface, port)
 

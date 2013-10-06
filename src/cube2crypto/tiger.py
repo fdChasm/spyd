@@ -20,7 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 import array
 import struct
-from sboxes import t1, t2, t3, t4
+from cube2crypto.sboxes import t1, t2, t3, t4
 
 def tiger_round(a,b,c,x,mul):
     c ^= x

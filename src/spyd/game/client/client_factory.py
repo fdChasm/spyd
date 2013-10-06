@@ -2,7 +2,6 @@ from spyd.game.client.client import Client
 from spyd.server.client_protocol_wrapper import ClientProtocolWrapper
 
 class ClientFactory(object):
-    
     def __init__(self, client_number_provider, room_bindings, master_client_bindings, permission_resolver):
         self.client_number_provider = client_number_provider
         self.room_bindings = room_bindings

@@ -1,12 +1,11 @@
 """A python native implementation of the public key crypto in Cube 2
 Based on the Sauerbraten Sources and https://github.com/mgaare/cube2-crypto
 """
-
-from gfield import GField
-from jacobian import Jacobian
-import ecc_params
-from get_random_number import get_random_number
-import tiger
+from cube2crypto.gfield import GField
+import cube2crypto.ecc_params as ecc_params
+import cube2crypto.tiger as tiger
+from cube2crypto.jacobian import Jacobian
+from cube2crypto.get_random_number import get_random_number
 
 def hashstring(string):
     return tiger.tiger_hash(string)

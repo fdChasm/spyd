@@ -1,5 +1,5 @@
-from bit_test import bit_test
-import ecc_params as _ecc_params
+from cube2crypto.bit_test import bit_test
+from cube2crypto import ecc_params as _ecc_params
 
 def _GField__big_m_pow(x, exp, carry, ecc_params):
     if carry is None:

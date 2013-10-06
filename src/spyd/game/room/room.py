@@ -1,6 +1,6 @@
 from twisted.internet import reactor
 
-from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes
+from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
 from cube2common.cube_data_stream import CubeDataStream
 from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError
 from spyd.game.gamemode import get_mode_name_from_num
@@ -27,26 +27,34 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, server_name_model=None, map_rotation=None, map_meta_data_accessor=None):
+    def __init__(self, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
+        
+        self.manager = room_manager
 
         self._server_name_model = server_name_model or ValueModel("123456789ABCD")
-        self._name = ValueModel("1234567")
+        self._name = ValueModel(room_name or "1234567")
         self._server_name_model.observe(self._on_name_changed)
         self._name.observe(self._on_name_changed)
 
         self._clients = ClientCollection()
         self._players = PlayerCollection()
+        
+        self.command_executer = command_executer
+        self.command_context = {}
 
+        self.mastermask = 0
         self.mastermode = 0
         self.resume_delay = None
 
         self.temporary = False
         self.decommissioned = False
         
+        # Holds the client objects with each level of permissions
         self.masters = set()
-        self.admins = set()
+        self.auths   = set()
+        self.admins  = set()
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
@@ -174,42 +182,12 @@ class Room(object):
     #######################  Client event handling  ###########################
     ###########################################################################
 
-    claim_master_open = Functionality("spyd.game.room.claim_master_open", "You aren't permitted to claim master.")
-    claim_master_also = Functionality("spyd.game.room.claim_master_also", "There is already a master; there can be only one.")
-    claim_master_auth = Functionality("spyd.game.room.claim_master_auth", "You must have auth to claim auth master in this room.")
-    claim_admin       = Functionality("spyd.game.room.claim_admin",       "Insufficent permissions to claim admin.")
-    relinquish        = Functionality("spyd.game.room.relinquish",        "You cannot relinquish permissions you don't have.")
-
     def on_client_set_master(self, client, target_cn, password_hash, requested_privilege):
         target = self.get_client(target_cn)
         if target is None:
             raise UnknownPlayer('No client with cn {cn#cn} found.')
 
-        functionality = None
-        if client is target:
-            if requested_privilege == 0:
-                functionality = Room.relinquish
-            if requested_privilege == 1:
-                if self.temporary:
-                    if self.masters:
-                        functionality = Room.claim_master_also
-                    else:
-                        functionality = Room.claim_master_open
-                else:
-                    functionality = Room.claim_master_auth
-            elif requested_privilege == 2:
-                functionality = Room.claim_admin
-                
-        print client, target, password_hash, requested_privilege, functionality
-                
-        if functionality is None:
-            raise InsufficientPermissions("You do not have permissions to do that.")
-                
-        if client.allowed(functionality):
-            self._client_change_privilege(client, target, requested_privilege)
-        else:
-            raise InsufficientPermissions(functionality.denied_message)
-        
+        self._client_try_set_privilege(client, target, requested_privilege)
 
     temporary_set_mastermode_functionality = Functionality("spyd.game.room.temporary.set_mastermode")
     set_mastermode_functionality = Functionality("spyd.game.room.set_mastermode")
@@ -236,7 +214,7 @@ class Room(object):
 
         player = self.get_player(target_pn)
         if player is None:
-            raise UnknownPlayer('No player with cn {cn#cn} found.')
+            raise UnknownPlayer(cn=target_pn)
 
         self.gamemode.on_player_try_set_team(client.get_player(), player, player.team.name, team_name)
 
@@ -249,7 +227,7 @@ class Room(object):
 
         player = self.get_player(target_pn)
         if player is None:
-            raise UnknownPlayer('No player with cn {cn#cn} found.')
+            raise UnknownPlayer(cn=target_pn)
 
     def on_client_kick(self, client, target_pn, reason):
         # TODO: Implement kicking of players and insertion of bans
@@ -406,7 +384,10 @@ class Room(object):
         self.gamemode.on_player_try_drop_flag(player)
 
     def on_player_game_chat(self, player, text):
-        swh.put_text(player.state.messages, text)
+        if text[0] == "#":
+            self.command_executer.execute(self, player.client, text)
+        else:
+            swh.put_text(player.state.messages, text)
 
     def on_player_team_chat(self, player, text):
         if player.isai: return
@@ -560,6 +541,78 @@ class Room(object):
     def _on_name_changed(self, *args):
         for client in self.clients:
             self._send_room_title(client)
+
+    set_self_privilege_functionality_tree = {
+        'temporary': {
+            'claim': {
+                privileges.PRIV_MASTER: Functionality("spyd.game.room.temporary.claim_master", "You do not have permission to claim master."),
+                privileges.PRIV_AUTH: Functionality("spyd.game.room.temporary.claim_auth", "You do not have permission to claim auth."),
+                privileges.PRIV_ADMIN: Functionality("spyd.game.room.temporary.claim_admin", "You do not have permission to claim admin.")
+            },
+            'relinquish': {
+                privileges.PRIV_MASTER: Functionality("spyd.game.room.temporary.relinquish_master", "Cannot relinquish master."),
+                privileges.PRIV_AUTH: Functionality("spyd.game.room.temporary.relinquish_auth", "Cannot relinquish auth."),
+                privileges.PRIV_ADMIN: Functionality("spyd.game.room.temporary.relinquish_admin", "Cannot relinquish master.")
+            }
+        },
+        'permanent': {
+            'claim': {
+                privileges.PRIV_MASTER: Functionality("spyd.game.room.permanent.claim_master", "You do not have permission to claim master in permanent rooms."),
+                privileges.PRIV_AUTH: Functionality("spyd.game.room.permanent.claim_auth", "You do not have permission to claim auth in permanent rooms."),
+                privileges.PRIV_ADMIN: Functionality("spyd.game.room.permanent.claim_admin", "You do not have permission to claim admin in permanent rooms.")
+            },
+            'relinquish': {
+                privileges.PRIV_MASTER: Functionality("spyd.game.room.permanent.relinquish_master", "Cannot relinquish master."),
+                privileges.PRIV_AUTH: Functionality("spyd.game.room.permanent.relinquish_master", "Cannot relinquish auth."),
+                privileges.PRIV_ADMIN: Functionality("spyd.game.room.permanent.relinquish_admin", "Cannot relinquish master.")
+            }
+        }
+    }
+
+
+    def _client_change_privilege(self, client, target, requested_privilege):
+        if requested_privilege == privileges.PRIV_NONE:
+            self.admins.discard(target)
+            self.auths.discard(target)
+            self.masters.discard(target)
+        elif requested_privilege == privileges.PRIV_MASTER:
+            self.masters.add(target)
+        elif requested_privilege == privileges.PRIV_AUTH:
+            self.auths.add(target)
+        elif requested_privilege == privileges.PRIV_ADMIN:
+            self.admins.add(target)
+        self._update_current_masters()
+    
+    def _set_self_privilege(self, client, requested_privilege):
+        room_classification = "temporary" if self.temporary else "permanent"
+        
+        if requested_privilege > privileges.PRIV_NONE:
+            privilege_action = "claim"
+            permission_involved = requested_privilege
+        else:
+            privilege_action = "relinquish"
+            permission_involved = client.privilege
+        
+        functionality_category = Room.set_self_privilege_functionality_tree.get(room_classification, {}).get(privilege_action, {})
+        
+        functionality = functionality_category.get(permission_involved, None)
+        
+        if functionality is None:
+            raise InsufficientPermissions("You do not have permissions to do that.")
+
+        if client.allowed(functionality):
+            self._client_change_privilege(client, client, requested_privilege)
+        else:
+            raise InsufficientPermissions(functionality.denied_message)
+
+    def _set_others_privilege(self, client, target, requested_privilege):
+        raise GenericError("Setting other player privileges isn't currently implemented.")
+
+    def _client_try_set_privilege(self, client, target, requested_privilege):
+        if client is target:
+            return self._set_self_privilege(client, requested_privilege)
+        else:
+            return self._set_others_privilege(client, target, requested_privilege)
 
     def _update_current_masters(self):
         self._broadcaster.current_masters(self.mastermode, self.clients)
