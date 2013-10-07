@@ -158,7 +158,6 @@ class GameClock(object):
     @timeleft.setter
     def timeleft(self, seconds):
         '''Set how many seconds are left on the game clock.'''
-        print "game_clock.timeleft setter called", seconds
         if seconds > 0.0:
             self._intermission_start_scheduled_callback_wrapper.timeleft = seconds
             self._intermission_end_scheduled_callback_wrapper.timeleft = seconds + self._intermission_duration_seconds
@@ -217,4 +216,3 @@ class GameClock(object):
 
     def _timeleft_altered(self):
         call_all(self._timeleft_altered_callbacks, self.timeleft)
-        print "game_clock._timeleft_altered called"

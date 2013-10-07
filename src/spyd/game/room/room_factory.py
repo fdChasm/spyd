@@ -27,13 +27,16 @@ class RoomFactory(object):
 
         map_rotation_data = room_config.get('map_rotation', test_rotation_dict)
         map_rotation = MapRotation.from_dictionary(map_rotation_data)
+        
+        maxplayers = room_config.get('maxplayers', 12)
 
         room = Room(room_name=name,
                     room_manager=self.room_manager,
                     server_name_model=self.server_name_model, 
                     map_meta_data_accessor=self.map_meta_data_accessor, 
                     map_rotation=map_rotation,
-                    command_executer=self.command_executer)
+                    command_executer=self.command_executer,
+                    maxplayers=maxplayers)
         
         self.room_manager.add_room(room)
         

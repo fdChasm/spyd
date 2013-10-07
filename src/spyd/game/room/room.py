@@ -27,7 +27,7 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None):
+    def __init__(self, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, maxplayers=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
         
@@ -44,12 +44,14 @@ class Room(object):
         self.command_executer = command_executer
         self.command_context = {}
 
-        self.mastermask = 0
-        self.mastermode = 0
-        self.resume_delay = None
+        self.maxplayers = maxplayers
 
         self.temporary = False
         self.decommissioned = False
+        
+        self.mastermask = 0 if self.temporary else -1
+        self.mastermode = 0
+        self.resume_delay = None
         
         # Holds the client objects with each level of permissions
         self.masters = set()
@@ -75,6 +77,12 @@ class Room(object):
     @name.setter
     def name(self, value):
         self._name.value = truncate(value, MAXROOMLEN)
+        
+    @property
+    def lan_info_name(self):
+        server_name = truncate(self._server_name_model.value, MAXSERVERLEN)
+        room_title = smf.format("{server_name} #{room.name}", room=self, server_name=server_name)
+        return room_title
 
     def get_entry_context(self, client, player):
         '''
@@ -100,6 +108,10 @@ class Room(object):
             if not player.state.is_spectator:
                 count += 1
         return count
+    
+    @property
+    def player_count(self):
+        return self._clients.count
 
     def get_client(self, cn):
         return self._clients.by_cn(cn)
@@ -122,6 +134,10 @@ class Room(object):
     @property
     def map_name(self):
         return self._map_mode_state.map_name
+    
+    @property
+    def mode_num(self):
+        return self._map_mode_state.mode_num
 
     @property
     def mode_name(self):

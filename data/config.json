@@ -13,7 +13,7 @@
             "interface": "127.0.0.1",
             "maxup": 0,
             "port": 10000,
-            "maxplayers": 16,
+            "maxplayers": 32,
             "public": true
         },
         "lobby": {
@@ -27,7 +27,7 @@
             "interface": "127.0.0.1",
             "maxup": 0,
             "port": 28785,
-            "maxplayers": 16
+            "maxplayers": 24
         }
     },
     "lan_findable": true,

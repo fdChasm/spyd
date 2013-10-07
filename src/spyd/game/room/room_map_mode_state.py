@@ -20,6 +20,9 @@ class RoomMapModeState(object):
         
     @property
     def map_name(self):
+        if self._gamemode is None:
+            map_name, _ = self._map_rotation.next_map_mode(peek=True)
+            return map_name
         return self._map_name
     
     @property
@@ -28,10 +31,16 @@ class RoomMapModeState(object):
     
     @property
     def mode_num(self):
+        if self._gamemode is None:
+            _, mode_name = self._map_rotation.next_map_mode(peek=True)
+            return gamemodes[mode_name].clientmodenum
         return self._gamemode.clientmodenum
     
     @property
     def mode_name(self):
+        if self._gamemode is None:
+            _, mode_name = self._map_rotation.next_map_mode(peek=True)
+            return gamemodes[mode_name].clientmodename
         return self._gamemode.clientmodename
     
     @property

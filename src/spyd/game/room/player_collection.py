@@ -8,6 +8,10 @@ class PlayerCollection(object):
         
     def remove(self, player):
         del self._players[player.pn]
+        
+    @property
+    def count(self):
+        return len(self._players)
     
     def to_list(self):
         return self._players.values()

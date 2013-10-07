@@ -90,8 +90,6 @@ class CtfBase(object):
                 return flag
     
     def on_player_take_flag(self, player, flag_index, version):
-        print player, flag_index, version
-        
         if player.state.is_spectator: return
         if not player.state.is_alive: return
         

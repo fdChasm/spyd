@@ -12,6 +12,10 @@ class ClientCollection(object):
         
     def remove(self, client):
         del self._clients[client.cn]
+        
+    @property
+    def count(self):
+        return len(self._clients)
     
     def to_list(self):
         return self._clients.values()
