@@ -69,7 +69,7 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         player = self.players[self.cn]
         
         try:
-            room_entry_context = self.room.get_entry_context(self, player, authentication, pwdhash)
+            room_entry_context = self.room.get_entry_context(self, player)
         except RoomEntryFailure as e:
             return self.disconnect(e.disconnect_type, e.message)
         

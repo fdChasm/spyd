@@ -34,20 +34,35 @@ class GameClock(object):
         self._intermission_ended_callbacks = []
         
         self._scheduled_callback_wrappers = []
+        
+    def _cancel_existing_scheduled_events(self):
+        if self._intermission_end_scheduled_callback_wrapper is not None:
+            self._intermission_end_scheduled_callback_wrapper.cancel()
+            self._intermission_start_scheduled_callback_wrapper = None
+            
+        if self._intermission_start_scheduled_callback_wrapper is not None:
+            self._intermission_start_scheduled_callback_wrapper.cancel()
+            self._intermission_start_scheduled_callback_wrapper = None
     
     def start(self, game_duration_seconds, intermission_duration_seconds):
         '''Set the game clock. If a game is currently underway, this will reset the time elapsed and set the amount of time left as specified.'''
         self._timed = True
+        
+        self._cancel_existing_scheduled_events()
+            
         self._intermission_duration_seconds = intermission_duration_seconds
         self._intermission_start_scheduled_callback_wrapper = ScheduledCallbackWrapper(game_duration_seconds)
         self._intermission_start_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_started)
+        
         self._intermission_end_scheduled_callback_wrapper = ScheduledCallbackWrapper(game_duration_seconds+intermission_duration_seconds)
         self._intermission_end_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_ended)
+        
         self._time_elapsed = 0.0
         
     def start_untimed(self):
         self._state = states.PAUSED
         self._timed = False
+        self._cancel_existing_scheduled_events()
         self._time_elapsed = 0.0
     
     def add_paused_callback(self, f, *args, **kwargs):
@@ -143,8 +158,16 @@ class GameClock(object):
     @timeleft.setter
     def timeleft(self, seconds):
         '''Set how many seconds are left on the game clock.'''
-        self._intermission_start_scheduled_callback_wrapper.timeleft = seconds
-        self._intermission_end_scheduled_callback_wrapper.timeleft = seconds + self._intermission_duration_seconds
+        print "game_clock.timeleft setter called", seconds
+        if seconds > 0.0:
+            self._intermission_start_scheduled_callback_wrapper.timeleft = seconds
+            self._intermission_end_scheduled_callback_wrapper.timeleft = seconds + self._intermission_duration_seconds
+            self._timeleft_altered()
+        else:
+            self._cancel_existing_scheduled_events()
+            self._intermission_end_scheduled_callback_wrapper = ScheduledCallbackWrapper(self._intermission_duration_seconds)
+            self._intermission_end_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_ended)
+            self._timeleft_altered()
 
     @property
     def intermission_timeleft(self):
@@ -194,3 +217,4 @@ class GameClock(object):
 
     def _timeleft_altered(self):
         call_all(self._timeleft_altered_callbacks, self.timeleft)
+        print "game_clock._timeleft_altered called"

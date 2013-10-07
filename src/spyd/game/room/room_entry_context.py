@@ -1,5 +1,3 @@
 class RoomEntryContext(object):
-    def __init__(self, client, authentication, pwdhash):
+    def __init__(self, client):
         self.client = client
-        self.authentication = authentication
-        self.pwdhash = pwdhash

@@ -14,26 +14,31 @@ class ScheduledCallbackWrapper(object):
         
         self.internal_deferred.chainDeferred(self.external_deferred)
         
+        self._cancelled = False
         self._delayed_call = None
         self._delay_seconds = seconds
         
     def pause(self):
-        if self.is_paused:
+        if self.is_paused or self._cancelled:
             return
         self._delay_seconds = self.timeleft
         self._delayed_call.cancel()
         self._delayed_call = None
 
     def resume(self):
-        if not self.is_paused:
+        if not self.is_paused or self._cancelled:
             return
         self._delayed_call = self.clock.callLater(self._delay_seconds, self.internal_deferred.callback, True)
         self._delay_seconds = None
 
     def cancel(self):
-        self.external_deferred.cancel()
-        self._delayed_call.cancel()
-        self.internal_deferred.callback(False)
+        if not self._cancelled:
+            self.external_deferred.cancel()
+            self._delayed_call.cancel()
+            self._delayed_call = None
+            self.internal_deferred.callback(False)
+            self._cancelled = True
+            self._delay_seconds = 0.0
         
     @property
     def timeleft(self):

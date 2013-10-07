@@ -76,14 +76,14 @@ class Room(object):
     def name(self, value):
         self._name.value = truncate(value, MAXROOMLEN)
 
-    def get_entry_context(self, client, player, authentication, pwdhash):
+    def get_entry_context(self, client, player):
         '''
         Returns an object which encapsulates the details about a client request
         to join this room.
         This gives the room an opportunity to raise exceptions before any
-        work change actually happen.
+        work change actually happen. (for example room being full, or private.)
         '''
-        return RoomEntryContext(client, authentication, pwdhash)
+        return RoomEntryContext(client)
 
     @property
     def clients(self):
@@ -165,6 +165,10 @@ class Room(object):
 
     def resume(self):
         self._game_clock.resume(self.resume_delay)
+        
+    def end_match(self):
+        print "end_match called"
+        self._game_clock.timeleft = 0
 
     def change_map_mode(self, map_name, mode_name):
         self._map_mode_state.change_map_mode(map_name, mode_name)
@@ -456,6 +460,7 @@ class Room(object):
 
     def _on_game_clock_timeleft_altered(self, seconds):
         self._broadcaster.time_left(seconds)
+        print "room._on_game_clock_timeleft_altered called", seconds
 
     def _on_game_clock_intermission(self):
         self._broadcaster.server_message("Intermission has started.")

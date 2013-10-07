@@ -67,7 +67,7 @@ class CtfBase(object):
             swh.put_scoreflag(cds, player, relay_flag, goal_flag)
             
         if player.team.score >= 10:
-            self.room.timeleft = 0
+            self.room.end_match()
             
     def _reset_flag(self, flag):
         flag.version += 1
@@ -90,6 +90,8 @@ class CtfBase(object):
                 return flag
     
     def on_player_take_flag(self, player, flag_index, version):
+        print player, flag_index, version
+        
         if player.state.is_spectator: return
         if not player.state.is_alive: return
         
@@ -150,7 +152,7 @@ class CtfBase(object):
         player.state.respawn(self.room.gamemode)
         with self.room.broadcastbuffer(1, True) as cds:
             swh.put_died(cds, player, player)
-        self.on_player_death(player)
+        self.on_player_death(player, player)
 
     def on_player_flag_list(self, player, flag_list):
         if not self.got_flags:
@@ -169,6 +171,8 @@ class CtfBase(object):
     def on_player_try_set_team(self, player, target, old_team_name, new_team_name):
         team = self._get_team(new_team_name)
         if team is None: return
+        
+        if team is target.team: return
         
         self._teamswitch_suicide(target)
         with self.room.broadcastbuffer(1, True) as cds:

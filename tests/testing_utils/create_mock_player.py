@@ -11,7 +11,7 @@ class PlayerTestContext(object):
         self.sendbuffers = []
         
     def enter_room(self, room):
-        entry_context = room.get_entry_context(self.player.client, self.player, None, '')
+        entry_context = room.get_entry_context(self.player.client, self.player)
         room.client_enter(entry_context)
         
     def leave_room(self, room):

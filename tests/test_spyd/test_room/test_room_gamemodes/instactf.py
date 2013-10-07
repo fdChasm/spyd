@@ -103,7 +103,31 @@ class TestRoomInstactf(unittest.TestCase):
             self.clock.advance(10)
             player_test_context.assertHasReceivedMessageOfType('N_RESETFLAG')
             
+    def test_score_10_flags_ends_game(self):
+        with mock_server_write_helper() as stack:
+            player_test_context = stack.enter_context(create_mock_player(self, 0))
+            player = player_test_context.player
+
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'dust2': dust2_meta_data})
+            room.change_map_mode('dust2', 'instactf')
             
+            player_test_context.enter_room(room)
             
-        
-    
+            #room.on_player_switch_team(player, 'good')
+            #self.clock.advance(5)
+            #room.on_player_request_spawn(player)
+            #room.on_player_spawn(player, player.state.lifesequence, player.state.gunselect)
+            
+            player_test_context.clear_received_messages()
+            
+            for i in xrange(10):
+                player_test_context.assertHasNotReceivedMessageOfType('N_TIMEUP')
+                room.on_player_take_flag(player, 1, i*2)
+                player_test_context.assertHasReceivedMessageOfType('N_TAKEFLAG')
+                room.on_player_take_flag(player, 0, 0)
+                player_test_context.assertHasReceivedMessageOfType('N_SCOREFLAG')
+            
+            player_test_context.assertHasReceivedMessageOfType('N_TIMEUP')
+            timeup_message = player_test_context.get_received_messages_of_type('N_TIMEUP')[0]
+            
+            self.assertAlmostEqual(timeup_message['timeleft'], 0.0)
