@@ -1,6 +1,7 @@
 from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.game.room.exceptions import RoomEntryFailure
 from spyd.game.client.client_message_handling_base import GenericError
+from spyd.game.server_message_formatter import info
 
 class RoomManager(object):
     def __init__(self):
@@ -28,7 +29,11 @@ class RoomManager(object):
         except RoomEntryFailure as e:
             raise GenericError(e.message)
         
+        client.room._broadcaster.server_message(info("{name#client} is leaving to join {room#room}. Use {action#follow} to go there too.", client=client, room=target_room, follow="follow"), exclude=[client])
+        
         client.room.client_leave(client)
+        
+        client.room.last_destination_room = target_room.name
         
         client.room = target_room
         

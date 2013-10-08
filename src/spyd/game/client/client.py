@@ -7,7 +7,7 @@ from spyd.game.client.client_message_handling_base import ClientMessageHandlingB
 from spyd.game.client.client_network_base import ClientNetworkBase
 from spyd.game.player.player import Player
 from spyd.game.room.exceptions import RoomEntryFailure
-from spyd.game.server_message_formatter import error
+from spyd.game.server_message_formatter import error, smf
 from spyd.protocol import swh
 from spyd.utils.filtertext import filtertext
 from spyd.game.client.client_permission_base import ClientPermissionBase
@@ -26,6 +26,16 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         self.command_context = {}
         
         self.is_connected = False
+        
+    def __format__(self, format_spec):
+        player = self.get_player()
+        
+        if player.shares_name or player.isai:
+            fmt = "{name#player.name} {pn#player.pn}"
+        else:
+            fmt = "{name#player.name}"
+            
+        return smf.format(fmt, player=player)
     
     def connected(self):
         print "Client connected called."

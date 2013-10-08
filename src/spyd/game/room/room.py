@@ -53,6 +53,8 @@ class Room(object):
         self.mastermode = 0
         self.resume_delay = None
         
+        self.last_destination_room = None
+        
         # Holds the client objects with each level of permissions
         self.masters = set()
         self.auths   = set()
@@ -171,9 +173,15 @@ class Room(object):
         self._clients.remove(client)
         for player in client.players.itervalues():
             self._player_disconnected(player)
+
         if client in self.masters or client in self.admins:
             self.masters.discard(client)
+            self.auths.discard(client)
             self.admins.discard(client)
+
+        with client.sendbuffer(1, True) as cds:
+            for remaining_client in self._clients.to_iterator():
+                swh.put_cdis(cds, remaining_client)
             
 
     def pause(self):

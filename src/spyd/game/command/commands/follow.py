@@ -5,18 +5,21 @@ from spyd.game.command.command_base import CommandBase
 
 @register("command")
 class RoomCommand(CommandBase):
-    name = "room"
+    name = "follow"
     functionality = Functionality("spyd.game.commands.room.execute", "You do not have permission to execute {action#command}", command=name)
-    usage = "<room name>"
-    description = "Join a specified room."
+    usage = ""
+    description = "Follow the last player to leave this room."
 
     @classmethod
     def execute(cls, room, client, command_string, arguments):
-        room_name = arguments[0]
+        room_name = room.last_destination_room
+        
+        if room_name is None:
+            raise GenericError("No players have left this room for another recently. Perhaps join another existing room with {action#room}.", room='room')
         
         target_room = room.manager.get_room(room_name, True)
         
         if target_room is None:
-            raise GenericError("Could not resolve {value#room_name} to a room. Perhaps create it with {action#room_create}", room_name=room_name, room_create='room_create')
+            raise GenericError("Could not join {value#room_name}. Room no longer exists. Perhaps create it with {action#room_create}", room_name=room_name, room_create='room_create')
         
         room.manager.client_change_room(client, target_room)
