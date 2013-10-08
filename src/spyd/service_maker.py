@@ -96,15 +96,17 @@ def make_service(options):
 
     def printer(s):
         print s
+        
+    shutdown_countdown = config.get('shutdown_countdown', 3)
 
     def shutdown():
-        print "Shutting down in 3 seconds to allow clients to disconnect."
+        print "Shutting down in {} seconds to allow clients to disconnect.".format(shutdown_countdown)
         client_manager.disconnect_all(disconnect_type=disconnect_types.DISC_NONE, message=notice("Server going down. Please come back when it is back up."))
-        # reactor.callLater(1, printer, "2...")
-        # reactor.callLater(2, printer, "1...")
-        # reactor.callLater(3, printer, "0...")
+        
+        for i in xrange(shutdown_countdown):
+            reactor.callLater(shutdown_countdown-i, printer, "{}...".format(i))
         d = defer.Deferred()
-        reactor.callLater(1, d.callback, 1)
+        reactor.callLater(shutdown_countdown+0.1, d.callback, 1)
         return d
 
     reactor.addSystemEventTrigger("before", "shutdown", shutdown)
