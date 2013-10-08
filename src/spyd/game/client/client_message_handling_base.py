@@ -56,7 +56,10 @@ class ClientMessageHandlingBase(object):
             swh.put_pong(cds, message['cmillis'])
 
     def N_CLIENTPING(self, message):
-        self.ping_buffer.add(message['ping'])
+        ping = message['ping']
+        self.ping_buffer.add(ping)
+        player = self.get_player(-1)
+        swh.put_clientping(player.state.messages, ping)
 
     def N_POS(self, message):
         player = self.get_player(message['clientnum'])
