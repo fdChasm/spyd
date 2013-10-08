@@ -10,7 +10,7 @@ class LanInfoService(service.Service):
         self.rooms_ports = {}
         self.broadcast_listener = None
         if lan_findable:
-            self.broadcast_listener = LanInfoProtocol()
+            self.broadcast_listener = LanInfoProtocol(multicast=True)
     
     def startService(self):
         for room, (interface, port) in self.rooms_ports.iteritems():
@@ -22,7 +22,7 @@ class LanInfoService(service.Service):
             if self.broadcast_listener is not None:
                 self.broadcast_listener.add_responder(lan_info_responder)
             
-            reactor.listenMulticast(port, lan_info_protocol, interface=interface, listenMultiple=True)
+            reactor.listenUDP(port, lan_info_protocol, interface=interface)
             
         if self.broadcast_listener is not None:
             reactor.listenMulticast(28784, self.broadcast_listener, interface="0.0.0.0", listenMultiple=True)

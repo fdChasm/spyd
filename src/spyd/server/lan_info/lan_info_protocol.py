@@ -2,11 +2,13 @@ from twisted.internet.protocol import DatagramProtocol
 from cube2common.read_cube_data_stream import ReadCubeDataStream
 
 class LanInfoProtocol(DatagramProtocol):
-    def __init__(self):
+    def __init__(self, multicast=False):
         self.lan_info_responders = []
+        self.multicast = multicast
         
     def startProtocol(self):
-        self.transport.setTTL(255)
+        if self.multicast:
+            self.transport.setTTL(255)
 
     def add_responder(self, lan_info_responder):
         self.lan_info_responders.append(lan_info_responder)
