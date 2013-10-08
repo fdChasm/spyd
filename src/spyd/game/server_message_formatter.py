@@ -21,6 +21,8 @@ smf.register_wrapper('info',        color_wrappers.yellow)
 smf.register_wrapper('error',       color_wrappers.red)
 smf.register_wrapper('notice',      color_wrappers.red)
 smf.register_wrapper('value',       color_wrappers.grey)
+smf.register_wrapper('map',         color_wrappers.grey)
+smf.register_wrapper('mode',        color_wrappers.grey)
 
 def wrapper_function(prefix_wrapper, prefix):
     prefix_fmt = ''.join(["{", prefix_wrapper,"#prefix}: {msg_fmt}"])

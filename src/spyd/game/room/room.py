@@ -114,6 +114,10 @@ class Room(object):
     @property
     def player_count(self):
         return self._clients.count
+    
+    @property
+    def empty(self):
+        return self.player_count == 0
 
     def get_client(self, cn):
         return self._clients.by_cn(cn)
