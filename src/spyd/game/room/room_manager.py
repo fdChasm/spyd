@@ -24,7 +24,7 @@ class RoomManager(object):
         player = client.get_player()
         
         try:
-            room_entry_context = target_room.get_entry_context(client, player, authentication=None, pwdhash='')
+            room_entry_context = target_room.get_entry_context(client, player)
         except RoomEntryFailure as e:
             raise GenericError(e.message)
         

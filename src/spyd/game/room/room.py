@@ -205,7 +205,7 @@ class Room(object):
     def on_client_set_master(self, client, target_cn, password_hash, requested_privilege):
         target = self.get_client(target_cn)
         if target is None:
-            raise UnknownPlayer('No client with cn {cn#cn} found.')
+            raise UnknownPlayer(cn=target_cn)
 
         self._client_try_set_privilege(client, target, requested_privilege)
 
@@ -219,18 +219,16 @@ class Room(object):
             raise InsufficientPermissions('Insufficient permissions to change mastermode.')
 
         if mastermode < mastermodes.MM_OPEN or mastermode > mastermodes.MM_PRIVATE:
-            client.send_server_message(error("Mastermode out of allowed range."))
-            return
+            raise GenericError("Mastermode out of allowed range.")
 
         self.mastermode = mastermode
         self._update_current_masters()
 
-    def on_client_set_team(self, client, target_pn, team_name):
-        # TODO: Implement permissions for changing player teams
-        can_set_others_teams = True
+    set_others_teams_functionality = Functionality("spyd.game.room.set_others_teams", 'Insufficient permissions to change other players teams.')
 
-        if not can_set_others_teams:
-            raise InsufficientPermissions('Insufficient permissions to change player teams.')
+    def on_client_set_team(self, client, target_pn, team_name):
+        if not client.allowed(Room.set_others_teams_functionality):
+            raise InsufficientPermissions(Room.set_others_teams_functionality.denied_message)
 
         player = self.get_player(target_pn)
         if player is None:
@@ -238,12 +236,11 @@ class Room(object):
 
         self.gamemode.on_player_try_set_team(client.get_player(), player, player.team.name, team_name)
 
-    def on_client_set_spectator(self, client, target_pn, spectate):
-        # TODO: Implement permissions for spectating players
-        can_spectate_others = True
+    set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change who is spectating.')
 
-        if not can_spectate_others:
-            raise InsufficientPermissions('Insufficient permissions to change who is spectating.')
+    def on_client_set_spectator(self, client, target_pn, spectate):
+        if not client.allowed(Room.set_spectator_functionality):
+            raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
 
         player = self.get_player(target_pn)
         if player is None:
@@ -257,8 +254,12 @@ class Room(object):
         # TODO: Implement clearing of bans
         pass
 
+    set_map_mode_functionality = Functionality("spyd.game.room.set_map_mode", 'Insufficient permissions to force a map/mode change.')
+
     def on_client_map_vote(self, client, map_name, mode_num):
-        # TODO: Implement map voting and setting of the map when players have elevated permissions and the room is locked
+        if not client.allowed(Room.set_map_mode_functionality):
+            raise InsufficientPermissions(Room.set_map_mode_functionality.denied_message)
+        
         mode_name = get_mode_name_from_num(mode_num)
         valid_map_names = self._map_mode_state.get_map_names()
         map_name_match = match_fuzzy(map_name, valid_map_names)
@@ -279,12 +280,11 @@ class Room(object):
     def on_client_flag_list(self, client, flag_list):
         self.gamemode.on_client_flag_list(client, flag_list)
 
-    def on_client_pause_game(self, client, pause):
-        # TODO: Implement permissions for pausing the game
-        can_pause_game = True
+    pause_resume_functionality = Functionality("spyd.game.room.pause_resume", 'Insufficient permissions to pause or resume the game.')
 
-        if not can_pause_game:
-            raise InsufficientPermissions('Insufficient permissions to pause game.')
+    def on_client_pause_game(self, client, pause):
+        if not client.allowed(Room.pause_resume_functionality):
+            raise InsufficientPermissions(Room.pause_resume_functionality.denied_message)
 
         if pause:
             self.pause()
@@ -346,10 +346,11 @@ class Room(object):
 
     def on_player_switch_name(self, player, name):
         player.name = name
-        with self.broadcastbuffer(1, True) as cds:
-            tm = CubeDataStream()
-            swh.put_switchname(tm, "aaaaa")
-            swh.put_clientdata(cds, player.client, str(tm))
+        swh.put_switchname(player.state.messages, name)
+        #with self.broadcastbuffer(1, True) as cds:
+        #    tm = CubeDataStream()
+        #    swh.put_switchname(tm, "aaaaa")
+        #    swh.put_clientdata(cds, player.client, str(tm))
 
     def on_player_switch_team(self, player, team_name):
         self.gamemode.on_player_try_set_team(player, player, player.team.name, team_name)
@@ -519,7 +520,9 @@ class Room(object):
             swh.put_welcome(cds)
             self._put_room_title(cds, client)
 
-            swh.put_currentmaster(cds, self.mastermode, self.clients)
+            possible_privileged_clients = [client] + self._clients.to_list()
+
+            swh.put_currentmaster(cds, self.mastermode, possible_privileged_clients)
 
             self._initialize_client_match_data(cds, client)
 
@@ -593,7 +596,7 @@ class Room(object):
             },
             'relinquish': {
                 privileges.PRIV_MASTER: Functionality("spyd.game.room.permanent.relinquish_master", "Cannot relinquish master."),
-                privileges.PRIV_AUTH: Functionality("spyd.game.room.permanent.relinquish_master", "Cannot relinquish auth."),
+                privileges.PRIV_AUTH: Functionality("spyd.game.room.permanent.relinquish_auth", "Cannot relinquish auth."),
                 privileges.PRIV_ADMIN: Functionality("spyd.game.room.permanent.relinquish_admin", "Cannot relinquish master.")
             }
         }

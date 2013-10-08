@@ -19,7 +19,7 @@ class RoomGroupProvider(object):
         if self.client in room.admins:
             group_names.append('local.room.admin')
             
-        if room.get_client(self.client.cn) is not None:
-            group_names.append('local.client')
+        #if room.get_client(self.client.cn) is not None:
+        group_names.append('local.client')
             
         return group_names

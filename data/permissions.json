@@ -5,6 +5,7 @@
                    "spyd.game.commands.room.execute", "spyd.game.commands.room_create.execute",
                    "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
                    "spyd.game.room.team.switch",
+                   "spyd.game.room.unspectate",
                    "spyd.game.room.temporary.claim_master"
                    ]
     },
@@ -13,7 +14,12 @@
                    "spyd.game.room.punitive.*.create",
                    "spyd.game.room.temporary.set_team",
                    "spyd.game.room.temporary.set_spectator",
-                   "spyd.game.room.temporary.set_mastermode"
+                   "spyd.game.room.temporary.set_mastermode",
+                   "spyd.game.room.set_map_mode",
+                   "spyd.game.room.set_spectator",
+                   "spyd.game.room.set_others_teams",
+                   "spyd.game.room.pause_resume",
+                   "spyd.game.room.*.relinquish_master"
                    ]
     },
     "local.room.auth": {
