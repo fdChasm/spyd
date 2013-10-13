@@ -1,11 +1,12 @@
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.WARN)
 
 from twisted.internet.protocol import ReconnectingClientFactory
 
 from spyd.master_client.master_client_protocol import MasterClientProtocol
 
+
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.WARN)
 
 
 class MasterClientFactory(ReconnectingClientFactory):

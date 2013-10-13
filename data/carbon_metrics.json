@@ -1,0 +1,6 @@
+{
+	"enabled": true,
+	"host": "localhost",
+	"port": 2004,
+	"metric_prefix": "spyd."
+}

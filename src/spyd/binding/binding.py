@@ -71,7 +71,7 @@ class Binding(object):
                 self.corresponder.send({'type': 'receive', 'ident': identifier, 'data': event.packet.data, 'channel': event.channelID})
         
     def _process_cmds(self):
-        commands = self.corresponder.receive(0.005)
+        commands = self.corresponder.receive(0.0)
         for command in commands:
             handler_name = "_on_cmd_{}".format(command['type'])
             handler = getattr(self, handler_name)

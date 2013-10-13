@@ -58,7 +58,7 @@ class ClientMessageHandlingBase(object):
     def N_CLIENTPING(self, message):
         ping = message['ping']
         self.ping_buffer.add(ping)
-        player = self.get_player(-1)
+        player = self.get_player()
         swh.put_clientping(player.state.messages, ping)
 
     def N_POS(self, message):

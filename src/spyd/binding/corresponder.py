@@ -34,18 +34,15 @@ class Corresponder(object):
         return messages
     
     def flush(self):
-        "Writes data to the output stream. If in blocking_write mode then this will block until the write_buffer is empty."
         while len(self.write_buffer) > 0:
             _, _, _ = select.select((), (self.outgoing_fd,), (), 0)
             written = os.write(self.outgoing_fd, self.write_buffer)
             self.write_buffer = self.write_buffer[written:]
     
     def _read(self, timeout):
-        #sys.stderr.write("_read before select\n")
         rl, _, _ = select.select((self.incoming_fd,), (), (), timeout)
-        #sys.stderr.write("_read after select\n")
         if len(rl):
-            data = os.read(rl[0], 4096)
+            data = os.read(rl[0], 65535)
             if len(data) == 0:
                 raise CorrespondenceEnded()
             self.read_buffer.extend(data)

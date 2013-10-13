@@ -24,27 +24,31 @@ from spyd.master_client.master_client_factory import MasterClientFactory
 from spyd.permissions.permission_resolver import PermissionResolver
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
+from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
 
 
 def make_service(options):
     binding_path = os.path.abspath(options.get('bindingpath'))
-    
+
     home_directory = os.path.abspath(options.get('homedir'))
     os.chdir(home_directory)
-    
+
     config_filename = os.path.abspath(options.get('config'))
     config = config_loader(config_filename)
-    
+
     logging.basicConfig(level=logging.DEBUG)
 
     root_service = service.MultiService()
-    
+
+    metrics_service = get_metrics_service(config)
+    metrics_service.setServiceParent(root_service)
+
     server_name_model = ValueModel(config.get('server_name', '123456789ABCD'))
-    
+
     packages_directory = config.get('packages_directory', "{}/git/spyd/packages".format(os.environ['HOME']))
     map_meta_data_accessor = MapMetaDataAccessor(packages_directory)
-    
+
     command_executer = CommandExecuter()
 
     room_manager = RoomManager()
@@ -52,7 +56,7 @@ def make_service(options):
     room_bindings = RoomBindings()
 
     punitive_model = PunitiveModel()
-    
+
     permission_resolver = PermissionResolver.from_dictionary(config.get('permissions'))
 
     master_client_bindings = MasterClientBindings()
@@ -64,7 +68,7 @@ def make_service(options):
     client_manager = ClientManager(client_factory, message_processor)
 
     binding_factory = BindingFactory(client_manager)
-    binding_service = BindingService(binding_factory, binding_path)
+    binding_service = BindingService(binding_factory, binding_path, metrics_service)
     binding_service.setServiceParent(root_service)
 
     lan_info_service = LanInfoService(config['lan_findable'])
@@ -96,17 +100,17 @@ def make_service(options):
 
     def printer(s):
         print s
-        
+
     shutdown_countdown = config.get('shutdown_countdown', 3)
 
     def shutdown():
         print "Shutting down in {} seconds to allow clients to disconnect.".format(shutdown_countdown)
         client_manager.disconnect_all(disconnect_type=disconnect_types.DISC_NONE, message=notice("Server going down. Please come back when it is back up."))
-        
+
         for i in xrange(shutdown_countdown):
-            reactor.callLater(shutdown_countdown-i, printer, "{}...".format(i))
+            reactor.callLater(shutdown_countdown - i, printer, "{}...".format(i))
         d = defer.Deferred()
-        reactor.callLater(shutdown_countdown+0.1, d.callback, 1)
+        reactor.callLater(shutdown_countdown + 0.1, d.callback, 1)
         return d
 
     reactor.addSystemEventTrigger("before", "shutdown", shutdown)

@@ -42,5 +42,6 @@
             "map_rotation": "file://map_rotation.json"
         }
     },
-    "permissions": "file://permissions.json"
+    "permissions": "file://permissions.json",
+    "carbon_metrics": "file://carbon_metrics.json"
 }

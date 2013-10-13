@@ -266,8 +266,8 @@ class StreamSpecification(object):
             raise
 
 class StreamContainerType(StreamSpecification):
-    def __init__(self, StreamClass, type_method_mapping, default_state, message_type_id_type, field_collection, length_field):
-        StreamSpecification.__init__(self, StreamClass, type_method_mapping, default_state, message_type_id_type)
+    def __init__(self, StreamClass, type_method_mapping, default_state, message_type_id_type, field_collection, length_field, message_type_enum):
+        StreamSpecification.__init__(self, StreamClass, type_method_mapping, default_state, message_type_id_type, message_type_enum)
         self.field_collection = field_collection
         self.length_field = length_field
         
