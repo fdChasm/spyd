@@ -4,10 +4,7 @@ from spyd.protocol.server_read_stream_protocol import sauerbraten_stream_spec
 
 
 class MessageProcessor(object):
-    def process(self, client, message):
-        data = message['data']
-        channel = message['channel']
-        
+    def process(self, channel, data):
         if len(data) == 0: return []
         
         if channel == 0:

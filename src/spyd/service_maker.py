@@ -6,9 +6,6 @@ from twisted.application.internet import TCPClient
 from twisted.internet import reactor, defer
 
 from cube2common.constants import disconnect_types
-from server.binding.binding_factory import BindingFactory
-from server.binding.binding_service import BindingService
-from server.client_manager import ClientManager
 from server.lan_info.lan_info_service import LanInfoService
 from spyd.config_loader import config_loader
 from spyd.game.client.client_factory import ClientFactory
@@ -24,13 +21,13 @@ from spyd.master_client.master_client_factory import MasterClientFactory
 from spyd.permissions.permission_resolver import PermissionResolver
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
+from spyd.server.binding.binding_service import BindingService
+from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
 from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
 
 
 def make_service(options):
-    binding_path = os.path.abspath(options.get('bindingpath'))
-
     home_directory = os.path.abspath(options.get('homedir'))
     os.chdir(home_directory)
 
@@ -65,10 +62,10 @@ def make_service(options):
 
     client_number_provider = get_client_number_provider(config)
     client_factory = ClientFactory(client_number_provider, room_bindings, master_client_bindings, permission_resolver)
-    client_manager = ClientManager(client_factory, message_processor)
 
-    binding_factory = BindingFactory(client_manager)
-    binding_service = BindingService(binding_factory, binding_path, metrics_service)
+    client_protocol_factory = ClientProtocolFactory(client_factory, message_processor)
+
+    binding_service = BindingService(client_protocol_factory, metrics_service)
     binding_service.setServiceParent(root_service)
 
     lan_info_service = LanInfoService(config['lan_findable'])
@@ -105,7 +102,7 @@ def make_service(options):
 
     def shutdown():
         print "Shutting down in {} seconds to allow clients to disconnect.".format(shutdown_countdown)
-        client_manager.disconnect_all(disconnect_type=disconnect_types.DISC_NONE, message=notice("Server going down. Please come back when it is back up."))
+        client_protocol_factory.disconnect_all(disconnect_type=disconnect_types.DISC_NONE, message=notice("Server going down. Please come back when it is back up."))
 
         for i in xrange(shutdown_countdown):
             reactor.callLater(shutdown_countdown - i, printer, "{}...".format(i))

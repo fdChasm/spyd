@@ -5,11 +5,10 @@ from spyd.utils.ping_buffer import PingBuffer
 
 
 class ClientNetworkBase(object):
-    def __init__(self, identifier, protocol_wrapper, host, port):
-        self.identifier = identifier
-        self.protocol_wrapper = protocol_wrapper
-        self.host = host
-        self.port = port
+    def __init__(self, protocol):
+        self.protocol_wrapper = protocol
+        self.host = protocol.transport.host
+        self.port = protocol.transport.port
         
         self.ping_buffer = PingBuffer()
     
@@ -25,12 +24,4 @@ class ClientNetworkBase(object):
         self.send(channel, cds, reliable)
     
     def disconnect(self, disconnect_type, message=None):
-        wait = False
-        if message is not None:
-            wait = True
-            self.send_server_message(message)
-            self.flush()
-        self.protocol_wrapper.disconnect(disconnect_type, wait=wait)
-        
-    def flush(self):
-        self.protocol_wrapper.flush()
+        self.protocol_wrapper.disconnect_with_message(disconnect_type, message, 3.0)

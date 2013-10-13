@@ -17,9 +17,9 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     '''
     Handles the per client networking, and distributes the messages out to the players (main, bots).
     '''
-    def __init__(self, identifier, protocol, host, port, clientnum, room, master_client, permission_resolver):
+    def __init__(self, protocol, clientnum, room, master_client, permission_resolver):
         ClientBase.__init__(self, clientnum, room)
-        ClientNetworkBase.__init__(self, identifier, protocol, host, port)
+        ClientNetworkBase.__init__(self, protocol)
         ClientAuthableBase.__init__(self, master_client)
         ClientPermissionBase.__init__(self, permission_resolver)
         
