@@ -9,13 +9,14 @@ from spyd.game.room.player_collection import PlayerCollection
 from spyd.game.room.room_broadcaster import RoomBroadcaster
 from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
-from spyd.game.server_message_formatter import smf, error
+from spyd.game.server_message_formatter import smf
 from spyd.game.timing.game_clock import GameClock
 from spyd.protocol import swh
 from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
 from spyd.permissions.functionality import Functionality
+from spyd.server.metrics.execution_timer import ExecutionTimer
 
 
 class Room(object):
@@ -27,10 +28,12 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, maxplayers=None):
+    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, maxplayers=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
-        
+
+        self._metrics_service = metrics_service
+
         self.manager = room_manager
 
         self._server_name_model = server_name_model or ValueModel("123456789ABCD")
@@ -38,9 +41,11 @@ class Room(object):
         self._server_name_model.observe(self._on_name_changed)
         self._name.observe(self._on_name_changed)
 
+        self._flush_positions_execution_timer = ExecutionTimer(self._metrics_service, 'room.{}.flush_positions'.format(self.name), 1.0)
+
         self._clients = ClientCollection()
         self._players = PlayerCollection()
-        
+
         self.command_executer = command_executer
         self.command_context = {}
 
@@ -48,17 +53,17 @@ class Room(object):
 
         self.temporary = False
         self.decommissioned = False
-        
+
         self.mastermask = 0 if self.temporary else -1
         self.mastermode = 0
         self.resume_delay = None
-        
+
         self.last_destination_room = None
-        
+
         # Holds the client objects with each level of permissions
         self.masters = set()
-        self.auths   = set()
-        self.admins  = set()
+        self.auths = set()
+        self.admins = set()
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
@@ -79,7 +84,7 @@ class Room(object):
     @name.setter
     def name(self, value):
         self._name.value = truncate(value, MAXROOMLEN)
-        
+
     @property
     def lan_info_name(self):
         server_name = truncate(self._server_name_model.value, MAXSERVERLEN)
@@ -110,11 +115,11 @@ class Room(object):
             if not player.state.is_spectator:
                 count += 1
         return count
-    
+
     @property
     def player_count(self):
         return self._clients.count
-    
+
     @property
     def empty(self):
         return self.player_count == 0
@@ -140,7 +145,7 @@ class Room(object):
     @property
     def map_name(self):
         return self._map_mode_state.map_name
-    
+
     @property
     def mode_num(self):
         return self._map_mode_state.mode_num
@@ -186,14 +191,14 @@ class Room(object):
         with client.sendbuffer(1, True) as cds:
             for remaining_client in self._clients.to_iterator():
                 swh.put_cdis(cds, remaining_client)
-            
+
 
     def pause(self):
         self._game_clock.pause()
 
     def resume(self):
         self._game_clock.resume(self.resume_delay)
-        
+
     def end_match(self):
         print "end_match called"
         self._game_clock.timeleft = 0
@@ -223,7 +228,7 @@ class Room(object):
 
     temporary_set_mastermode_functionality = Functionality("spyd.game.room.temporary.set_mastermode")
     set_mastermode_functionality = Functionality("spyd.game.room.set_mastermode")
-    
+
     def on_client_set_master_mode(self, client, mastermode):
         allowed_set_mastermode = client.allowed(Room.set_mastermode_functionality) or (self.temporary and client.allowed(Room.temporary_set_mastermode_functionality))
 
@@ -271,7 +276,7 @@ class Room(object):
     def on_client_map_vote(self, client, map_name, mode_num):
         if not client.allowed(Room.set_map_mode_functionality):
             raise InsufficientPermissions(Room.set_map_mode_functionality.denied_message)
-        
+
         mode_name = get_mode_name_from_num(mode_num)
         valid_map_names = self._map_mode_state.get_map_names()
         map_name_match = match_fuzzy(map_name, valid_map_names)
@@ -359,7 +364,7 @@ class Room(object):
     def on_player_switch_name(self, player, name):
         player.name = name
         swh.put_switchname(player.state.messages, name)
-        #with self.broadcastbuffer(1, True) as cds:
+        # with self.broadcastbuffer(1, True) as cds:
         #    tm = CubeDataStream()
         #    swh.put_switchname(tm, "aaaaa")
         #    swh.put_clientdata(cds, player.client, str(tm))
@@ -506,11 +511,12 @@ class Room(object):
     def _flush_messages(self):
         if not self.decommissioned:
             reactor.callLater(0, reactor.addSystemEventTrigger, 'before', 'flush_bindings', self._flush_messages)
-        self._broadcaster.flush_messages()
-        
+        with self._flush_positions_execution_timer.measure():
+            self._broadcaster.flush_messages()
+
     def _initialize_client_match_data(self, cds, client):
         player = client.get_player()
-        
+
         swh.put_mapchange(cds, self._map_mode_state.map_name, self._map_mode_state.mode_num, hasitems=False)
 
         if self.gamemode.timed and self.timeleft is not None:
@@ -520,7 +526,7 @@ class Room(object):
             swh.put_pausegame(cds, 1)
 
         self.gamemode.initialize_player(cds, player)
-    
+
         if player.state.can_spawn:
             player.state.respawn(self.gamemode)
             swh.put_spawnstate(cds, player)
@@ -558,7 +564,7 @@ class Room(object):
         for player in self.players:
             player.state.reset()
             player.state.respawn(self.gamemode)
-            
+
         for client in self.clients:
             with client.sendbuffer(1, True) as cds:
                 self._initialize_client_match_data(cds, client)
@@ -627,21 +633,21 @@ class Room(object):
         elif requested_privilege == privileges.PRIV_ADMIN:
             self.admins.add(target)
         self._update_current_masters()
-    
+
     def _set_self_privilege(self, client, requested_privilege):
         room_classification = "temporary" if self.temporary else "permanent"
-        
+
         if requested_privilege > privileges.PRIV_NONE:
             privilege_action = "claim"
             permission_involved = requested_privilege
         else:
             privilege_action = "relinquish"
             permission_involved = client.privilege
-        
+
         functionality_category = Room.set_self_privilege_functionality_tree.get(room_classification, {}).get(privilege_action, {})
-        
+
         functionality = functionality_category.get(permission_involved, None)
-        
+
         if functionality is None:
             raise InsufficientPermissions("You do not have permissions to do that.")
 

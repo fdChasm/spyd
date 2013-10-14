@@ -1,19 +1,26 @@
 from cube2common.constants import message_types
 from cube2common.read_cube_data_stream import ReadCubeDataStream
 from spyd.protocol.server_read_stream_protocol import sauerbraten_stream_spec
+from spyd.server.metrics.execution_timer import ExecutionTimer
 
 
 class MessageProcessor(object):
+    def __init__(self, metrics_service):
+        self._metrics_service = metrics_service
+
+        self._execution_timer = ExecutionTimer(self._metrics_service, 'process_message', 1.0)
+
     def process(self, channel, data):
         if len(data) == 0: return []
-        
-        if channel == 0:
-            messages = self._parse_channel_0_data(data)
-        elif channel == 1:
-            messages = sauerbraten_stream_spec.read(data, {'aiclientnum':-1})
-        
+
+        with self._execution_timer.measure():
+            if channel == 0:
+                messages = self._parse_channel_0_data(data)
+            elif channel == 1:
+                messages = sauerbraten_stream_spec.read(data, {'aiclientnum':-1})
+
         return messages
-        
+
     def _parse_channel_0_data(self, data):
         cds = ReadCubeDataStream(data)
         message_type = cds.getint()
@@ -44,19 +51,18 @@ class MessageProcessor(object):
             dir = cds.getbyte() | (cds.getbyte() << 8)  # @ReservedAssignment
 
             message = ('N_POS', {'clientnum': cn, 'position': v, 'raw_position': data})
-            
+
         elif message_type == message_types.N_JUMPPAD:
             cn = cds.getint()
             jumppad = cds.getint()
-            
+
             message = ('N_JUMPPAD', {'aiclientnum': cn, 'jumppad': jumppad})
 
         elif message_type == message_types.N_TELEPORT:
             cn = cds.getint()
             teleport = cds.getint()
             teledest = cds.getint()
-            
+
             message = ('N_TELEPORT', {'aiclientnum': cn, 'teleport': teleport, 'teledest': teledest})
-            
+
         return [message]
-            

@@ -49,7 +49,7 @@ def make_service(options):
     command_executer = CommandExecuter()
 
     room_manager = RoomManager()
-    room_factory = RoomFactory(config, room_manager, server_name_model, map_meta_data_accessor, command_executer)
+    room_factory = RoomFactory(config, room_manager, server_name_model, map_meta_data_accessor, command_executer, metrics_service)
     room_bindings = RoomBindings()
 
     punitive_model = PunitiveModel()
@@ -58,7 +58,7 @@ def make_service(options):
 
     master_client_bindings = MasterClientBindings()
 
-    message_processor = MessageProcessor()
+    message_processor = MessageProcessor(metrics_service)
 
     client_number_provider = get_client_number_provider(config)
     client_factory = ClientFactory(client_number_provider, room_bindings, master_client_bindings, permission_resolver)
