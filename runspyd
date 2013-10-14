@@ -1,2 +1,3 @@
 #!/bin/bash
-twistd -no spyd --homedir=$(pwd)/data --bindingpath=$(pwd)/bin/spyd_binding
+export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+twistd -no spyd --homedir=$(pwd)/data

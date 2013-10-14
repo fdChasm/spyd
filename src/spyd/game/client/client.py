@@ -38,7 +38,6 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         return smf.format(fmt, player=player)
     
     def connected(self):
-        print "Client connected called."
         with self.sendbuffer(1, True) as cds:
             swh.put_servinfo(cds, self, haspwd=False, description="", domain="")
             
@@ -47,7 +46,6 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     def disconnected(self):
         if self.is_connected:
             self.room.client_leave(self)
-        print "Client disconnected called."
 
     def connect_timeout(self):
         '''Disconnect client because it didn't send N_CONNECT soon enough.'''
