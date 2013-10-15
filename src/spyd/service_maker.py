@@ -2,7 +2,6 @@ import logging
 import os.path
 
 from twisted.application import service
-from twisted.application.internet import TCPClient
 from twisted.internet import reactor, defer
 
 from cube2common.constants import disconnect_types
@@ -16,8 +15,6 @@ from spyd.game.room.room_bindings import RoomBindings
 from spyd.game.room.room_factory import RoomFactory
 from spyd.game.room.room_manager import RoomManager
 from spyd.game.server_message_formatter import notice
-from spyd.master_client.master_client_bindings import MasterClientBindings
-from spyd.master_client.master_client_factory import MasterClientFactory
 from spyd.permissions.permission_resolver import PermissionResolver
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
@@ -25,6 +22,9 @@ from spyd.server.binding.binding_service import BindingService
 from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
 from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
+from spyd.authentication.auth_world_view_factory import AuthWorldViewFactory,\
+    ANY
+from spyd.authentication.master_client_service_factory import MasterClientServiceFactory
 
 
 def make_service(options):
@@ -56,12 +56,13 @@ def make_service(options):
 
     permission_resolver = PermissionResolver.from_dictionary(config.get('permissions'))
 
-    master_client_bindings = MasterClientBindings()
+    master_client_service_factory = MasterClientServiceFactory(punitive_model)
+    auth_world_view_factory = AuthWorldViewFactory()
 
     message_processor = MessageProcessor(metrics_service)
 
     client_number_provider = get_client_number_provider(config)
-    client_factory = ClientFactory(client_number_provider, room_bindings, master_client_bindings, permission_resolver)
+    client_factory = ClientFactory(client_number_provider, room_bindings, auth_world_view_factory, permission_resolver)
 
     client_protocol_factory = ClientProtocolFactory(client_factory, message_processor)
 
@@ -70,6 +71,12 @@ def make_service(options):
 
     lan_info_service = LanInfoService(config['lan_findable'])
     lan_info_service.setServiceParent(root_service)
+    
+    for master_server_name, master_server_config in config['master_servers'].iteritems():
+        register_port = master_server_config.get('register_port', ANY)
+        master_client_service = master_client_service_factory.build_master_client_service(master_server_config)
+        auth_world_view_factory.register_auth_service(master_client_service, register_port)
+        master_client_service.setServiceParent(root_service)
 
     for room_name, room_config in config['room_bindings'].iteritems():
         interface = room_config['interface']
@@ -86,7 +93,7 @@ def make_service(options):
         binding_service.add_binding(interface, port, maxclients, maxdown, maxup)
         room_bindings.add_room(port, room, default_room)
         lan_info_service.add_lan_info_for_room(room, interface, port)
-
+        '''
         if masterserver is not None:
             master_host, master_port, default_master = masterserver
 
@@ -94,6 +101,7 @@ def make_service(options):
             master_client_service = TCPClient(master_host, master_port, master_client)
             master_client_service.setServiceParent(root_service)
             master_client_bindings.add_master_client(port, master_client, default_master)
+        '''
 
     def printer(s):
         print s

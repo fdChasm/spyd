@@ -26,5 +26,6 @@ class Registration(object):
 def register(registry_name, *args, **kwargs):
     def decorator(registered_object):
         RegistryManager.register(registry_name, registered_object, args, kwargs)
+        return registered_object
     return decorator
 

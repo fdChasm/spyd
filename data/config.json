@@ -43,5 +43,6 @@
         }
     },
     "permissions": "file://permissions.json",
+    "master_servers": "file://master_servers.json",
     "carbon_metrics": "file://carbon_metrics.json"
 }
