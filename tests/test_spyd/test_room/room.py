@@ -9,6 +9,9 @@ from spyd.game.timing.scheduled_callback_wrapper import ScheduledCallbackWrapper
 from testing_utils.create_mock_player import create_mock_player
 from testing_utils.protocol.mock_server_write_helper import mock_server_write_helper
 from spyd.utils.value_model import ValueModel
+from spyd.game.gamemode import gamemodes
+from cube2common.constants import INTERMISSIONLEN
+from twisted.internet.defer import setDebugging
 
 
 class TestRoom(unittest.TestCase):
@@ -17,6 +20,8 @@ class TestRoom(unittest.TestCase):
         GameClock.clock = self.clock
         ScheduledCallbackWrapper.clock = self.clock
         ResumeCountdown.clock = self.clock
+        
+        setDebugging(True)
 
     def test_add_player_sends_mapchange(self):
         with mock_server_write_helper() as stack:
@@ -179,3 +184,87 @@ class TestRoom(unittest.TestCase):
             room.on_player_suicide(player)
             
             self.assertFalse(player.state.is_alive)
+            
+    def test_two_players_map_rotation(self):
+        with mock_server_write_helper() as stack:
+            player_test_context1 = stack.enter_context(create_mock_player(self, 0))
+            player_test_context2 = stack.enter_context(create_mock_player(self, 1))
+            
+            ffa = gamemodes['ffa']
+            
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
+            room.change_map_mode('complex', 'ffa')
+            
+            player_test_context1.enter_room(room)
+            player_test_context2.enter_room(room)
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+
+            self.clock.advance(ffa.timeout)
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], 0)
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+            
+            self.clock.advance(INTERMISSIONLEN)
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], ffa.timeout)
+            
+            #########################################################
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+
+            self.clock.advance(ffa.timeout)
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], 0)
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+            
+            self.clock.advance(INTERMISSIONLEN)
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], ffa.timeout)
+            
+    def test_two_players_map_forced(self):
+        with mock_server_write_helper() as stack:
+            player_test_context1 = stack.enter_context(create_mock_player(self, 0))
+            player_test_context2 = stack.enter_context(create_mock_player(self, 1))
+            
+            ffa = gamemodes['ffa']
+            
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
+            room.change_map_mode('complex', 'ffa')
+            
+            player_test_context1.enter_room(room)
+            player_test_context2.enter_room(room)
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+
+            room.change_map_mode('complex', 'ffa')
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], ffa.timeout)
+            
+            #########################################################
+            
+            player_test_context1.clear_received_messages()
+            player_test_context2.clear_received_messages()
+
+            room.change_map_mode('complex', 'ffa')
+            
+            player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
+            messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
+            self.assertEqual(messages[0]['timeleft'], ffa.timeout)

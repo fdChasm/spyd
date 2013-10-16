@@ -10,7 +10,7 @@ from spyd.game.gamemode.bases.fighting_base import FightingBase
 from spyd.game.gamemode.bases.mode_base import ModeBase
 from spyd.game.gamemode.bases.spawning_base import SpawningBase
 from spyd.protocol import swh
-from spyd.game.registry_manager import register
+from spyd.registry_manager import register
 from spyd.game.server_message_formatter import info
 from spyd.game.timing.expiry import Expiry
 

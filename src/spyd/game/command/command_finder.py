@@ -1,4 +1,5 @@
-from spyd.game.registry_manager import RegistryManager
+from spyd.registry_manager import RegistryManager
+
 
 
 class CommandFinder(object):

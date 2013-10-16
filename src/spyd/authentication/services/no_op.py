@@ -4,7 +4,7 @@ from zope.interface import implements
 
 from spyd.authentication.exceptions import AuthFailedException
 from spyd.authentication.interfaces import IAuthService
-from spyd.game.registry_manager import register
+from spyd.registry_manager import register
 
 
 @register("master_client_service", "no_op")

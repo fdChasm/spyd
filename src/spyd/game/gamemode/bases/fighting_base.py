@@ -35,7 +35,11 @@ class FightingBase(object):
         elif gun == weapon_types.GUN_GL:
             player.state.grenades[shot_id] = gun
         else:
+            total_rays = 0
+            max_rays = guns[gun].rays
             for hit in hits:
+                total_rays += hit['rays']
+                if total_rays > max_rays: return
                 self._on_player_hit(player, gun, **hit)
                 
     def on_player_explode(self, player, cmillis, gun, explode_id, hits):
@@ -48,14 +52,7 @@ class FightingBase(object):
 
         self._broadcaster.explodefx(player, gun, explode_id)
 
-        max_rays = guns[gun].rays
-
-        total_rays = 0
-
         for hit in hits:
-            total_rays += hit['rays']
-            if total_rays > max_rays:
-                break
             self._on_player_hit(player, gun, **hit)
             
     def _on_player_hit(self, player, gun, target_cn, lifesequence, distance, rays, dx, dy, dz):

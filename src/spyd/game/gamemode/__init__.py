@@ -1,4 +1,4 @@
-from spyd.game.registry_manager import RegistryManager
+from spyd.registry_manager import RegistryManager
 from spyd.utils.import_all import import_all
 
 

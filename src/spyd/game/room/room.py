@@ -17,6 +17,7 @@ from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
 from spyd.permissions.functionality import Functionality
 from spyd.server.metrics.execution_timer import ExecutionTimer
+import traceback
 
 
 class Room(object):
@@ -133,6 +134,10 @@ class Room(object):
     @property
     def is_paused(self):
         return self._game_clock.is_paused
+    
+    @property
+    def is_intermission(self):
+        return self._game_clock.is_intermission
 
     @property
     def timeleft(self):
@@ -502,7 +507,10 @@ class Room(object):
 
     def _on_game_clock_intermission_ended(self):
         self._broadcaster.server_message("Intermission has ended.")
-        self.rotate_map_mode()
+        try:
+            self.rotate_map_mode()
+        except:
+            traceback.print_exc()
 
     ###########################################################################
     #######################  Other private methods  ###########################
@@ -527,7 +535,7 @@ class Room(object):
 
         self.gamemode.initialize_player(cds, player)
 
-        if player.state.can_spawn:
+        if player.state.can_spawn and not self.is_intermission:
             player.state.respawn(self.gamemode)
             swh.put_spawnstate(cds, player)
 
@@ -544,8 +552,8 @@ class Room(object):
 
             self._initialize_client_match_data(cds, client)
 
-            swh.put_resume(cds, existing_players)
             swh.put_initclients(cds, existing_players)
+            swh.put_resume(cds, existing_players)
 
     def _new_map_mode_initialize(self):
         with self._broadcaster.broadcastbuffer(1, True) as cds:
@@ -562,14 +570,21 @@ class Room(object):
         self._game_clock.resume(self.resume_delay)
 
         for player in self.players:
-            player.state.reset()
+            player.state.map_change_reset()
             player.state.respawn(self.gamemode)
 
         for client in self.clients:
             with client.sendbuffer(1, True) as cds:
-                self._initialize_client_match_data(cds, client)
+        
+                if self.gamemode.timed and self.timeleft is not None:
+                    swh.put_timeup(cds, self.timeleft)
+        
+                if self.is_paused:
+                    swh.put_pausegame(cds, 1)
+
                 for player in client.players.itervalues():
-                    swh.put_spawnstate(cds, player)
+                    if player.state.can_spawn:
+                        swh.put_spawnstate(cds, player)
 
     def _player_disconnected(self, player):
         self._players.remove(player)

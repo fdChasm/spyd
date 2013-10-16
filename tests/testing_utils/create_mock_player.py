@@ -52,6 +52,8 @@ class PlayerTestContext(object):
         has_received_message = self.has_received_message_of_type(message_type)
         self.test_case.assertFalse(has_received_message, 'Message of type {} was received.'.format(message_type))
 
+
+
 @contextmanager
 def create_mock_player(test_case, cn):
     with patch('spyd.game.player.player.Player', spec=True) as player:
@@ -66,7 +68,9 @@ def create_mock_player(test_case, cn):
         player_test_context = PlayerTestContext(test_case, player)
         
         player_test_context.sendbuffers = []
-        player.state.messages = []
+        player.state.messages = MagicMock(spec=list)
+        def clear_messages(): pass
+        player.state.messages.clear = clear_messages
         
         def sendbuffer(channel, reliable):
             sendbuffer = []

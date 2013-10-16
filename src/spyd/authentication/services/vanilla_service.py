@@ -5,7 +5,7 @@ from zope.interface import implements
 from spyd.authentication.interfaces import IAuthService
 from spyd.authentication.services.vanilla.protocol_factory import MasterClientProtocolFactory
 from spyd.authentication.services.vanilla.punitive_model_adapter import PunitiveModelAdapter
-from spyd.game.registry_manager import register
+from spyd.registry_manager import register
 
 
 @register("master_client_service", "vanilla")

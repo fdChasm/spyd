@@ -1,5 +1,9 @@
 from twisted.internet import defer, reactor
 
+def try_cancel(deferred):
+    if deferred is None: return
+    if hasattr(deferred, 'called') and deferred.called: return
+    deferred.cancel()
 
 class ScheduledCallbackWrapper(object):
     '''Holds a deferred and either delayed call or a delay seconds value.'''
@@ -11,6 +15,10 @@ class ScheduledCallbackWrapper(object):
         # We use the internal deferred to make sure this gets cleaned up whether or not it is cancelled.
         self.external_deferred = defer.Deferred()
         self.internal_deferred = defer.Deferred()
+        
+        # Ignore the DeferredCancelled errors
+        #self.external_deferred.addErrback(lambda e: None)
+        #self.internal_deferred.addErrback(lambda e: None)
         
         self.internal_deferred.chainDeferred(self.external_deferred)
         
@@ -32,13 +40,16 @@ class ScheduledCallbackWrapper(object):
         self._delay_seconds = None
 
     def cancel(self):
-        if not self._cancelled:
-            self.external_deferred.cancel()
-            self._delayed_call.cancel()
-            self._delayed_call = None
+        try_cancel(self.external_deferred)
+        try_cancel(self._delayed_call)
+        self.external_deferred = None
+        self._delayed_call = None
+        try:
             self.internal_deferred.callback(False)
-            self._cancelled = True
-            self._delay_seconds = 0.0
+        except:
+            pass
+        self._cancelled = True
+        self._delay_seconds = 0.0
         
     @property
     def timeleft(self):

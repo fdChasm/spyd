@@ -1,6 +1,6 @@
 import spyd.authentication.services  # @UnusedImport
 from spyd.config_loader import ConfigurationError
-from spyd.game.registry_manager import RegistryManager
+from spyd.registry_manager import RegistryManager
 
 
 class MasterClientServiceFactory(object):

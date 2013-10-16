@@ -11,6 +11,7 @@ class PlayerState(object):
     def __init__(self):
         self.game_clock = None
         self.messages = CubeDataStream()
+        self.state = -1
         self.reset()
         
     def use_game_clock(self, game_clock):
@@ -122,8 +123,10 @@ class PlayerState(object):
         self.messages.clear()
         self.position = None
         
-    def reset(self):
-        self.state = client_states.CS_ALIVE
+    def map_change_reset(self):
+        if self.state != client_states.CS_SPECTATOR:
+            self.state = client_states.CS_DEAD
+            
         self.frags = 0
         self.deaths = 0
         self.suicides = 0
@@ -132,7 +135,6 @@ class PlayerState(object):
         self.damage_spent = 0
         self.flags = 0
         self.flag_returns = 0
-        self.lifesequence = -1
         self.health = 100
         self.maxhealth = 100
         self.armour = 0
@@ -156,6 +158,11 @@ class PlayerState(object):
         
         self.messages.clear()
         self.position = None
+
+    def reset(self):
+        self.map_change_reset()
+        self.state = client_states.CS_ALIVE
+        self.lifesequence = -1
         
     def receive_damage(self, damage):
         # let armour absorb when possible

@@ -1,0 +1,19 @@
+{
+	"default": {
+		"interface": "127.0.0.1",
+		"port": 28788,
+		"transport": "netstring",
+		"packing": "json",
+		"authentication": {
+			"type": "cube2crypto",
+			"credentials": {
+				"example.com": {
+					"bob": {
+						"groups": ["spyd.gep.bob"],
+						"pubkey": "+619da5dd56cefee9ee35091d27490d78b19d0d884f1fc7b5"
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,4 +1,3 @@
-from spyd.game.command.command_score import CommandScore
 from spyd.game.client.client_message_handling_base import GenericError
 
 class CommandBase(object):

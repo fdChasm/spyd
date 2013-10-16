@@ -1,15 +1,11 @@
 {
     "server_name": "Spyd Server",
     "packages_directory": "/opt/sauerbraten/packages",
+    "default_room": "lobby",
     "room_bindings": {
         "bored": {
-            "maxclients": 512,
+            "maxclients": 127,
             "maxdown": 0,
-            "masterserver": [
-                "localhost",
-                28787,
-                false
-            ],
             "interface": "127.0.0.1",
             "maxup": 0,
             "port": 10000,
@@ -17,13 +13,8 @@
             "public": true
         },
         "lobby": {
-            "maxclients": 512,
+            "maxclients": 127,
             "maxdown": 0,
-            "masterserver": [
-                "localhost",
-                28787,
-                true
-            ],
             "interface": "127.0.0.1",
             "maxup": 0,
             "port": 28785,
@@ -44,5 +35,6 @@
     },
     "permissions": "file://permissions.json",
     "master_servers": "file://master_servers.json",
+    "gep_endpoints": "file://gep_endpoints.json",
     "carbon_metrics": "file://carbon_metrics.json"
 }

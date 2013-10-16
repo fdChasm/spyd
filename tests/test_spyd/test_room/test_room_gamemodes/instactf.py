@@ -113,11 +113,6 @@ class TestRoomInstactf(unittest.TestCase):
             
             player_test_context.enter_room(room)
             
-            #room.on_player_switch_team(player, 'good')
-            #self.clock.advance(5)
-            #room.on_player_request_spawn(player)
-            #room.on_player_spawn(player, player.state.lifesequence, player.state.gunselect)
-            
             player_test_context.clear_received_messages()
             
             for i in xrange(10):
@@ -128,6 +123,5 @@ class TestRoomInstactf(unittest.TestCase):
                 player_test_context.assertHasReceivedMessageOfType('N_SCOREFLAG')
             
             player_test_context.assertHasReceivedMessageOfType('N_TIMEUP')
-            timeup_message = player_test_context.get_received_messages_of_type('N_TIMEUP')[0]
-            
-            self.assertAlmostEqual(timeup_message['timeleft'], 0.0)
+            timeup_messages = player_test_context.get_received_messages_of_type('N_TIMEUP')
+            self.assertAlmostEqual(timeup_messages[0]['timeleft'], 0.0)
