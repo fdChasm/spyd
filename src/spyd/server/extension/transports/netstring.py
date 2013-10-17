@@ -9,12 +9,13 @@ class NetstringProtocol(NetstringReceiver):
         self._packing = packing
 
     def stringReceived(self, data):
+        print data
         message = self._packing.unpack(data)
-        self.controller.received(message)
+        self.controller.receive(message)
 
     def send(self, message):
         data = self._packing.pack(message)
         self.sendString(data)
         
     def disconnect(self):
-        self.transport.disconnect()
+        self.transport.loseConnection()

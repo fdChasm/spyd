@@ -2,6 +2,7 @@ from cube2common.utils.enum import enum
 from spyd.server.extension.exceptions import AuthenticationHardFailure
 import cube2crypto
 from spyd.registry_manager import register
+import traceback
 
 states = enum('PENDING_CONNECT', 'PENDING_ANSWER', 'AUTHENTICATED', 'DENIED')
 
@@ -36,9 +37,9 @@ class Cube2CryptoAuthenticationController(object):
     @property
     def _next_expected_message(self):
         if self._state == states.PENDING_CONNECT:
-            return 'connect'
+            return u'connect'
         elif self._state == states.PENDING_ANSWER:
-            return 'answer'
+            return u'answer'
         
     def _issue_challenge(self, domain, username):
         self._domain = domain
@@ -50,7 +51,7 @@ class Cube2CryptoAuthenticationController(object):
         
         challenge, self._expected_answer = map(str, cube2crypto.generate_challenge(public_key))
         
-        self.protocol.send({"msgtype": "challenge", "challenge": challenge})
+        self._protocol.send({"msgtype": "challenge", "challenge": challenge})
         
         self._state = states.PENDING_ANSWER
     
@@ -58,7 +59,7 @@ class Cube2CryptoAuthenticationController(object):
         self._answer = answer
         
         if self._answer == self._expected_answer:
-            self.protocol.send({"msgtype": "status", "status": "success"})
+            self._protocol.send({"msgtype": "status", "status": "success"})
             self._state = states.AUTHENTICATED
         else:
             raise AuthenticationHardFailure()
@@ -70,12 +71,13 @@ class Cube2CryptoAuthenticationController(object):
             msg_type = message.get('msgtype')
             if self._next_expected_message != msg_type: raise AuthenticationHardFailure()
             
-            if msg_type == 'connect':
+            if msg_type == u'connect':
                 self._issue_challenge(message.get('domain'), message.get('username'))
-            elif msg_type == 'answer':
+            elif msg_type == u'answer':
                 self._validate_answer(message.get('answer'))
             else:
                 raise AuthenticationHardFailure()
         except:
             self._state = states.DENIED
+            #traceback.print_exc()
             raise AuthenticationHardFailure()
