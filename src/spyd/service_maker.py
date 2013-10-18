@@ -11,6 +11,8 @@ from spyd.spyd_server import SpydServer
 
 def make_service(options):
     server_directory = options.get('servdir') or 'my_spyd_server'
+    
+    server_directory = os.path.expanduser(server_directory)
 
     if options.get('init'):
         if os.path.exists(server_directory):
