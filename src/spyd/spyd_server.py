@@ -37,7 +37,9 @@ class SpydServer(object):
 
         self.server_name_model = ValueModel(config.get('server_name', '123456789ABCD'))
 
-        map_meta_data_accessor = MapMetaDataAccessor(get_package_dir(config))
+        sauerbraten_package_dir = get_package_dir(config)
+        map_meta_data_accessor = MapMetaDataAccessor(sauerbraten_package_dir)
+        print "Using package directory; {!r}".format(sauerbraten_package_dir)
 
         command_executer = CommandExecuter()
 
