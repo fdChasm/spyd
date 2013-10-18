@@ -28,7 +28,7 @@ class UnknownPlayer(GenericError):
         GenericError.__init__(self, message_fmt, **fmt_kwargs)
 
 class ClientMessageHandlingBase(object):
-    def message_received(self, message_type, message):
+    def _message_received(self, message_type, message):
         try:
             if (not self.isconnected) and message_type != "N_CONNECT":
                 self.disconnect(disconnect_types.DISC_TAGT)

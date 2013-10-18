@@ -1,4 +1,4 @@
-from utils.enum import enum
+from cube2common.utils.enum import enum
 
 MAPVERSION = 33
 PROTOCOL_VERSION = 259

@@ -21,7 +21,7 @@ class ClientProtocol(ENetClientProtocol):
         processed_messages = self._message_processor.process(channel, data)
 
         for processed_message in processed_messages:
-            self._client.message_received(*processed_message)
+            self._client._message_received(*processed_message)
 
     def connectionLost(self, reason=connectionDone):
         self.factory.protocol_disconnected(self)
