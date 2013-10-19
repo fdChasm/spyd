@@ -1,3 +1,4 @@
+from twisted.internet.protocol import connectionDone
 from twisted.protocols.basic import NetstringReceiver
 
 from spyd.registry_manager import register
@@ -15,6 +16,10 @@ class NetstringProtocol(NetstringReceiver):
     def send(self, message):
         data = self._packing.pack(message)
         self.sendString(data)
-        
+
     def disconnect(self):
         self.transport.loseConnection()
+
+    def connectionLost(self, reason=connectionDone):
+        self.controller.disconnected()
+        NetstringReceiver.connectionLost(self, reason=reason)

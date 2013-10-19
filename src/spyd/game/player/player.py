@@ -2,6 +2,7 @@ from spyd.game.player.player_network_base import PlayerNetworkBase
 from spyd.game.player.player_state import PlayerState
 from spyd.protocol import swh
 from spyd.game.server_message_formatter import smf
+import uuid
 
 
 class Player(PlayerNetworkBase):
@@ -12,6 +13,7 @@ class Player(PlayerNetworkBase):
         self.playermodel = playermodel
         self._team = None
         self._isai = False
+        self._uuid = str(uuid.uuid4())
         
         self._state = PlayerState()
         
@@ -30,6 +32,10 @@ class Player(PlayerNetworkBase):
     @property
     def isai(self):
         return self._isai
+    
+    @property
+    def uuid(self):
+        return self._uuid
         
     @property
     def room(self):

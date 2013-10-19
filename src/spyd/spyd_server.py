@@ -23,6 +23,7 @@ from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
 from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
 from spyd.server.extension.service_factory import GeneralExtensionServiceFactory
+from spyd.events import EventSubscriptionFulfiller
 
 
 def get_package_dir(config):
@@ -40,11 +41,13 @@ class SpydServer(object):
         sauerbraten_package_dir = get_package_dir(config)
         map_meta_data_accessor = MapMetaDataAccessor(sauerbraten_package_dir)
         print "Using package directory; {!r}".format(sauerbraten_package_dir)
+        
+        self.event_subscription_fulfiller = EventSubscriptionFulfiller()
 
         command_executer = CommandExecuter()
 
         self.room_manager = RoomManager()
-        self.room_factory = RoomFactory(config, self.room_manager, self.server_name_model, map_meta_data_accessor, command_executer, self.metrics_service)
+        self.room_factory = RoomFactory(config, self.room_manager, self.server_name_model, map_meta_data_accessor, command_executer, self.event_subscription_fulfiller, self.metrics_service)
         self.room_bindings = RoomBindings()
 
         self.permission_resolver = PermissionResolver.from_dictionary(config.get('permissions'))

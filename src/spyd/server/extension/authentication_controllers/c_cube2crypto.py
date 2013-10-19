@@ -42,9 +42,9 @@ class Cube2CryptoAuthenticationController(object):
     @property
     def _next_expected_message(self):
         if self._state == states.PENDING_CONNECT:
-            return u'connect'
+            return u'gep.connect'
         elif self._state == states.PENDING_ANSWER:
-            return u'answer'
+            return u'gep.answer'
 
     def _issue_challenge(self, domain, username, reqid):
         self._domain = domain
@@ -56,7 +56,7 @@ class Cube2CryptoAuthenticationController(object):
 
         challenge, self._expected_answer = map(str, cube2crypto.generate_challenge(public_key))
 
-        self.send({"msgtype": "challenge", "challenge": challenge}, respid=reqid)
+        self.send({"msgtype": "gep.challenge", "challenge": challenge}, respid=reqid)
 
         self._state = states.PENDING_ANSWER
 
@@ -64,7 +64,7 @@ class Cube2CryptoAuthenticationController(object):
         self._answer = answer
 
         if self._answer == self._expected_answer:
-            self.send({"msgtype": "status", "status": "success"}, respid=reqid)
+            self.send({"msgtype": "gep.status", "status": "success"}, respid=reqid)
             self._state = states.AUTHENTICATED
         else:
             raise AuthenticationHardFailure()
@@ -76,9 +76,9 @@ class Cube2CryptoAuthenticationController(object):
             msg_type = message.get('msgtype')
             if self._next_expected_message != msg_type: raise AuthenticationHardFailure()
 
-            if msg_type == u'connect':
+            if msg_type == u'gep.connect':
                 self._issue_challenge(message.get('domain'), message.get('username'), message.get('reqid', None))
-            elif msg_type == u'answer':
+            elif msg_type == u'gep.answer':
                 self._validate_answer(message.get('answer'), message.get('reqid', None))
             else:
                 raise AuthenticationHardFailure()

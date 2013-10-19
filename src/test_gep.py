@@ -29,7 +29,7 @@ class GEPProtocol(NetstringReceiver):
         
     def connectionMade(self):
         Protocol.connectionMade(self)
-        self.request({"msgtype": "connect", "username": "bob", "domain": "example.com"}, self._on_connect_response)
+        self.request({"msgtype": "gep.connect", "username": "bob", "domain": "example.com"}, self._on_connect_response)
 
     def connectionLost(self, reason):
         print "connection lost"
@@ -51,7 +51,7 @@ class GEPProtocol(NetstringReceiver):
     def _on_connect_response(self, message):
         challenge = str(message['challenge'])
         answer = str(cube2crypto.answer_challenge(private_key, challenge))
-        self.request({'msgtype': 'answer', 'answer': answer}, self._on_answer_response)
+        self.request({'msgtype': 'gep.answer', 'answer': answer}, self._on_answer_response)
     
     def _on_answer_response(self, message):
         if message.get('status', None) == u'success':

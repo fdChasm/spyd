@@ -9,6 +9,8 @@ class ExtensionProtocolClientController(object):
         self._protocol = protocol
         self._authentication_controller = authentication_controller
         self._message_handler = CentralMessageHandler()
+        
+        self.event_subscriptions = []
 
     def send(self, message, respid=None):
         if respid is not None:
@@ -31,12 +33,16 @@ class ExtensionProtocolClientController(object):
             self._receive_authenticated(message)
         else:
             self._receive_not_authenticated(message)
+            
+    def disconnected(self):
+        for event_subscription in self.event_subscriptions:
+            event_subscription.unsubscribe()
 
     def _receive_not_authenticated(self, message):
         try:
             self._authentication_controller.receive(message)
         except AuthenticationHardFailure:
-            self.send({"msgtype": "error", "message": "Authentication failure"}, message.get('reqid', None))
+            self.send({"msgtype": "gep.error", "message": "Authentication failure"}, message.get('reqid', None))
             self._protocol.disconnect()
 
     def _receive_authenticated(self, message):
@@ -44,3 +50,6 @@ class ExtensionProtocolClientController(object):
             self._message_handler.handle_message(self._spyd_server, self, message)
         except Exception as e:
             self.send({"msgtype": "error", "message": e.message}, message.get('reqid', None))
+            
+    def on_subscribed_event(self, event_stream, data):
+        self.send({"msgtype": "gep.event", "event_stream": event_stream, "event_data": data})

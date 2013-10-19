@@ -29,7 +29,7 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, maxplayers=None):
+    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
 
@@ -49,6 +49,8 @@ class Room(object):
 
         self.command_executer = command_executer
         self.command_context = {}
+        
+        self.event_subscription_fulfiller = event_subscription_fulfiller
 
         self.maxplayers = maxplayers
 
@@ -431,12 +433,14 @@ class Room(object):
             self.command_executer.execute(self, player.client, text)
         else:
             swh.put_text(player.state.messages, text)
+            self.event_subscription_fulfiller.publish('spyd.game.player.chat', {'player': player.uuid, 'room': self.name, 'text': text, 'scope': 'room'})
 
     def on_player_team_chat(self, player, text):
         if player.isai: return
         clients = filter(lambda c: c.get_player().team == player.team, self.clients)
         with self.broadcastbuffer(1, True, [player.client], clients) as cds:
             swh.put_sayteam(cds, player.client, text)
+        self.event_subscription_fulfiller.publish('spyd.game.player.chat', {'player': player.uuid, 'room': self.name, 'text': text, 'scope': 'team'})
 
     def on_player_edit_mode(self, player, editmode):
         with self.broadcastbuffer(1, True, [player]) as cds:
