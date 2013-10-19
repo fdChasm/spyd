@@ -199,6 +199,7 @@ class Room(object):
             for remaining_client in self._clients.to_iterator():
                 swh.put_cdis(cds, remaining_client)
 
+        self.manager.on_room_player_count_changed(self)
 
     def pause(self):
         self._game_clock.pause()

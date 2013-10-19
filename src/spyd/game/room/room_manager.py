@@ -31,10 +31,16 @@ class RoomManager(object):
         
         client.room._broadcaster.server_message(info("{name#client} is leaving to join {room#room}. Use {action#follow} to go there too.", client=client, room=target_room, follow="follow"), exclude=[client])
         
-        client.room.client_leave(client)
+        old_room = client.room
+
+        old_room.client_leave(client)
         
-        client.room.last_destination_room = target_room.name
+        old_room.last_destination_room = target_room.name
         
         client.room = target_room
         
         target_room.client_enter(room_entry_context)
+
+    def on_room_player_count_changed(self, room):
+        if room.empty and room.temporary:
+            del self.rooms[room.name]

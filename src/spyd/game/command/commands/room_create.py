@@ -32,6 +32,8 @@ class RoomCreateCommand(CommandBase):
         room_factory = room.manager.room_factory
         target_room = room_factory.build_room(room_name, 'temporary')
         
+        target_room.temporary = True
+
         target_room.masters.add(client)
         
         room.manager.client_change_room(client, target_room)
