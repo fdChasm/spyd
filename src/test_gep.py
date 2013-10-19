@@ -1,10 +1,12 @@
+import itertools
 import json
+import time
 
+from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.protocols.basic import NetstringReceiver
 
 import cube2crypto
-import itertools
 
 
 private_key = "81a838d411f32284ce4d9bfee2af62d62db0308fa73a6b2f"
@@ -21,8 +23,8 @@ class GEPProtocol(NetstringReceiver):
         self._message_received(message)
     
     def _message_received(self, message):
-        reqid = message.pop('reqid', None)
-        callback = self._callbacks.pop(reqid, self._default_callback)
+        respid = message.pop('respid', None)
+        callback = self._callbacks.pop(respid, self._default_callback)
         callback(message)
         
     def connectionMade(self):
@@ -31,10 +33,12 @@ class GEPProtocol(NetstringReceiver):
 
     def connectionLost(self, reason):
         print "connection lost"
+        if reactor.running:
+            reactor.stop()
         
     def request(self, message, callback):
         reqid = request_id.next()
-        message['reqid'] = request_id.next()
+        message['reqid'] = reqid
         self._callbacks[reqid] = callback
         self.send(message)
         
@@ -51,12 +55,24 @@ class GEPProtocol(NetstringReceiver):
     
     def _on_answer_response(self, message):
         if message.get('status', None) == u'success':
-            self.request({'msgtype': 'subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
+            self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
+            self.request({'msgtype': 'gep.ping', 'time': time.time()}, self._on_ping_response)
         else:
             self.transport.loseConnection()
         
     def _on_subscribe_response(self, message):
         print "subscribe request:", message
+        
+    def _on_ping_response(self, message):
+        start_time = message['client_time']
+        echo_time = message['server_time']
+        now_time = time.time()
+        
+        cts = (echo_time - start_time) * 1000
+        stc = (now_time - echo_time) * 1000
+        rnd = (now_time - start_time) * 1000
+        
+        print "ping response: cts: {:.4f} ms, stc: {:.4f} ms, rnd: {:.4f} ms".format(cts, stc, rnd)
         
 
 
@@ -66,9 +82,6 @@ class GEPClientFactory(ClientFactory):
 
 
 def poetry_main():
-
-    from twisted.internet import reactor
-
     host, port = "127.0.0.1", 28788
     
     factory = GEPClientFactory()

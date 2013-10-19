@@ -50,5 +50,8 @@
     },
     "local.punitive.limit": {
         "denies": ["spyd.game.room.team.switch"]
+    },
+    "spyd.gep.bob": {
+    	"allows": ["*"]
     }
 }

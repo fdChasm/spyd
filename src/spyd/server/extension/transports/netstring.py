@@ -9,7 +9,6 @@ class NetstringProtocol(NetstringReceiver):
         self._packing = packing
 
     def stringReceived(self, data):
-        print data
         message = self._packing.unpack(data)
         self.controller.receive(message)
 
