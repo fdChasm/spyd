@@ -1,9 +1,6 @@
-import logging
 import os
 import shutil
 import sys
-
-from twisted.python import log
 
 from spyd.config_loader import config_loader
 from spyd.spyd_server import SpydServer
@@ -11,7 +8,7 @@ from spyd.spyd_server import SpydServer
 
 def make_service(options):
     server_directory = options.get('servdir') or 'my_spyd_server'
-    
+
     server_directory = os.path.expanduser(server_directory)
 
     if options.get('init'):
@@ -41,10 +38,6 @@ def make_service(options):
     print "Using server directory; {!r}".format(os.path.abspath(os.curdir))
 
     config = config_loader('config.json')
-
-    # logging.basicConfig(level=logging.DEBUG)
-
-    # log.startLogging(sys.stdout)
 
     spyd = SpydServer(config)
 
