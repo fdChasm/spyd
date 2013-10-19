@@ -24,7 +24,7 @@ packages = [
     'spyd.server.binding',
     'spyd.server.extension',
     'spyd.server.extension.authentication_controllers',
-    'spyd.server.extension.commands',
+    'spyd.server.extension.message_handlers',
     'spyd.server.extension.packings',
     'spyd.server.extension.transports',
     'spyd.server.lan_info',

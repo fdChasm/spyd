@@ -6,6 +6,7 @@ class SpectatingBase(object):
     
     def _spectate_suicide(self, cds, player):
         if not player.state.is_alive: return
+        self.on_player_death(player, player)
 
     def on_player_spectate(self, player):
         with self.room.broadcastbuffer(1, True) as cds:

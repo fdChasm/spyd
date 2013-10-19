@@ -44,6 +44,9 @@ class GameClock(object):
         if self._intermission_start_scheduled_callback_wrapper is not None:
             self._intermission_start_scheduled_callback_wrapper.cancel()
             self._intermission_start_scheduled_callback_wrapper = None
+
+        for scheduled_callback_wrapper in self._scheduled_callback_wrappers:
+            scheduled_callback_wrapper.cancel()
     
     def start(self, game_duration_seconds, intermission_duration_seconds):
         '''Set the game clock. If a game is currently underway, this will reset the time elapsed and set the amount of time left as specified.'''
@@ -117,9 +120,10 @@ class GameClock(object):
     
     def schedule_callback(self, seconds):
         '''Schedule a callback after the specified number of seconds on the game clock. Returns a deferred.'''
+
         scheduled_callback_wrapper = ScheduledCallbackWrapper(seconds)
+        scheduled_callback_wrapper.add_finished_callback(self._scheduled_callback_wrappers.remove, scheduled_callback_wrapper)
         self._scheduled_callback_wrappers.append(scheduled_callback_wrapper)
-        scheduled_callback_wrapper.internal_deferred.addCallback(self._scheduled_callback_wrappers.remove, scheduled_callback_wrapper)
         if not self.is_paused:
             scheduled_callback_wrapper.resume()
         return scheduled_callback_wrapper.external_deferred

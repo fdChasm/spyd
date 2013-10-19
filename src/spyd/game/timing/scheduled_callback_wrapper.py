@@ -1,9 +1,5 @@
 from twisted.internet import defer, reactor
-
-def try_cancel(deferred):
-    if deferred is None: return
-    if hasattr(deferred, 'called') and deferred.called: return
-    deferred.cancel()
+from spyd.game.timing.callback import Callback, call_all
 
 class ScheduledCallbackWrapper(object):
     '''Holds a deferred and either delayed call or a delay seconds value.'''
@@ -16,11 +12,7 @@ class ScheduledCallbackWrapper(object):
         self.external_deferred = defer.Deferred()
         self.internal_deferred = defer.Deferred()
         
-        # Ignore the DeferredCancelled errors
-        #self.external_deferred.addErrback(lambda e: None)
-        #self.internal_deferred.addErrback(lambda e: None)
-        
-        self.internal_deferred.chainDeferred(self.external_deferred)
+        self._finished_callbacks = set()
         
         self._cancelled = False
         self._delayed_call = None
@@ -36,18 +28,24 @@ class ScheduledCallbackWrapper(object):
     def resume(self):
         if not self.is_paused or self._cancelled:
             return
-        self._delayed_call = self.clock.callLater(self._delay_seconds, self.internal_deferred.callback, True)
+        self._delayed_call = self.clock.callLater(self._delay_seconds, self._timeup)
         self._delay_seconds = None
+        
+    def add_finished_callback(self, func, *args, **kwargs):
+        callback = Callback(func, args, kwargs)
+        self._finished_callbacks.add(callback)
+
+    def _timeup(self):
+        call_all(self._finished_callbacks)
+        if self._cancelled: return
+        self.external_deferred.callback(True)
 
     def cancel(self):
-        try_cancel(self.external_deferred)
-        try_cancel(self._delayed_call)
+        if self._delayed_call is not None:
+            self._delayed_call.cancel()
         self.external_deferred = None
+        call_all(self._finished_callbacks)
         self._delayed_call = None
-        try:
-            self.internal_deferred.callback(False)
-        except:
-            pass
         self._cancelled = True
         self._delay_seconds = 0.0
         
