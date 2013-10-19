@@ -9,16 +9,17 @@ from cube2common.vec import vec
 from spyd.game.gamemode.bases.fighting_base import FightingBase
 from spyd.game.gamemode.bases.mode_base import ModeBase
 from spyd.game.gamemode.bases.spawning_base import SpawningBase
-from spyd.protocol import swh
-from spyd.registry_manager import register
+from spyd.game.gamemode.bases.spectating_base import SpectatingBase
 from spyd.game.server_message_formatter import info
 from spyd.game.timing.expiry import Expiry
+from spyd.protocol import swh
+from spyd.registry_manager import register
 
 
 tist_states = enum('UNINITIALIZED', 'WAITING_PLAYERS', 'WAITING_TRAITOR', 'PLAYING')
 
 @register('gamemode')
-class Traitors(ModeBase, FightingBase, SpawningBase):
+class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
     isbasemode = False
     clientmodename = 'traitors'
     clientmodenum = 3

@@ -260,15 +260,22 @@ class Room(object):
 
         self.gamemode.on_player_try_set_team(client.get_player(), player, player.team.name, team_name)
 
-    set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change who is spectating.')
-
+    set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change your spectator status.')
+    set_other_spectator_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to change who is spectating.')
+    
     def on_client_set_spectator(self, client, target_pn, spectate):
-        if not client.allowed(Room.set_spectator_functionality):
-            raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
-
         player = self.get_player(target_pn)
         if player is None:
             raise UnknownPlayer(cn=target_pn)
+        
+        if client.get_player() is player:
+            if not client.allowed(Room.set_spectator_functionality):
+                raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
+        else:
+            if not client.allowed(Room.set_other_spectator_functionality):
+                raise InsufficientPermissions(Room.set_other_spectator_functionality.denied_message)
+
+        self._set_player_spectator(player, spectate)
 
     def on_client_kick(self, client, target_pn, reason):
         # TODO: Implement kicking of players and insertion of bans
@@ -611,6 +618,16 @@ class Room(object):
     def _on_name_changed(self, *args):
         for client in self.clients:
             self._send_room_title(client)
+
+    def _set_player_spectator(self, player, spectate):
+        if not spectate and player.state.is_spectator:
+            self.gamemode.on_player_unspectate(player)
+
+        elif spectate and not player.state.is_spectator:
+            self.gamemode.on_player_spectate(player)
+
+        else:
+            print "invalid change"
 
     set_self_privilege_functionality_tree = {
         'temporary': {

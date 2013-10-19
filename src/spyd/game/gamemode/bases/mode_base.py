@@ -81,3 +81,11 @@ class ModeBase(object):
     @multidispatched
     def on_player_taunt(self, player):
         swh.put_taunt(player.state.messages)
+
+    @multidispatched
+    def on_player_spectate(self, player):
+        pass
+
+    @multidispatched
+    def on_player_unspectate(self, player):
+        pass

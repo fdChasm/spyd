@@ -92,10 +92,12 @@ class PlayerState(object):
             self.state = client_states.CS_SPECTATOR
             if self.playing_timer is not None:
                 self.playing_timer.pause()
-        elif value and self.is_spectator:
+        elif not value and self.is_spectator:
             self.state = client_states.CS_DEAD
             if self.playing_timer is not None:
                 self.playing_timer.resume()
+        else:
+            print "failed to set is_spectator"
         
     def respawn(self, gamemode):
         self.lifesequence = (self.lifesequence + 1)&0x7F

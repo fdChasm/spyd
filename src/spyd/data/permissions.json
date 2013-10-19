@@ -4,6 +4,7 @@
                    "spyd.server.connect",
                    "spyd.game.commands.room.execute", "spyd.game.commands.room_create.execute",
                    "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
+                   "spyd.game.room.set_spectator",
                    "spyd.game.room.team.switch",
                    "spyd.game.room.unspectate",
                    "spyd.game.room.set_map_mode",

@@ -2,11 +2,12 @@ from cube2common.constants import weapon_types, armor_types
 from spyd.game.gamemode.bases.fighting_base import FightingBase
 from spyd.game.gamemode.bases.mode_base import ModeBase
 from spyd.game.gamemode.bases.spawning_base import SpawningBase
+from spyd.game.gamemode.bases.spectating_base import SpectatingBase
 from spyd.registry_manager import register
 
 
 @register('gamemode')
-class Insta(ModeBase, FightingBase, SpawningBase):
+class Insta(ModeBase, FightingBase, SpawningBase, SpectatingBase):
     isbasemode = True
     clientmodename = 'insta'
     clientmodenum = 3
