@@ -66,10 +66,10 @@ class GameClock(object):
             
         self._intermission_duration_seconds = intermission_duration_seconds
         self._intermission_start_scheduled_callback_wrapper = ScheduledCallbackWrapper(game_duration_seconds)
-        self._intermission_start_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_started)
+        self._intermission_start_scheduled_callback_wrapper.add_timeup_callback(self._intermission_started)
         
         self._intermission_end_scheduled_callback_wrapper = ScheduledCallbackWrapper(game_duration_seconds+intermission_duration_seconds)
-        self._intermission_end_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_ended)
+        self._intermission_end_scheduled_callback_wrapper.add_timeup_callback(self._intermission_ended)
         
         self._time_elapsed = 0.0
         
@@ -131,7 +131,8 @@ class GameClock(object):
             return
 
     def _remove_scheduled_callback_wrapper(self, scheduled_callback_wrapper):
-        self._scheduled_callback_wrappers.remove(scheduled_callback_wrapper)
+        if scheduled_callback_wrapper in self._scheduled_callback_wrappers:
+            self._scheduled_callback_wrappers.remove(scheduled_callback_wrapper)
     
     def schedule_callback(self, seconds):
         '''Schedule a callback after the specified number of seconds on the game clock. Returns a deferred.'''
@@ -140,7 +141,7 @@ class GameClock(object):
         self._scheduled_callback_wrappers.append(scheduled_callback_wrapper)
         if not self.is_paused:
             scheduled_callback_wrapper.resume()
-        return scheduled_callback_wrapper.external_deferred
+        return scheduled_callback_wrapper
     
     @property
     def is_started(self):
@@ -184,7 +185,7 @@ class GameClock(object):
         else:
             self._cancel_existing_scheduled_events()
             self._intermission_end_scheduled_callback_wrapper = ScheduledCallbackWrapper(self._intermission_duration_seconds)
-            self._intermission_end_scheduled_callback_wrapper.external_deferred.addCallback(self._intermission_ended)
+            self._intermission_end_scheduled_callback_wrapper.add_timeup_callback(self._intermission_ended)
             self._timeleft_altered()
 
     @property

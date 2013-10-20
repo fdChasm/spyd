@@ -81,10 +81,10 @@ class Item(object):
     
     def _schedule_spawn(self, spawn_delay):
         self.spawn_deferred = self.game_clock.schedule_callback(spawn_delay)
-        self.spawn_deferred.addCallback(lambda _: self._spawn())
+        self.spawn_deferred.add_timeup_callback(self._spawn)
         
         if self.type in (item_types.I_QUAD, item_types.I_BOOST):
             self.spawn_announce_deferred = self.game_clock.schedule_callback(spawn_delay-10)
-            self.spawn_announce_deferred.addCallback(lambda _: self._announce())
+            self.spawn_announce_deferred.add_timeup_callback(self._announce)
         else:
             self.spawn_announce_deferred = None

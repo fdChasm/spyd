@@ -7,9 +7,8 @@ class ScheduledCallbackWrapper(object):
     clock = reactor
     
     def __init__(self, seconds):
-        self.external_deferred = defer.Deferred()
-        
         self._finished_callbacks = set()
+        self._timeup_callbacks = set()
         
         self._cancelled = False
         self._delayed_call = None
@@ -32,21 +31,29 @@ class ScheduledCallbackWrapper(object):
         callback = Callback(func, args, kwargs)
         self._finished_callbacks.add(callback)
 
+    def add_timeup_callback(self, func, *args, **kwargs):
+        callback = Callback(func, args, kwargs)
+        self._timeup_callbacks.add(callback)
+
+    def _finished_cleanup(self):
+        self._timeup_callbacks.clear()
+        self._finished_callbacks.clear()
+        self._delayed_call = None
+        self._delay_seconds = 0.0
+
     def _timeup(self):
         call_all(self._finished_callbacks)
-        if self._cancelled: return
-        self._delayed_call = None
-        self._delay_seconds = 0.0
-        self.external_deferred.callback(True)
+        if not self._cancelled:
+            call_all(self._timeup_callbacks)
+            self._delay_seconds = 0.0
+        self._finished_cleanup()
 
     def cancel(self):
-        if self._delayed_call is not None:
-            self._delayed_call.cancel()
-        self.external_deferred = None
         call_all(self._finished_callbacks)
-        self._delayed_call = None
+        if self._delayed_call is not None and not self._delayed_call.called:
+            self._delayed_call.cancel()
         self._cancelled = True
-        self._delay_seconds = 0.0
+        self._finished_cleanup()
         
     @property
     def timeleft(self):

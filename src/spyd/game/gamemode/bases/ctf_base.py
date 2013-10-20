@@ -8,6 +8,7 @@ from spyd.protocol import swh
 class CtfBase(object):
     def __init__(self, room, map_meta_data):
         self.room = room
+        self._game_clock = room._game_clock
         
         good = Team(0, 'good')
         evil = Team(1, 'evil')
@@ -70,6 +71,7 @@ class CtfBase(object):
             self.room.end_match()
             
     def _reset_flag(self, flag):
+        if flag.owner is not None: return
         flag.version += 1
         flag.reset()
         with self.room.broadcastbuffer(1, True) as cds:
@@ -107,7 +109,7 @@ class CtfBase(object):
         if flag.version != version:
             return
             
-        if flag.team == player.team:
+        if flag.team is player.team:
             # if the flag was dropped, then return it
             if flag.dropped:
                 self._return_flag(player, flag)
@@ -134,9 +136,9 @@ class CtfBase(object):
     
     def on_player_try_drop_flag(self, player):
         for flag in self.flags or ():
-            if flag.owner == player:
-                flag.drop(player.state.pos.copy(), RESETFLAGTIME/1000.0)
-                flag.return_deferred.addCallback(lambda _: self._reset_flag(flag))
+            if flag.owner is player:
+                flag.drop(player.state.pos.copy(), RESETFLAGTIME / 1000.0)
+                flag.return_scheduled_callback_wrapper.add_timeup_callback(self._reset_flag, flag)
                 with self.room.broadcastbuffer(1, True) as cds:
                     swh.put_dropflag(cds, player, flag)
         return True

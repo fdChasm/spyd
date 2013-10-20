@@ -11,5 +11,6 @@ class Callback(object):
         self.f(*args, **kwargs)
         
 def call_all(callback_list, *args, **kwargs):
+    callback_list = list(callback_list)
     for callback in callback_list:
         callback.call(*args, **kwargs)

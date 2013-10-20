@@ -32,42 +32,42 @@ class Test(unittest.TestCase):
         scheduled_callback_wrapper = ScheduledCallbackWrapper(5)
         scheduled_callback_wrapper.resume()
         self._finished_called = False
-        self._external_called = False
+        self._timeup_called = False
         def on_finished_called(*args, **kwargs):
             self._finished_called = True
-        def on_external_called(*args, **kwargs):
-            self._external_called = True
+        def on_timeup_called(*args, **kwargs):
+            self._timeup_called = True
         scheduled_callback_wrapper.add_finished_callback(on_finished_called)
-        scheduled_callback_wrapper.external_deferred.addCallback(on_external_called)
+        scheduled_callback_wrapper.add_timeup_callback(on_timeup_called)
         self.clock.advance(20)
         self.assertTrue(self._finished_called)
-        self.assertTrue(self._external_called)
+        self.assertTrue(self._timeup_called)
         
     def test_cancelling(self):
         scheduled_callback_wrapper = ScheduledCallbackWrapper(20)
         scheduled_callback_wrapper.resume()
         self._finished_called = False
-        self._external_called = False
+        self._timeup_called = False
         def on_finished_called(*args, **kwargs):
             self._finished_called = True
-        def on_external_called(*args, **kwargs):
-            self._external_called = True
+        def on_timeup_called(*args, **kwargs):
+            self._timeup_called = True
         scheduled_callback_wrapper.add_finished_callback(on_finished_called)
-        scheduled_callback_wrapper.external_deferred.addCallback(on_external_called)
+        scheduled_callback_wrapper.add_timeup_callback(on_timeup_called)
 
         self.clock.advance(15)
         self.assertFalse(self._finished_called)
-        self.assertFalse(self._external_called)
+        self.assertFalse(self._timeup_called)
         
         scheduled_callback_wrapper.cancel()
 
         self.assertTrue(self._finished_called)
-        self.assertFalse(self._external_called)
+        self.assertFalse(self._timeup_called)
         
         self.clock.advance(5)
         
         self.assertTrue(self._finished_called)
-        self.assertFalse(self._external_called)
+        self.assertFalse(self._timeup_called)
 
 if __name__ == "__main__":
     unittest.main()

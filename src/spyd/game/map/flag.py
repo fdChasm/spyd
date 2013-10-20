@@ -14,7 +14,7 @@ class Flag(object):
         self.game_clock = game_clock
         self.id = fid
         self.team = team
-        self.return_deferred = None
+        self.return_scheduled_callback_wrapper = None
 
     def reset(self):
         self.owner = None
@@ -22,20 +22,20 @@ class Flag(object):
         self.drop_count = 0
         self.drop_location = None
         
-        if self.return_deferred is not None:
-            self.return_deferred.cancel()
-        self.return_deferred = None
+        if self.return_scheduled_callback_wrapper is not None:
+            self.return_scheduled_callback_wrapper.cancel()
+        self.return_scheduled_callback_wrapper = None
     
     @property
     def dropped(self):
         return self.owner is None and self.drop_location is not None
     
-    def drop(self, location, return_delay):
+    def drop(self, location, return_timeout):
         if self.owner is not self.dropper:
             self.drop_count = 0
         self.drop_count += 1
         self.dropper = self.owner
         self.owner = None
         self.drop_location = location
-        
-        self.return_deferred = self.game_clock.schedule_callback(return_delay)
+
+        self.return_scheduled_callback_wrapper = self.game_clock.schedule_callback(return_timeout)
