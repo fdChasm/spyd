@@ -10,7 +10,7 @@ from spyd.log import SpydLogger
 logging.setLoggerClass(SpydLogger)
 logger = logging.getLogger(__name__)
 
-import spyd
+import spyd as spyd_root_module
 from spyd.config_loader import config_loader
 from spyd.spyd_server import SpydServer
 
@@ -42,7 +42,7 @@ class WrapperService(MultiService):
             if os.path.exists(server_directory):
                 fatal("The {!r} directory already exists, please only use the -i with a server directory path which does not exist and should be created.".format(server_directory))
 
-            data_path = spyd.__path__ + ['data']
+            data_path = spyd_root_module.__path__ + ['data']
             data_path = os.path.join(*data_path)
 
             shutil.copytree(data_path, server_directory)
