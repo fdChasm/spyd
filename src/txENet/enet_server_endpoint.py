@@ -3,6 +3,7 @@ from twisted.internet.interfaces import IStreamServerEndpoint
 from zope.interface import implements
 
 from txENet.enet_host import ENetHost
+from twisted.python import log, _reflectpy3 as reflect
 
 
 class ENetServerEndpoint(object):
@@ -29,7 +30,12 @@ class ENetServerEndpoint(object):
 
         self._enet_host = ENetHost(enet_host, factory)
 
+        log.msg("%s starting on %s" % (self._getLogPrefix(), self._port))
+
         self._reactor.addReader(self._enet_host)
 
     def flush(self):
         return self._enet_host.flush()
+    
+    def _getLogPrefix(self):
+        return reflect.qual(self._factory.__class__)

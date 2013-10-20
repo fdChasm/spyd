@@ -1,3 +1,4 @@
+import logging
 import os
 
 from twisted.application import service
@@ -7,6 +8,7 @@ from cube2common.constants import disconnect_types
 from server.lan_info.lan_info_service import LanInfoService
 from spyd.authentication.auth_world_view_factory import AuthWorldViewFactory, ANY
 from spyd.authentication.master_client_service_factory import MasterClientServiceFactory
+from spyd.events import EventSubscriptionFulfiller
 from spyd.game.client.client_factory import ClientFactory
 from spyd.game.client.client_number_provider import get_client_number_provider
 from spyd.game.command.command_executer import CommandExecuter
@@ -20,11 +22,12 @@ from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
 from spyd.server.binding.binding_service import BindingService
 from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
+from spyd.server.extension.service_factory import GeneralExtensionServiceFactory
 from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
-from spyd.server.extension.service_factory import GeneralExtensionServiceFactory
-from spyd.events import EventSubscriptionFulfiller
 
+
+logger = logging.getLogger(__name__)
 
 def get_package_dir(config):
     return config.get('packages_directory', "{}/git/spyd/packages".format(os.environ['HOME']))
@@ -107,16 +110,13 @@ class SpydServer(object):
             gep_service.setServiceParent(self.root_service)
 
     def _before_shutdown(self, config):
-        def printer(s):
-            print s
-
         shutdown_countdown = config.get('shutdown_countdown', 3)
 
-        print "Shutting down in {} seconds to allow clients to disconnect.".format(shutdown_countdown)
+        reactor.callLater(0.1, logger.spyd_event, "Shutting down in {} seconds to allow clients to disconnect.".format(shutdown_countdown))
         self.client_protocol_factory.disconnect_all(disconnect_type=disconnect_types.DISC_NONE, message=notice("Server going down. Please come back when it is back up."))
 
         for i in xrange(shutdown_countdown):
-            reactor.callLater(shutdown_countdown - i, printer, "{}...".format(i))
+            reactor.callLater(shutdown_countdown - i, logger.spyd_event, "{}...".format(i))
         d = defer.Deferred()
         reactor.callLater(shutdown_countdown + 0.1, d.callback, 1)
         return d

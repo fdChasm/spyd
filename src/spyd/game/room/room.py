@@ -212,10 +212,12 @@ class Room(object):
         self._game_clock.timeleft = 0
 
     def change_map_mode(self, map_name, mode_name):
+        self._game_clock.cancel()
         self._map_mode_state.change_map_mode(map_name, mode_name)
         self._new_map_mode_initialize()
 
     def rotate_map_mode(self):
+        self._game_clock.cancel()
         self._map_mode_state.rotate_map_mode()
         self._new_map_mode_initialize()
 

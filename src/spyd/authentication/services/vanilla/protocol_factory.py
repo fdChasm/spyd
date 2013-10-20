@@ -23,6 +23,8 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
         self.punitive_model = punitive_model
         self.register_port = register_port
 
+        self.noisy = False
+
         self.pending_auths = {}
         self._auth_id = itertools.count()
 

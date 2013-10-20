@@ -15,6 +15,6 @@ class SpydServiceMaker(object):
     options = Options
     
     def makeService(self, options):
-        return service_maker.make_service(options)
+        return service_maker.WrapperService(options)
 
 spyd = SpydServiceMaker()

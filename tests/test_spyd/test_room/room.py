@@ -12,6 +12,7 @@ from spyd.utils.value_model import ValueModel
 from spyd.game.gamemode import gamemodes
 from cube2common.constants import INTERMISSIONLEN
 from twisted.internet.defer import setDebugging
+from mock import MagicMock
 
 
 class TestRoom(unittest.TestCase):
@@ -135,7 +136,7 @@ class TestRoom(unittest.TestCase):
             player_test_context1 = stack.enter_context(create_mock_player(self, 0))
             player_test_context2 = stack.enter_context(create_mock_player(self, 1))
             
-            room = spyd.game.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={}, room_manager=MagicMock())
             
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
@@ -148,7 +149,7 @@ class TestRoom(unittest.TestCase):
         with mock_server_write_helper() as stack:
             player_test_context = stack.enter_context(create_mock_player(self, 0))
             
-            room = spyd.game.room.room.Room(map_meta_data_accessor={})
+            room = spyd.game.room.room.Room(map_meta_data_accessor={}, room_manager=MagicMock())
             player_test_context.enter_room(room)
             player_test_context.leave_room(room)
             player_test_context.clear_received_messages()

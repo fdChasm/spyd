@@ -94,6 +94,8 @@ class TestRoomFFA(unittest.TestCase):
 
             self.clock.advance(0.1)
 
+            print player_test_context.sendbuffers
+
             self.assertEqual(itemTypeSpawnCount(player_test_context, item_types.I_GREENARMOUR), 1)
             self.assertEqual(itemTypeSpawnCount(player_test_context, item_types.I_YELLOWARMOUR), 1)
 

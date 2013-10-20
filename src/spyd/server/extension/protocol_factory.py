@@ -1,6 +1,5 @@
 from twisted.internet.protocol import Factory
 
-
 class ExtensionProtocolFactory(Factory):
     def __init__(self, spyd_server, TransportProtocol, packing, ExtensionProtocolController, authentication_controller_factory):
         self._spyd_server = spyd_server

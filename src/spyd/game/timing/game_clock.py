@@ -39,7 +39,7 @@ class GameClock(object):
     def _cancel_existing_scheduled_events(self):
         if self._intermission_end_scheduled_callback_wrapper is not None:
             self._intermission_end_scheduled_callback_wrapper.cancel()
-            self._intermission_start_scheduled_callback_wrapper = None
+            self._intermission_end_scheduled_callback_wrapper = None
             
         if self._intermission_start_scheduled_callback_wrapper is not None:
             self._intermission_start_scheduled_callback_wrapper.cancel()
@@ -47,12 +47,22 @@ class GameClock(object):
 
         for scheduled_callback_wrapper in self._scheduled_callback_wrappers:
             scheduled_callback_wrapper.cancel()
+
+    def cancel(self):
+        '''Cancel the current game that is timed and start a new one.'''
+        self._cancel_existing_scheduled_events()
+        self._state = states.ENDED
+
+    def _assert_not_started(self):
+        assert(self._intermission_start_scheduled_callback_wrapper is None)
+        assert(self._intermission_end_scheduled_callback_wrapper is None)
+        assert(not self.is_started)
     
     def start(self, game_duration_seconds, intermission_duration_seconds):
         '''Set the game clock. If a game is currently underway, this will reset the time elapsed and set the amount of time left as specified.'''
+        self._assert_not_started()
+
         self._timed = True
-        
-        self._cancel_existing_scheduled_events()
             
         self._intermission_duration_seconds = intermission_duration_seconds
         self._intermission_start_scheduled_callback_wrapper = ScheduledCallbackWrapper(game_duration_seconds)
@@ -64,9 +74,10 @@ class GameClock(object):
         self._time_elapsed = 0.0
         
     def start_untimed(self):
+        self._assert_not_started()
+
         self._state = states.PAUSED
         self._timed = False
-        self._cancel_existing_scheduled_events()
         self._time_elapsed = 0.0
     
     def add_paused_callback(self, f, *args, **kwargs):
@@ -103,6 +114,7 @@ class GameClock(object):
             return
 
         if delay is not None:
+            self._state = states.RESUMING
             self._resume_countdown = ResumeCountdown(delay, Callback(self._resume_countdown_tick), Callback(self._resumed))
             self._resume_countdown.start()
         else:
@@ -117,12 +129,14 @@ class GameClock(object):
             self._paused()
         else:
             return
+
+    def _remove_scheduled_callback_wrapper(self, scheduled_callback_wrapper):
+        self._scheduled_callback_wrappers.remove(scheduled_callback_wrapper)
     
     def schedule_callback(self, seconds):
         '''Schedule a callback after the specified number of seconds on the game clock. Returns a deferred.'''
-
         scheduled_callback_wrapper = ScheduledCallbackWrapper(seconds)
-        scheduled_callback_wrapper.add_finished_callback(self._scheduled_callback_wrappers.remove, scheduled_callback_wrapper)
+        scheduled_callback_wrapper.add_finished_callback(self._remove_scheduled_callback_wrapper, scheduled_callback_wrapper)
         self._scheduled_callback_wrappers.append(scheduled_callback_wrapper)
         if not self.is_paused:
             scheduled_callback_wrapper.resume()
@@ -202,6 +216,7 @@ class GameClock(object):
     def _resumed(self):
         self._state = states.RUNNING
         self._last_resume_time = self.clock.seconds()
+        self._resume_countdown = None
         if self._timed:
             self._intermission_start_scheduled_callback_wrapper.resume()
             self._intermission_end_scheduled_callback_wrapper.resume()

@@ -1,44 +1,69 @@
+import logging
 import os
 import shutil
 import sys
 
+from twisted.application.service import MultiService
+
+from spyd.log import SpydLogger
+
+logging.setLoggerClass(SpydLogger)
+logger = logging.getLogger(__name__)
+
+import spyd
 from spyd.config_loader import config_loader
 from spyd.spyd_server import SpydServer
 
 
-def make_service(options):
-    server_directory = options.get('servdir') or 'my_spyd_server'
+def fatal(msg):
+    logger.critical(msg)
+    sys.exit(1)
 
-    server_directory = os.path.expanduser(server_directory)
+def success(msg):
+    logger.info(msg)
+    sys.exit(0)
 
-    if options.get('init'):
-        if os.path.exists(server_directory):
-            print "The {!r} directory already exists, please only use the -i with a server directory path which does not exist and should be created.".format(server_directory)
-            sys.exit(1)
+class WrapperService(MultiService):
+    def __init__(self, options):
+        self._options = options
+        MultiService.__init__(self)
 
-        import spyd
+    def startService(self):
+        options = self._options
 
-        data_path = spyd.__path__ + ['data']
-        data_path = os.path.join(*data_path)
+        server_directory = options.get('servdir') or 'my_spyd_server'
 
-        shutil.copytree(data_path, server_directory)
+        server_directory = os.path.expanduser(server_directory)
 
-        if os.path.exists(server_directory):
-            print "The specified server directory has been created; {!r} Remove the -i flag to run.".format(server_directory)
-            sys.exit(0)
-        else:
-            print "Error failed to create the specified server directory."
-            sys.exit(1)
+        if not len(logging._handlers):
+            logging.basicConfig()
 
-    if not os.path.exists(server_directory):
-        print "The specified server directory, {!r}, does not exist. Use the -i flag to create it.".format(server_directory)
-        sys.exit(1)
+        if options.get('init'):
+            if os.path.exists(server_directory):
+                fatal("The {!r} directory already exists, please only use the -i with a server directory path which does not exist and should be created.".format(server_directory))
 
-    os.chdir(server_directory)
-    print "Using server directory; {!r}".format(os.path.abspath(os.curdir))
+            data_path = spyd.__path__ + ['data']
+            data_path = os.path.join(*data_path)
 
-    config = config_loader('config.json')
+            shutil.copytree(data_path, server_directory)
 
-    spyd = SpydServer(config)
+            if os.path.exists(server_directory):
+                success("The specified server directory has been created; {!r} Remove the -i flag to run.".format(server_directory))
+            else:
+                fatal("Error failed to create the specified server directory.")
 
-    return spyd.root_service
+        if not os.path.exists(server_directory):
+            fatal("The specified server directory, {!r}, does not exist. Use the -i flag to create it.".format(server_directory))
+
+        os.chdir(server_directory)
+        logger.info("Using server directory; {!r}".format(os.path.abspath(os.curdir)))
+
+        config = config_loader('config.json')
+
+        spyd = SpydServer(config)
+
+        spyd.root_service.setServiceParent(self)
+
+        MultiService.startService(self)
+
+        logger.spyd_event("Server started.")

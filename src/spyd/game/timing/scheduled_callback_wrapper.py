@@ -7,10 +7,7 @@ class ScheduledCallbackWrapper(object):
     clock = reactor
     
     def __init__(self, seconds):
-        # The external deferred gets returned to the client scheduling an event.
-        # We use the internal deferred to make sure this gets cleaned up whether or not it is cancelled.
         self.external_deferred = defer.Deferred()
-        self.internal_deferred = defer.Deferred()
         
         self._finished_callbacks = set()
         
@@ -38,6 +35,8 @@ class ScheduledCallbackWrapper(object):
     def _timeup(self):
         call_all(self._finished_callbacks)
         if self._cancelled: return
+        self._delayed_call = None
+        self._delay_seconds = 0.0
         self.external_deferred.callback(True)
 
     def cancel(self):

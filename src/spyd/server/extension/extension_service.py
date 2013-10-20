@@ -11,7 +11,6 @@ class GeneralExtensionService(service.Service):
         self._listener = None
 
     def startService(self):
-        print "starting general extension service on interface: {!r}, port: {!r}".format(self._interface, self._port)
         self._listener = reactor.listenTCP(interface=self._interface, port=self._port, factory=self._protocol_factory)
 
     def stopService(self):

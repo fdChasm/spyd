@@ -28,44 +28,45 @@ class Test(unittest.TestCase):
         self.clock.advance(20)
         self.assertAlmostEqual(scheduled_callback_wrapper.timeleft, 0.0)
         
-    def test_external_and_internal_callbacks(self):
+    def test_external_and_finished_callbacks(self):
         scheduled_callback_wrapper = ScheduledCallbackWrapper(5)
         scheduled_callback_wrapper.resume()
-        self._internal_called = False
+        self._finished_called = False
         self._external_called = False
-        def on_internal_called(*args, **kwargs):
-            self._internal_called = True
+        def on_finished_called(*args, **kwargs):
+            self._finished_called = True
         def on_external_called(*args, **kwargs):
             self._external_called = True
-        scheduled_callback_wrapper.internal_deferred.addCallback(on_internal_called)
+        scheduled_callback_wrapper.add_finished_callback(on_finished_called)
         scheduled_callback_wrapper.external_deferred.addCallback(on_external_called)
         self.clock.advance(20)
-        self.assertTrue(self._internal_called)
+        self.assertTrue(self._finished_called)
         self.assertTrue(self._external_called)
         
     def test_cancelling(self):
         scheduled_callback_wrapper = ScheduledCallbackWrapper(20)
         scheduled_callback_wrapper.resume()
-        self._internal_called = False
+        self._finished_called = False
         self._external_called = False
-        def on_internal_called(*args, **kwargs):
-            self._internal_called = True
+        def on_finished_called(*args, **kwargs):
+            self._finished_called = True
         def on_external_called(*args, **kwargs):
             self._external_called = True
-        scheduled_callback_wrapper.internal_deferred.addCallback(on_internal_called)
+        scheduled_callback_wrapper.add_finished_callback(on_finished_called)
         scheduled_callback_wrapper.external_deferred.addCallback(on_external_called)
-        
-        self.clock.advance(5)
-        self.assertFalse(self._internal_called)
+
+        self.clock.advance(15)
+        self.assertFalse(self._finished_called)
         self.assertFalse(self._external_called)
         
         scheduled_callback_wrapper.cancel()
-        self.assertTrue(self._internal_called)
+
+        self.assertTrue(self._finished_called)
         self.assertFalse(self._external_called)
         
-        self.clock.advance(15)
+        self.clock.advance(5)
         
-        self.assertTrue(self._internal_called)
+        self.assertTrue(self._finished_called)
         self.assertFalse(self._external_called)
 
 if __name__ == "__main__":
