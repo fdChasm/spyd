@@ -1,7 +1,7 @@
 from twisted.internet import defer
 
 from spyd.protocol import swh
-from spyd.game.server_message_formatter import error
+from spyd.game.server_message_formatter import error, info
 
 
 class ClientAuthableBase(object):
@@ -12,7 +12,7 @@ class ClientAuthableBase(object):
     def auth(self, authdomain, authname):
         if self.auth_deferred is not None:
             self.send_server_message(error("You already have a pending auth request wait for the previous one to complete."))
-            return
+            return defer.fail(None)
 
         self.auth_deferred = defer.Deferred()
 
@@ -43,9 +43,15 @@ class ClientAuthableBase(object):
     def on_auth_failure(self, deferred_exception):
         self.send_server_message(error(deferred_exception.value.message))
         self.auth_deferred.errback(deferred_exception)
+        self.auth_deferred = None
 
     def on_auth_success(self, auth_success):
         if auth_success is not None:
             self.add_group_name_provider(auth_success.group_provider)
 
+            if auth_success.room_message is not None:
+                auth_success.room_message_kwargs['client'] = self
+                self.room._broadcaster.server_message(info(auth_success.room_message, **auth_success.room_message_kwargs))
+
         self.auth_deferred.callback(auth_success)
+        self.auth_deferred = None

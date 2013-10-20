@@ -2,7 +2,7 @@ from txENet.enet_server_endpoint import ENetServerEndpoint
 
 
 class Binding(ENetServerEndpoint):
-    def __init__(self, reactor, metrics_service, interface, port, maxclients, channels, maxdown=0, maxup=0):
+    def __init__(self, reactor, metrics_service, interface, port, maxclients, channels, maxdown=0, maxup=0, max_duplicate_peers=None):
         metric_prefix = "{}.{}".format(interface.replace('.', '_'), port)
 
         received_metric_name = "{}.rx".format(metric_prefix)
@@ -13,7 +13,7 @@ class Binding(ENetServerEndpoint):
         metrics_service.register_repeating_metric(sent_metric_name, 1.0, self._get_and_reset_bytes_sent)
         metrics_service.register_repeating_metric(peer_count_metric_name, 1.0, self._get_peer_count)
 
-        ENetServerEndpoint.__init__(self, reactor, interface, port, maxclients, channels, maxdown=maxdown, maxup=maxup)
+        ENetServerEndpoint.__init__(self, reactor, interface, port, maxclients, channels, maxdown=maxdown, maxup=maxup, max_duplicate_peers=max_duplicate_peers)
 
     def _get_and_reset_bytes_received(self):
         if self._enet_host is None: return 0

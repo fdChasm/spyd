@@ -115,7 +115,6 @@ class ClientMessageHandlingBase(object):
         authdomain = message['authdomain']
         authname = message['authname']
         deferred = self.auth(authdomain, authname)
-        deferred.addCallback(lambda a: self.send_server_message(info("Authentication success!")))
         
     def N_AUTHKICK(self, message):
         authdomain = message['authdomain']

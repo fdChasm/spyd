@@ -9,7 +9,7 @@ from twisted.python import log, _reflectpy3 as reflect
 class ENetServerEndpoint(object):
     implements(IStreamServerEndpoint)
 
-    def __init__(self, reactor, interface, port, maxclients, channels, maxdown=0, maxup=0):
+    def __init__(self, reactor, interface, port, maxclients, channels, maxdown=0, maxup=0, max_duplicate_peers=None):
         self._reactor = reactor
         self._interface = interface
         self._port = port
@@ -17,6 +17,7 @@ class ENetServerEndpoint(object):
         self._channels = channels
         self._maxdown = maxdown
         self._maxup = maxup
+        self._max_duplicate_peers = max_duplicate_peers or 0xFFF
 
         self._factory = None
         self._address = None
@@ -29,6 +30,9 @@ class ENetServerEndpoint(object):
         enet_host = enet.Host(self._address, self._maxclients, self._channels, self._maxdown, self._maxup)
 
         self._enet_host = ENetHost(enet_host, factory)
+
+        print self._enet_host.duplicate_peers
+        self._enet_host.duplicate_peers = self._max_duplicate_peers
 
         log.msg("%s starting on %s" % (self._getLogPrefix(), self._port))
 

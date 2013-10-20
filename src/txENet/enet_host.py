@@ -86,3 +86,11 @@ class ENetHost(object):
 
     def reset_total_peceived_packets(self):
         self._enet_host.totalReceivedPackets = 0
+
+    @property
+    def duplicate_peers(self):
+        return self._enet_host.duplicatePeers
+
+    @duplicate_peers.setter
+    def duplicate_peers(self, value):
+        self._enet_host.duplicatePeers = value

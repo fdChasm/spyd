@@ -12,10 +12,12 @@ def domain_to_auth_group(domain):
 class VanillaAuthSuccess(object):
     implements(IAuthSuccess)
     
-    def __init__(self, domain, auth_name):
-        self.group_provider = VanillaGroupProvider(domain, auth_name)
-        self.room_message = None
+    def __init__(self, auth_domain, auth_name):
+        self.group_provider = VanillaGroupProvider(auth_domain, auth_name)
+        self.room_message = "{name#client} claimed auth as {auth#auth_name}@{domain#auth_domain}"
+        self.room_message_kwargs = {'auth_name': auth_name, 'auth_domain': auth_domain}
         self.client_message = None
+        self.client_message_kwargs = {}
 
 class VanillaGroupProvider(object):
     implements(IGroupProvider)

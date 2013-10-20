@@ -32,8 +32,8 @@ class BindingService(service.Service):
         self.flush_looping_call.stop()
         service.Service.stopService(self)
 
-    def add_binding(self, interface, port, maxclients, maxdown, maxup):
-        binding = Binding(reactor, self.metrics_service, interface, port, maxclients=maxclients, channels=2, maxdown=maxdown, maxup=maxup)
+    def add_binding(self, interface, port, maxclients, maxdown, maxup, max_duplicate_peers):
+        binding = Binding(reactor, self.metrics_service, interface, port, maxclients=maxclients, channels=2, maxdown=maxdown, maxup=maxup, max_duplicate_peers=max_duplicate_peers)
         self.bindings.add(binding)
 
     def flush_all(self):

@@ -1,5 +1,5 @@
-{
-	"localhost": {
+[
+	{
 		"type": "vanilla",
 		"enabled": true,
 		"host": "localhost",
@@ -7,7 +7,7 @@
 		"register_port": 28785,
 		"domains": ["localhost", ""]
 	},
-	"localhost": {
+	{
 		"type": "vanilla",
 		"enabled": true,
 		"host": "localhost",
@@ -15,4 +15,4 @@
 		"register_port": 10000,
 		"domains": ["localhost", ""]
 	}
-}
+]

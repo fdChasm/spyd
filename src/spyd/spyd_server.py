@@ -81,6 +81,8 @@ class SpydServer(object):
     def _initialize_rooms(self, config):
         default_room_name = config.get('default_room')
 
+        max_duplicate_peers = config.get('max_duplicate_peers', 10)
+
         for room_name, room_config in config['room_bindings'].iteritems():
             interface = room_config['interface']
             port = room_config['port']
@@ -92,12 +94,12 @@ class SpydServer(object):
 
             room = self.room_factory.build_room(room_name, room_type)
 
-            self.binding_service.add_binding(interface, port, maxclients, maxdown, maxup)
+            self.binding_service.add_binding(interface, port, maxclients, maxdown, maxup, max_duplicate_peers)
             self.room_bindings.add_room(port, room, default_room)
             self.lan_info_service.add_lan_info_for_room(room, interface, port)
 
     def _initialize_master_clients(self, config):
-        for master_server_config in config['master_servers'].itervalues():
+        for master_server_config in config['master_servers']:
             register_port = master_server_config.get('register_port', ANY)
             master_client_service = self.master_client_service_factory.build_master_client_service(master_server_config)
             self.auth_world_view_factory.register_auth_service(master_client_service, register_port)

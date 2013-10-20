@@ -36,5 +36,6 @@
     "permissions": "file://permissions.json",
     "master_servers": "file://master_servers.json",
     "gep_endpoints": "file://gep_endpoints.json",
-    "carbon_metrics": "file://carbon_metrics.json"
+    "carbon_metrics": "file://carbon_metrics.json",
+    "max_duplicate_peers": 10
 }

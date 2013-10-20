@@ -48,7 +48,9 @@ class IAuthChallenge(zope.interface.Interface):
 class IAuthSuccess(zope.interface.Interface):
     group_provider = zope.interface.Attribute('An object providing the IGroupProvider interface.')
     room_message = zope.interface.Attribute('The message to display to the room the client is in.')
+    room_message_kwargs = zope.interface.Attribute('Keyword arguments used to populate the room message.')
     client_message = zope.interface.Attribute('The message to display to the client.')
+    client_message_kwargs = zope.interface.Attribute('Keyword arguments used to populate the client message.')
 
 class IGroupProvider(zope.interface.Interface):
     def get_group_names():

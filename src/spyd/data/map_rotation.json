@@ -1,8 +1,12 @@
 {
 	"rotations": {
-		"ctf": ["authentic", "dust2", "forge", "reissen"],
-		"ffa": ["complex"]
+		"ctf": "file://ctf_maps.json",
+		"instactf": "file://ctf_maps.json",
+		"efficctf": "file://ctf_maps.json",
+		"ffa": "file://ffa_maps.json",
+		"insta": "file://ffa_maps.json",
+		"effic": "file://ffa_maps.json"
 	},
-	"modes": ["ffa"],
+	"modes": ["ctf", "instactf", "efficctf", "ffa", "insta", "effic"],
 	"rotate_modes": false
 }
