@@ -51,12 +51,15 @@ setup(
         'twisted': ['plugins/spyd_server.py'],
         'spyd': ['data/*.json']
     },
-    install_requires=["twisted", "pycrypto", "txCarbonClient", "cython", "python-Levenshtein", "simplejson", "simple_json"],
+    install_requires=["twisted", "pycrypto", "txCarbonClient", "pyenet>=0.0.0", "python-Levenshtein", "simplejson", "simple_json"],
     author="Chasm",
     author_email="fd.chasm@gmail.com",
     url="https://github.com/fdChasm/spyd",
     license="MIT",
     description="A Python implementation of the Sauerbraten Cube 2 server on top of Twisted.",
+    dependency_links = [
+        'http://github.com/fdChasm/pyenet/tarball/master#egg=pyenet-0.1.0',
+    ],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Games/Entertainment :: First Person Shooters",
