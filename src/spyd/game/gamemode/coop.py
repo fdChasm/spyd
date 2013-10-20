@@ -16,7 +16,7 @@ class Coop(ModeBase, ItemBase, FightingBase, SpawningBase, SpectatingBase):
     timeout = None
     hasitems = True
     hasflags = True
-    hasteams = True
+    hasteams = False
     hasbases = False
     spawnarmour = 50
     spawnarmourtype = armor_types.A_BLUE
