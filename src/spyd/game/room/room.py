@@ -208,7 +208,6 @@ class Room(object):
         self._game_clock.resume(self.resume_delay)
 
     def end_match(self):
-        print "end_match called"
         self._game_clock.timeleft = 0
 
     def change_map_mode(self, map_name, mode_name):
@@ -513,7 +512,6 @@ class Room(object):
 
     def _on_game_clock_timeleft_altered(self, seconds):
         self._broadcaster.time_left(seconds)
-        print "room._on_game_clock_timeleft_altered called", seconds
 
     def _on_game_clock_intermission(self):
         self._broadcaster.server_message("Intermission has started.")

@@ -45,7 +45,7 @@ class GameClock(object):
             self._intermission_start_scheduled_callback_wrapper.cancel()
             self._intermission_start_scheduled_callback_wrapper = None
 
-        for scheduled_callback_wrapper in self._scheduled_callback_wrappers:
+        for scheduled_callback_wrapper in list(self._scheduled_callback_wrappers):
             scheduled_callback_wrapper.cancel()
 
     def cancel(self):

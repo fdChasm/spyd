@@ -60,3 +60,21 @@ class Test(unittest.TestCase):
         self.clock.advance(0)
         self.clock.advance(605)
         self.assertAlmostEqual(game_clock.intermission_timeleft, 5)
+
+    def test_callback_not_called_if_cancelled(self):
+        game_clock = GameClock()
+        game_clock.start(600, 10)
+        game_clock.resume(None)
+        self._was_called = False
+        def func():
+            self._was_called = True
+
+        scheduled_callback_wrapper = game_clock.schedule_callback(5)
+
+        scheduled_callback_wrapper.add_timeup_callback(func)
+
+        game_clock.cancel()
+
+        self.clock.advance(10)
+
+        self.assertFalse(self._was_called)

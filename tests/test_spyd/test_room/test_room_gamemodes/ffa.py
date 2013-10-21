@@ -148,3 +148,25 @@ class TestRoomFFA(unittest.TestCase):
             self.clock.advance(15.9)
             
             self.assertFalse(isItemIndexSpawned(player_test_context2, item_index=79))
+
+    def test_immediate_map_change_cancels_itemspawns(self):
+        with mock_server_write_helper() as stack:
+            player_test_context = stack.enter_context(create_mock_player(self, 0))
+
+            room = spyd.game.room.room.Room(map_meta_data_accessor={'complex': complex_meta_data})
+            room.change_map_mode('complex', 'ffa')
+
+            self.clock.advance(2)
+
+            player_test_context.enter_room(room)
+
+            self.clock.advance(2)
+
+            room.change_map_mode('complex', 'insta')
+            print "Map change happened just before here"
+
+            player_test_context.clear_received_messages()
+
+            self.clock.advance(30)
+
+            player_test_context.assertHasNotReceivedMessageOfType('N_ITEMSPAWN')
