@@ -3,6 +3,7 @@
         "allows": [
                    "spyd.server.connect",
                    "spyd.game.commands.room.execute", "spyd.game.commands.room_create.execute",
+                   "spyd.game.commands.timeleft.execute",
                    "spyd.game.room.chat.game", "spyd.game.room.chat.team", "spyd.game.room.chat.pm",
                    "spyd.game.room.set_spectator",
                    "spyd.game.room.team.switch",
@@ -17,6 +18,8 @@
                    "spyd.game.room.temporary.set_team",
                    "spyd.game.room.temporary.set_spectator",
                    "spyd.game.room.temporary.set_mastermode",
+                   "spyd.game.commands.timeleft.set_temporary_room",
+                   "spyd.game.commands.timeleft.set_permanent_room",
                    "spyd.game.room.set_map_mode",
                    "spyd.game.room.set_spectator",
                    "spyd.game.room.set_others_teams",

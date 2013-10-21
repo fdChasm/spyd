@@ -18,7 +18,7 @@ class RoomCreateCommand(CommandBase):
     description = "Create a room."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments):
+    def execute(cls, room, client, command_string, arguments, raw_args):
         room_name = filtertext(arguments[0], True, MAXROOMLEN)
         
         target_room = room.manager.get_room(room_name, False)

@@ -14,7 +14,7 @@ class RoomCommand(CommandBase):
     description = "Displays the rooms on the server, their player counts, modes, and maps."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments):
+    def execute(cls, room, client, command_string, arguments, raw_args):
         for room in room.manager.rooms.itervalues():
             if room.empty: continue
             client.send_server_message(info(room_info_msg, room=room))

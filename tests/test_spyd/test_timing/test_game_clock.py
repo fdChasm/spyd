@@ -78,3 +78,11 @@ class Test(unittest.TestCase):
         self.clock.advance(10)
 
         self.assertFalse(self._was_called)
+
+    def test_start_then_set_timeleft(self):
+        game_clock = GameClock()
+        game_clock.start(600, 10)
+        game_clock.resume(None)
+
+        game_clock.timeleft = 300
+        self.assertEqual(game_clock.timeleft, 300)

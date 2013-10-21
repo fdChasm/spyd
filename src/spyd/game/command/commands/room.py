@@ -11,7 +11,7 @@ class RoomCommand(CommandBase):
     description = "Join a specified room."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments):
+    def execute(cls, room, client, command_string, arguments, raw_args):
         room_name = arguments[0]
         
         target_room = room.manager.get_room(room_name, True)

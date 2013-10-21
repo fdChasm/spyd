@@ -145,6 +145,10 @@ class Room(object):
     def timeleft(self):
         return self._game_clock.timeleft
 
+    @timeleft.setter
+    def timeleft(self, seconds):
+        self._game_clock.timeleft = seconds
+
     @property
     def gamemode(self):
         return self._map_mode_state.gamemode

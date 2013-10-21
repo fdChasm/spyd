@@ -11,7 +11,7 @@ class RoomCommand(CommandBase):
     description = "Follow the last player to leave this room."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments):
+    def execute(cls, room, client, command_string, arguments, raw_args):
         room_name = room.last_destination_room
         
         if room_name is None:

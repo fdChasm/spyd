@@ -67,10 +67,10 @@ class ScheduledCallbackWrapper(object):
     @timeleft.setter
     def timeleft(self, seconds):
         was_paused = self.is_paused
-        if was_paused:
+        if not was_paused:
             self.pause()
         self._delay_seconds = seconds
-        if was_paused:
+        if not was_paused:
             self.resume()
 
     @property

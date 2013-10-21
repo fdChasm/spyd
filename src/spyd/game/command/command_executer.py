@@ -12,8 +12,8 @@ class CommandExecuter(object):
     def __init__(self):
         self._command_finder = CommandFinder()
 
-    def execute(self, room, client, command_string):
-        command_match = command_pattern.match(command_string)
+    def execute(self, room, client, raw_command_string):
+        command_match = command_pattern.match(raw_command_string)
         
         if command_match is None:
             raise GenericError("Invalid command input.")
@@ -39,4 +39,4 @@ class CommandExecuter(object):
         except ValueError, e:
             raise GenericError("Invalid input: {error}", error=e.message)
         
-        command_handler.execute(room, client, command_string, args)
+        command_handler.execute(room, client, command_string, args, arg_string)
