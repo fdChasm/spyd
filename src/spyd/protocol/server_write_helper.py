@@ -1,4 +1,6 @@
 from cube2common.constants import PROTOCOL_VERSION, message_types, weapon_types, privileges
+from spyd.utils.formatted_sauerbraten_message_splitter import FormattedSauerbratenMessageSplitter
+
 
 def put_info_reply(cds, server_desc, numclients, maxclients, mode_num, map_name, seconds_left, mastermask, gamepaused, gamespeed):
     cds.putint(numclients)
@@ -38,9 +40,15 @@ def put_currentmaster(data_stream, mastermode, clients):
             data_stream.putint(client.privilege)
     data_stream.putint(-1)
 
-def put_servmsg(data_stream, message):
+def put_raw_servmsg(data_stream, message):
     data_stream.putint(message_types.N_SERVMSG)
     data_stream.putstring(message)
+
+def put_servmsg(data_stream, message):
+    message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
+    messages = message_splitter.split(message)
+    for message in messages:
+        put_raw_servmsg(data_stream, message)
 
 def put_mapchange(data_stream, map_name, mode_num, hasitems):
     data_stream.putint(message_types.N_MAPCHANGE)

@@ -40,3 +40,8 @@ class CommandExecuter(object):
             raise GenericError("Invalid input: {error}", error=e.message)
         
         command_handler.execute(room, client, command_string, args, arg_string)
+
+    def get_available_commands(self, client):
+        command_list = self._command_finder.get_command_list()
+        command_list = filter(lambda c: client.allowed(c.functionality), command_list)
+        return command_list

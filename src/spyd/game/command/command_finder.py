@@ -24,3 +24,6 @@ class CommandFinder(object):
             if command_handler.handles(room, client, command_string):
                 return command_handler
         return self._find_fuzzy(room, client, command_string)
+
+    def get_command_list(self):
+        return list(self.command_handlers)
