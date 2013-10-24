@@ -416,11 +416,7 @@ class Room(object):
         self.gamemode.on_player_request_spawn(player)
 
     def on_player_spawn(self, player, lifesequence, gunselect):
-        player.state.state = client_states.CS_ALIVE
-        player.state.lifesequence = lifesequence
-        player.state.gunselect = gunselect
-
-        swh.put_spawn(player.state.messages, player.state)
+        player.state.on_respawn(lifesequence, gunselect)
 
     def on_player_gunselect(self, player, gunselect):
         player.state.gunselect = gunselect

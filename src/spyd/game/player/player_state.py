@@ -49,6 +49,10 @@ class PlayerState(object):
     def can_spawn(self):
         if self.is_spectator:
             return False
+        if self.is_alive:
+            return False
+        if self._pending_spawn:
+            return False
         if self.spawnwait is not None:
             return self.spawnwait.is_expired
         return True
@@ -100,6 +104,7 @@ class PlayerState(object):
             print "failed to set is_spectator"
         
     def respawn(self, gamemode):
+        self._pending_spawn = True
         self.lifesequence = (self.lifesequence + 1)&0x7F
         self._quadexpiry = None
         self.health = gamemode.spawnhealth
@@ -111,8 +116,9 @@ class PlayerState(object):
         self.position = None
         
     def on_respawn(self, lifesequence, gunselect):
+        if lifesequence != self.lifesequence: return
+        self._pending_spawn = False
         self.state = client_states.CS_ALIVE
-        self.lifesequence = lifesequence
         self.gunselect = gunselect
 
         swh.put_spawn(self.messages, self)
@@ -154,6 +160,7 @@ class PlayerState(object):
         self._quadexpiry = None
         self.shotwait = None
         self.spawnwait = None
+        self._pending_spawn = False
         
         self.rockets = {}
         self.grenades = {}
