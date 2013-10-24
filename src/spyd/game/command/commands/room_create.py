@@ -19,6 +19,9 @@ class RoomCreateCommand(CommandBase):
 
     @classmethod
     def execute(cls, room, client, command_string, arguments, raw_args):
+        if len(arguments) < 1:
+            raise GenericError("Please specify a room name.")
+
         room_name = filtertext(arguments[0], True, MAXROOMLEN)
         
         target_room = room.manager.get_room(room_name, False)
