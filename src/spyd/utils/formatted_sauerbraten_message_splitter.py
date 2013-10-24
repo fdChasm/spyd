@@ -45,12 +45,13 @@ class FormattedSauerbratenMessageSplitter(object):
         return map(bytearray.decode, chunks)
 
     def _should_split_early(self, message, chunklen, ix):
-        seek_range = min(self._max_length - chunklen, 10, len(message) - ix)
+        seek_range = min(self._max_length - chunklen, 10)
+
+        if seek_range > len(message) - ix:
+            return False
 
         if message[ix] == ' ' and seek_range < 10:
             for i in xrange(1, seek_range):
                 if message[ix + i] == ' ':
                     return False
             return True
-
-        return False

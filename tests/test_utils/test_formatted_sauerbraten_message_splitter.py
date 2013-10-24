@@ -63,3 +63,14 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
         print chunks
 
         self.assertChunksOk(max_length=512, chunks=chunks)
+
+    def test_commands_with_short_word_at_end(self):
+        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
+
+        message = 'test small chunk with short word at end.'
+
+        chunks = formatted_sauer_message_splitter.split(message)
+
+        print chunks
+
+        self.assertChunksOk(max_length=512, chunks=chunks)
