@@ -7,9 +7,13 @@ class ClientBase(object):
         self.players = {}
         
     @property
-    def isconnected(self):
+    def is_connected(self):
         return self.cn in self.players
     
+    @property
+    def uuid(self):
+        return self.get_player().uuid
+
     def get_player(self, pn=-1):
         if pn == -1:
             pn = self.cn

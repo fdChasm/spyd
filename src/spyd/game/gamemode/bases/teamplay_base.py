@@ -22,6 +22,7 @@ class TeamplayBase(object):
         player.team = smallest_team
         player.team.size += 1
         swh.put_setteam(cds, player, -1)
+        swh.put_teaminfo(cds, self.teams.itervalues())
 
     def on_player_disconnected(self, player):
         if player.team is not None:
@@ -47,7 +48,8 @@ class TeamplayBase(object):
             swh.put_setteam(cds, target, reason)
 
     def on_player_death(self, player, killer):
-        pass
+        if player is killer:
+            player.team.frags -= 1
 
     def _teamswitch_suicide(self, player):
         if not player.state.is_alive: return

@@ -30,7 +30,7 @@ class UnknownPlayer(GenericError):
 class ClientMessageHandlingBase(object):
     def _message_received(self, message_type, message):
         try:
-            if (not self.isconnected) and message_type != "N_CONNECT":
+            if (not self.is_connected) and message_type != "N_CONNECT":
                 self.disconnect(disconnect_types.DISC_TAGT)
                 return
             else:
@@ -48,7 +48,7 @@ class ClientMessageHandlingBase(object):
             traceback.print_exc()
         
     def N_CONNECT(self, message):
-            if not self.isconnected:
+            if not self.is_connected:
                 self.connect_received(message)
                 
     def N_PING(self, message):

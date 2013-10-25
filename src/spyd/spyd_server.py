@@ -62,7 +62,7 @@ class SpydServer(object):
         self.message_processor = MessageProcessor(self.metrics_service)
 
         client_number_provider = get_client_number_provider(config)
-        self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver)
+        self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller)
 
         self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor)
 

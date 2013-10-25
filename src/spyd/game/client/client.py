@@ -17,15 +17,15 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     '''
     Handles the per client networking, and distributes the messages out to the players (main, bots).
     '''
-    def __init__(self, protocol, clientnum, room, auth_world_view, permission_resolver):
+    def __init__(self, protocol, clientnum, room, auth_world_view, permission_resolver, event_subscription_fulfiller):
         ClientBase.__init__(self, clientnum, room)
         ClientNetworkBase.__init__(self, protocol)
         ClientAuthableBase.__init__(self, auth_world_view)
         ClientPermissionBase.__init__(self, permission_resolver)
         
+        self.event_subscription_fulfiller = event_subscription_fulfiller
+
         self.command_context = {}
-        
-        self.is_connected = False
         
     def __format__(self, format_spec):
         player = self.get_player()
@@ -46,6 +46,7 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     def disconnected(self):
         if self.is_connected:
             self.room.client_leave(self)
+            self.event_subscription_fulfiller.publish('spyd.game.player.disconnect', {'player': self.uuid, 'room': self.room.name})
 
     def connect_timeout(self):
         '''Disconnect client because it didn't send N_CONNECT soon enough.'''
@@ -81,8 +82,9 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         except RoomEntryFailure as e:
             return self.disconnect(e.disconnect_type, e.message)
         
-        self.is_connected = True
         self.room.client_enter(room_entry_context)
+
+        self.event_subscription_fulfiller.publish('spyd.game.player.connect', {'player': self.uuid, 'room': self.room.name})
 
     def send_server_message(self, message):
         with self.sendbuffer(1, True) as cds:

@@ -151,6 +151,13 @@ def put_itemlist(data_stream, items):
             data_stream.putint(item.type)
     data_stream.putint(-1)
 
+def put_teaminfo(data_stream, teams):
+    data_stream.putint(message_types.N_TEAMINFO)
+    for team in teams:
+        data_stream.putstring(team.name)
+        data_stream.putint(team.frags)
+    data_stream.putstring('')
+
 def put_initflags(data_stream, teamscores, flags):
     data_stream.putint(message_types.N_INITFLAGS)
     for score in teamscores:

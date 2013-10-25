@@ -46,7 +46,7 @@ class GEPProtocol(NetstringReceiver):
         self.sendString(json.dumps(message))
 
     def _default_callback(self, message):
-        print "message:", message
+        print "message:", json.dumps(message)
 
     def _on_connect_response(self, message):
         challenge = str(message['challenge'])
@@ -56,6 +56,7 @@ class GEPProtocol(NetstringReceiver):
     def _on_answer_response(self, message):
         if message.get('status', None) == u'success':
             self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
+            self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.connect'}, self._on_subscribe_response)
             self.request({'msgtype': 'gep.ping', 'time': time.time()}, self._on_ping_response)
         else:
             self.transport.loseConnection()

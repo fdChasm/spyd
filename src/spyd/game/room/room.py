@@ -402,9 +402,9 @@ class Room(object):
         self._broadcaster.jumppad(player, jumppad)
 
     def on_player_suicide(self, player):
-        self._broadcaster.player_died(player, player)
         player.state.state = client_states.CS_DEAD
         self.gamemode.on_player_death(player, player)
+        self._broadcaster.player_died(player, player)
 
     def on_player_shoot(self, player, shot_id, gun, from_pos, to_pos, hits):
         self.gamemode.on_player_shoot(player, shot_id, gun, from_pos, to_pos, hits)
@@ -595,7 +595,7 @@ class Room(object):
                     swh.put_pausegame(cds, 1)
 
                 for player in client.players.itervalues():
-                    if player.state.can_spawn:
+                    if not player.state.is_spectator:
                         swh.put_spawnstate(cds, player)
 
     def _player_disconnected(self, player):
