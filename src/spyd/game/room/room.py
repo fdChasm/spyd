@@ -547,7 +547,7 @@ class Room(object):
 
         self.gamemode.initialize_player(cds, player)
 
-        if player.state.can_spawn and not self.is_intermission:
+        if not player.state.is_spectator and not self.is_intermission:
             player.state.respawn(self.gamemode)
             swh.put_spawnstate(cds, player)
 
