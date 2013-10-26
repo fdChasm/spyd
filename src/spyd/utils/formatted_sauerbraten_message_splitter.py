@@ -2,8 +2,16 @@ class FormattedSauerbratenMessageSplitter(object):
     def __init__(self, max_length):
         self._max_length = max_length
 
-        self._saved_color = "\f7"
+        self._saved_colors = []
         self._last_color = "\f7"
+
+    def _push_color(self, color):
+        self._saved_colors.append(color)
+
+    def _pop_color(self):
+        if not len(self._saved_colors):
+            return "\f7"
+        return self._saved_colors.pop()
 
     def split(self, message):
         chunks = [bytearray(self._last_color)]
@@ -15,9 +23,9 @@ class FormattedSauerbratenMessageSplitter(object):
                 color = message[ix:ix + 2]
                 ix += 2
                 if color == '\fr':
-                    color = self._saved_color
+                    color = self._pop_color()
                 elif color == '\fs':
-                    self._saved_color = self._last_color
+                    self._push_color(self._last_color)
                     continue
 
                 self._last_color = color

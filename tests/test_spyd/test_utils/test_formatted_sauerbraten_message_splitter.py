@@ -74,3 +74,18 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
         print chunks
 
         self.assertChunksOk(max_length=512, chunks=chunks)
+
+    def test_save_reset_working_correctly(self):
+        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
+
+        message = '\x0cs\x0c2Info\x0cr: \x0cs\x0c0\x0cs\x0c0[FD]Chasm\x0cr\x0cr claimed auth as \x0cs\x0c5chasm\x0cr@\x0cs\x0c5localhost\x0cr'
+
+        chunks = formatted_sauer_message_splitter.split(message)
+
+        print chunks
+
+        self.assertChunksOk(max_length=512, chunks=chunks)
+
+
+
+
