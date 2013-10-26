@@ -10,12 +10,15 @@ def clientnum_wrapper(cn):
 def room_title_wrapper(title):
     return "{blue}{title}{white}".format(title=title, **colors)
 
+def action_wrapper(action):
+    return color_wrappers.orange("#{}".format(action))
+
 smf.register_wrapper('name',        color_wrappers.green)
 smf.register_wrapper('cn',          clientnum_wrapper)
 smf.register_wrapper('pn',          clientnum_wrapper)
 smf.register_wrapper('domain',      color_wrappers.magenta)
 smf.register_wrapper('auth',        color_wrappers.magenta)
-smf.register_wrapper('action',      color_wrappers.orange)
+smf.register_wrapper('action',      action_wrapper)
 smf.register_wrapper('room',        color_wrappers.blue)
 smf.register_wrapper('room_title',  room_title_wrapper)
 smf.register_wrapper('info',        color_wrappers.yellow)
