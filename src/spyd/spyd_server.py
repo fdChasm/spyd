@@ -64,7 +64,7 @@ class SpydServer(object):
         client_number_provider = get_client_number_provider(config)
         self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller)
 
-        self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor)
+        self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor, config.get('client_message_rate_limit', 200))
 
         self.binding_service = BindingService(self.client_protocol_factory, self.metrics_service)
         self.binding_service.setServiceParent(self.root_service)

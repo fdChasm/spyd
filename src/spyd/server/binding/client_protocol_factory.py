@@ -5,9 +5,10 @@ from txENet.enet_peer_transport import ENetPeerTransport
 
 
 class ClientProtocolFactory(Factory):
-    def __init__(self, client_factory, message_processor):
+    def __init__(self, client_factory, message_processor, message_rate_limit):
         self._client_factory = client_factory
         self._message_processor = message_processor
+        self._message_rate_limit = message_rate_limit
 
         self._connected_protocols = set()
 
@@ -15,7 +16,7 @@ class ClientProtocolFactory(Factory):
         peer = enet_connect_event.peer
 
         transport = ENetPeerTransport(peer)
-        protocol = ClientProtocol(self._client_factory, self._message_processor)
+        protocol = ClientProtocol(self._client_factory, self._message_processor, self._message_rate_limit)
         protocol.factory = self
         protocol.makeConnection(transport)
         return protocol

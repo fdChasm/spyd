@@ -4,13 +4,16 @@ from twisted.internet import reactor
 from twisted.internet.protocol import connectionDone
 
 from cube2common.constants import disconnect_types
+from spyd.utils.rate_limiter import RateLimiter
 from txENet.enet_client_protocol import ENetClientProtocol
 
 
 class ClientProtocol(ENetClientProtocol):
-    def __init__(self, client_factory, message_processor):
+    def __init__(self, client_factory, message_processor, message_rate_limit):
         self._client_factory = client_factory
         self._message_processor = message_processor
+
+        self._message_rate_limiter = RateLimiter(message_rate_limit)
 
         self._client = None
         self._disconnecting_later = None
@@ -29,7 +32,10 @@ class ClientProtocol(ENetClientProtocol):
             self.disconnect(disconnect_types.DISC_MSGERR)
 
         for processed_message in processed_messages:
-            self._client._message_received(*processed_message)
+            if not self._message_rate_limiter.check_drop():
+                self._client._message_received(*processed_message)
+            else:
+                self.disconnect(disconnect_types.DISC_OVERFLOW)
 
     def connectionLost(self, reason=connectionDone):
         self.factory.protocol_disconnected(self)
