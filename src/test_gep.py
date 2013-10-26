@@ -59,7 +59,7 @@ class GEPProtocol(NetstringReceiver):
         if message.get('status', None) == u'success':
             self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
             self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.connect'}, self._on_subscribe_response)
-            self.request({'msgtype': 'gep.ping', 'time': time.time()}, self._on_ping_response)
+            self.request({'msgtype': 'gep.ping', 'time': int(time.time() * 1000000)}, self._on_ping_response)
         else:
             self.transport.loseConnection()
 
@@ -69,11 +69,11 @@ class GEPProtocol(NetstringReceiver):
     def _on_ping_response(self, message):
         start_time = message['client_time']
         echo_time = message['server_time']
-        now_time = time.time()
+        now_time = int(time.time() * 1000000)
 
-        cts = (echo_time - start_time) * 1000
-        stc = (now_time - echo_time) * 1000
-        rnd = (now_time - start_time) * 1000
+        cts = (echo_time - start_time) / 1000.0
+        stc = (now_time - echo_time) / 1000.0
+        rnd = (now_time - start_time) / 1000.0
 
         print "ping response: cts: {:.4f} ms, stc: {:.4f} ms, rnd: {:.4f} ms".format(cts, stc, rnd)
 
