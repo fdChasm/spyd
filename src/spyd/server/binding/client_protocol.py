@@ -30,6 +30,7 @@ class ClientProtocol(ENetClientProtocol):
             print "Error processing messages from {}:{}".format(self._client.host, self._client.port)
             traceback.print_exc()
             self.disconnect(disconnect_types.DISC_MSGERR)
+            return
 
         for processed_message in processed_messages:
             if not self._message_rate_limiter.check_drop():
