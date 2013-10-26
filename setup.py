@@ -51,7 +51,7 @@ setup(
         'twisted': ['plugins/spyd_server.py'],
         'spyd': ['data/*.json']
     },
-    install_requires=["twisted", "pycrypto", "txCarbonClient", "pyenet>=0.0.0", "python-Levenshtein", "simplejson", "simple_json"],
+    install_requires=["twisted", "pycrypto", "txCarbonClient", "pyenet>=0.0.0", "python-Levenshtein", "simplejson", "simple_json", "pyclj"],
     author="Chasm",
     author_email="fd.chasm@gmail.com",
     url="https://github.com/fdChasm/spyd",
