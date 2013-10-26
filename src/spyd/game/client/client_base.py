@@ -5,10 +5,11 @@ class ClientBase(object):
         self.cn = clientnum
         self.room = room
         self.players = {}
+        self.connection_sequence_complete = False
         
     @property
     def is_connected(self):
-        return self.cn in self.players
+        return self.cn in self.players and self.connection_sequence_complete
     
     @property
     def uuid(self):

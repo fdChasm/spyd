@@ -49,7 +49,7 @@ class ClientAuthableBase(object):
         if auth_success is not None:
             self.add_group_name_provider(auth_success.group_provider)
 
-            if auth_success.room_message is not None:
+            if auth_success.room_message is not None and self.connection_sequence_complete:
                 auth_success.room_message_kwargs['client'] = self
                 self.room._broadcaster.server_message(info(auth_success.room_message, **auth_success.room_message_kwargs))
 

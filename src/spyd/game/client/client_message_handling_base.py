@@ -28,10 +28,17 @@ class UnknownPlayer(GenericError):
         GenericError.__init__(self, message_fmt, **fmt_kwargs)
 
 class ClientMessageHandlingBase(object):
+    def __init__(self):
+        self._ignored_preconnect_message_types = ("N_POS", "N_PING")
+        self._allowed_preconnect_message_types = ("N_CONNECT", "N_AUTHANS")
+
     def _message_received(self, message_type, message):
         try:
-            if (not self.is_connected) and message_type != "N_CONNECT":
-                self.disconnect(disconnect_types.DISC_TAGT)
+            if (not self.is_connected) and (message_type in self._ignored_preconnect_message_types):
+                pass
+            elif (not self.is_connected) and (message_type not in self._allowed_preconnect_message_types):
+                print message_type
+                self.disconnect(disconnect_types.DISC_MSGERR)
                 return
             else:
                 if hasattr(self, message_type):

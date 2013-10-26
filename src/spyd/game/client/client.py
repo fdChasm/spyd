@@ -20,6 +20,7 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     def __init__(self, protocol, clientnum, room, auth_world_view, permission_resolver, event_subscription_fulfiller, servinfo_domain=""):
         ClientBase.__init__(self, clientnum, room)
         ClientNetworkBase.__init__(self, protocol)
+        ClientMessageHandlingBase.__init__(self)
         ClientAuthableBase.__init__(self, auth_world_view)
         ClientPermissionBase.__init__(self, permission_resolver)
         
@@ -85,6 +86,8 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
             return self.disconnect(e.disconnect_type, e.message)
         
         self.room.client_enter(room_entry_context)
+
+        self.connection_sequence_complete = True
 
         self.event_subscription_fulfiller.publish('spyd.game.player.connect', {'player': self.uuid, 'room': self.room.name})
 
