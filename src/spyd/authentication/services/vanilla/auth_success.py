@@ -26,7 +26,7 @@ class VanillaGroupProvider(object):
         self.domain = domain
         self.auth_name = auth_name
 
-        self._group_names = (domain_to_auth_group(domain),)
+        self._group_names = (domain_to_auth_group(domain), "{self.auth_name}@{self.domain}".format(self=self))
 
     def get_group_names(self):
         return self._group_names
