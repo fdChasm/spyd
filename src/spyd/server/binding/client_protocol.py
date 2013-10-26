@@ -1,8 +1,10 @@
+import traceback
+
 from twisted.internet import reactor
 from twisted.internet.protocol import connectionDone
 
+from cube2common.constants import disconnect_types
 from txENet.enet_client_protocol import ENetClientProtocol
-import traceback
 
 
 class ClientProtocol(ENetClientProtocol):
@@ -24,7 +26,7 @@ class ClientProtocol(ENetClientProtocol):
         except:
             print "Error processing messages from {}:{}".format(self._client.host, self._client.port)
             traceback.print_exc()
-            self.disconnect(0)
+            self.disconnect(disconnect_types.DISC_MSGERR)
 
         for processed_message in processed_messages:
             self._client._message_received(*processed_message)

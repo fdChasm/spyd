@@ -25,3 +25,6 @@ class ClientNetworkBase(object):
     
     def disconnect(self, disconnect_type, message=None):
         self.protocol_wrapper.disconnect_with_message(disconnect_type, message, 3.0)
+
+    def get_enet_peer(self):
+        return self.protocol_wrapper.transport._enet_peer
