@@ -17,13 +17,15 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     '''
     Handles the per client networking, and distributes the messages out to the players (main, bots).
     '''
-    def __init__(self, protocol, clientnum, room, auth_world_view, permission_resolver, event_subscription_fulfiller):
+    def __init__(self, protocol, clientnum, room, auth_world_view, permission_resolver, event_subscription_fulfiller, servinfo_domain=""):
         ClientBase.__init__(self, clientnum, room)
         ClientNetworkBase.__init__(self, protocol)
         ClientAuthableBase.__init__(self, auth_world_view)
         ClientPermissionBase.__init__(self, permission_resolver)
         
         self.event_subscription_fulfiller = event_subscription_fulfiller
+
+        self._servinfo_domain = servinfo_domain
 
         self.command_context = {}
         
@@ -39,7 +41,7 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
     
     def connected(self):
         with self.sendbuffer(1, True) as cds:
-            swh.put_servinfo(cds, self, haspwd=False, description="", domain="")
+            swh.put_servinfo(cds, self, haspwd=False, description="", domain=self._servinfo_domain)
             
         self.connect_timeout_deferred = reactor.callLater(1, self.connect_timeout)
 

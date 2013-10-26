@@ -61,8 +61,10 @@ class SpydServer(object):
 
         self.message_processor = MessageProcessor(self.metrics_service)
 
+        self.connect_auth_domain = config.get('connect_auth_domain', '')
+
         client_number_provider = get_client_number_provider(config)
-        self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller)
+        self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller, self.connect_auth_domain)
 
         self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor, config.get('client_message_rate_limit', 200))
 
