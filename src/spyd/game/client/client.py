@@ -51,6 +51,12 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
             self.room.client_leave(self)
             self.event_subscription_fulfiller.publish('spyd.game.player.disconnect', {'player': self.uuid, 'room': self.room.name})
 
+        for player in self.players.itervalues():
+            reactor.callLater(60, self._cleanup_player, player)
+
+    def _cleanup_player(self, player):
+        player.cleanup()
+
     def connect_timeout(self):
         '''Disconnect client because it didn't send N_CONNECT soon enough.'''
         self.disconnect(disconnect_types.DISC_NONE, message=error("Hey What's up, you didn't send an N_CONNECT message!"))

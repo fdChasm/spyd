@@ -7,6 +7,9 @@ from spyd.protocol import swh
 
 
 class Player(PlayerNetworkBase):
+
+    instances_by_uuid = {}
+
     def __init__(self, client, playernum, name, playermodel):
         PlayerNetworkBase.__init__(self, client)
         self._pn = playernum
@@ -15,6 +18,8 @@ class Player(PlayerNetworkBase):
         self._team = None
         self._isai = False
         self._uuid = str(uuid.uuid4())
+
+        Player.instances_by_uuid[self.uuid] = self
 
         self._state = PlayerState()
 
@@ -53,6 +58,11 @@ class Player(PlayerNetworkBase):
         self._team = team
 
     @property
+    def team_name(self):
+        if self._team is None: return ''
+        return self._team.name
+
+    @property
     def shares_name(self):
         return self.room.is_name_duplicate(self.name)
 
@@ -73,3 +83,6 @@ class Player(PlayerNetworkBase):
 
         if not self.state.messages.empty():
             swh.put_clientdata(room_messages, self, self.state.messages)
+
+    def cleanup(self):
+        Player.instances_by_uuid.pop(self.uuid, None)

@@ -1,15 +1,16 @@
 import itertools
 import json
-import clj
 import time
 
+import clj
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.protocols.basic import NetstringReceiver
 
 import cube2crypto
 
-PACKER = clj
+
+PACKER = json
 
 private_key = "81a838d411f32284ce4d9bfee2af62d62db0308fa73a6b2f"
 
@@ -25,6 +26,7 @@ class GEPProtocol(NetstringReceiver):
         self._message_received(message)
 
     def _message_received(self, message):
+        print json.dumps(message)
         respid = message.pop('respid', None)
         callback = self._callbacks.pop(respid, self._default_callback)
         callback(message)
@@ -42,13 +44,25 @@ class GEPProtocol(NetstringReceiver):
         reqid = request_id.next()
         message['reqid'] = reqid
         self._callbacks[reqid] = callback
+        print json.dumps(message)
         self.send(message)
 
     def send(self, message):
         self.sendString(PACKER.dumps(message))
 
     def _default_callback(self, message):
-        print "message:", message
+        if message['msgtype'] == u'gep.event':
+            event_data = message['event_data']
+            event_stream = message['event_stream']
+
+            event_stream_handler_name = "_on_event_{}".format(event_stream.replace('.', '_'))
+            handler = getattr(self, event_stream_handler_name, self._default_event_handler)
+            handler(message, event_data)
+        else:
+            print "message:", message
+
+    def _default_event_handler(self, message, event_data):
+        print "event", message
 
     def _on_connect_response(self, message):
         challenge = str(message['challenge'])
@@ -77,6 +91,13 @@ class GEPProtocol(NetstringReceiver):
 
         print "ping response: cts: {:.4f} ms, stc: {:.4f} ms, rnd: {:.4f} ms".format(cts, stc, rnd)
 
+    def _on_player_info_response(self, message):
+        # print json.dumps(message)
+        pass
+
+    def _on_event_spyd_game_player_connect(self, message, event_data):
+        player_uuid = event_data['player']
+        reactor.callLater(1, self.request, {'msgtype': 'gep.get_player_info', 'player': player_uuid}, self._on_player_info_response)
 
 
 class GEPClientFactory(ClientFactory):
