@@ -149,7 +149,6 @@ class CtfBase(object):
     def _teamswitch_suicide(self, player):
         if not player.state.is_alive: return
         player.state.suicide()
-        player.state.respawn(self.room.gamemode)
         with self.room.broadcastbuffer(1, True) as cds:
             swh.put_died(cds, player, player)
         self.on_player_death(player, player)
