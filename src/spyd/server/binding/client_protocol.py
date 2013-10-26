@@ -2,6 +2,7 @@ from twisted.internet import reactor
 from twisted.internet.protocol import connectionDone
 
 from txENet.enet_client_protocol import ENetClientProtocol
+import traceback
 
 
 class ClientProtocol(ENetClientProtocol):
@@ -18,7 +19,12 @@ class ClientProtocol(ENetClientProtocol):
         self._client.connected()
 
     def dataReceived(self, channel, data):
-        processed_messages = self._message_processor.process(channel, data)
+        try:
+            processed_messages = self._message_processor.process(channel, data)
+        except:
+            print "Error processing messages from {}:{}".format(self._client.host, self._client.port)
+            traceback.print_exc()
+            self.disconnect(0)
 
         for processed_message in processed_messages:
             self._client._message_received(*processed_message)

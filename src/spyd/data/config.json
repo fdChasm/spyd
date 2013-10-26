@@ -33,6 +33,10 @@
             "map_rotation": "file://map_rotation.json"
         }
     },
+    "logging": {
+        "log_rooms_seperately": true,
+        "log_directory": "logs"
+    },
     "permissions": "file://permissions.json",
     "master_servers": "file://master_servers.json",
     "gep_endpoints": "file://gep_endpoints.json",

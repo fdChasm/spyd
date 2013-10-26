@@ -1,5 +1,6 @@
 import itertools
 import json
+import clj
 import time
 
 from twisted.internet import reactor
@@ -8,6 +9,7 @@ from twisted.protocols.basic import NetstringReceiver
 
 import cube2crypto
 
+PACKER = clj
 
 private_key = "81a838d411f32284ce4d9bfee2af62d62db0308fa73a6b2f"
 
@@ -19,7 +21,7 @@ class GEPProtocol(NetstringReceiver):
         self._callbacks = {}
 
     def stringReceived(self, data):
-        message = json.loads(data)
+        message = PACKER.loads(data)
         self._message_received(message)
 
     def _message_received(self, message):
@@ -43,10 +45,10 @@ class GEPProtocol(NetstringReceiver):
         self.send(message)
 
     def send(self, message):
-        self.sendString(json.dumps(message))
+        self.sendString(PACKER.dumps(message))
 
     def _default_callback(self, message):
-        print "message:", json.dumps(message)
+        print "message:", message
 
     def _on_connect_response(self, message):
         challenge = str(message['challenge'])
