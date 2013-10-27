@@ -49,6 +49,7 @@ class ModeBase(object):
     @multidispatched
     def on_player_death(self, player, killer):
         player.state.spawnwait = Expiry(self.room._game_clock, self.spawndelay)
+        player.state.died()
     
     @multidispatched
     def on_client_flag_list(self, client, flag_list):

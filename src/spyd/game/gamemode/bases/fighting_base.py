@@ -1,4 +1,5 @@
-from cube2common.constants import DMF, weapon_types, guns, EXP_DISTSCALE, EXP_SELFDAMDIV, DNF, client_states
+from cube2common.constants import DMF, weapon_types, guns, EXP_DISTSCALE, EXP_SELFDAMDIV, DNF, client_states, \
+    DEATHMILLIS
 from cube2common.vec import vec
 from spyd.protocol import swh
 from spyd.game.timing.expiry import Expiry
@@ -16,7 +17,7 @@ class FightingBase(object):
         pfrom = from_pos.copy().div(DMF)
         pto = to_pos.copy().div(DMF)
 
-        if not player.state.is_alive: return
+        if not player.state.check_alive(threshold=DEATHMILLIS): return
         if gun < weapon_types.GUN_FIST or gun > weapon_types.GUN_PISTOL: return
         if player.state.ammo[gun] <= 0: return
         if guns[gun].range and (pfrom.dist(pto) > guns[gun].range + 1): return

@@ -39,6 +39,8 @@ EXP_DISTSCALE = 1.5
 # map file constants
 MAXENTS = 10000
 
+DEATHMILLIS = 300
+
 base_entity_types = enum('ET_EMPTY', 'ET_LIGHT', 'ET_MAPMODEL', 'ET_PLAYERSTART', 'ET_ENVMAP', 'ET_PARTICLES', 'ET_SOUND', 'ET_SPOTLIGHT', 'ET_GAMESPECIFIC')
 
 game_entity_types = enum(                     # static entity types

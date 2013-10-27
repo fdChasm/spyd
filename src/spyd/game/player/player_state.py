@@ -87,6 +87,19 @@ class PlayerState(object):
         return self.state == client_states.CS_ALIVE
     
     @property
+    def millis_since_death(self):
+        if self.death_timer is None: return None
+        return self.playing_timer.time_elapsed * 1000
+
+    def check_alive(self, threshold=None):
+        if threshold is None: return self.is_alive
+        if self.is_alive:
+            return True
+        else:
+            millis_since_death = self.millis_since_death
+            return millis_since_death is not None and millis_since_death < threshold
+
+    @property
     def is_spectator(self):
         return self.state == client_states.CS_SPECTATOR
     
@@ -154,6 +167,8 @@ class PlayerState(object):
             self.playing_timer = Timer(self.game_clock)
         else:
             self.playing_timer = None
+
+        self.death_timer = None
         
         self.pos = vec(0, 0, 0)
         
@@ -188,6 +203,12 @@ class PlayerState(object):
         self.deaths += 1
         self.suicides += 1
         self.state = client_states.CS_DEAD
+
+    def died(self):
+        if self.game_clock is not None:
+            self.death_timer = Timer(self.game_clock)
+        else:
+            self.death_timer = None
     
     def pickup_item(self, item_type):
         if item_type < item_types.I_SHELLS or item_type > item_types.I_QUAD:
