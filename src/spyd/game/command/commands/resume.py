@@ -4,7 +4,7 @@ from spyd.registry_manager import register
 
 
 @register("command")
-class PauseCommand(CommandBase):
+class ResumeCommand(CommandBase):
     name = "resume"
     functionality = Functionality("spyd.game.commands.resume.execute", "You do not have permission to execute {action#command}", command=name)
     usage = ""

@@ -2,14 +2,14 @@ from twisted.internet import reactor
 
 from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
 from cube2common.cube_data_stream import CubeDataStream
-from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError
+from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError, StateError
 from spyd.game.gamemode import get_mode_name_from_num
 from spyd.game.room.client_collection import ClientCollection
 from spyd.game.room.player_collection import PlayerCollection
 from spyd.game.room.room_broadcaster import RoomBroadcaster
 from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
-from spyd.game.server_message_formatter import smf
+from spyd.game.server_message_formatter import smf, info
 from spyd.game.timing.game_clock import GameClock
 from spyd.protocol import swh
 from spyd.utils.match_fuzzy import match_fuzzy
@@ -137,6 +137,10 @@ class Room(object):
     def is_paused(self):
         return self._game_clock.is_paused
     
+    @property
+    def is_resuming(self):
+        return self._game_clock.is_resuming
+
     @property
     def is_intermission(self):
         return self._game_clock.is_intermission
@@ -324,9 +328,13 @@ class Room(object):
             raise InsufficientPermissions(Room.pause_resume_functionality.denied_message)
 
         if pause:
+            if self.is_paused and not self.is_resuming: raise StateError('The game is already paused.')
             self.pause()
-        else:
+            self._broadcaster.server_message(info("{name#client} has paused the game.", client=client))
+        elif not pause:
+            if not self.is_paused: raise StateError('The game is already resumed.')
             self.resume()
+            self._broadcaster.server_message(info("{name#client} has resumed the game.", client=client))
 
     def on_client_set_demo_recording(self, client, value):
         pass

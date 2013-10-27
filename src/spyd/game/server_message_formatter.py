@@ -35,7 +35,9 @@ def wrapper_function(prefix_wrapper, prefix):
         return smf.vformat(msg_fmt, args, kwargs)
     return function
     
-info   = wrapper_function('info',   'Info')
-notice = wrapper_function('notice', 'Notice')
-error  = wrapper_function('error',  'Error')
-denied = wrapper_function('error',  'Denied')
+info        = wrapper_function('info',   'Info')
+notice      = wrapper_function('notice', 'Notice')
+error       = wrapper_function('error',  'Error')
+state_error = wrapper_function('error',  'State Error')
+usage_error = wrapper_function('error',  'Usage Error')
+denied      = wrapper_function('error',  'Denied')

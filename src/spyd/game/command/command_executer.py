@@ -36,7 +36,7 @@ class CommandExecuter(object):
 
         try:
             args = shlex.split(arg_string)
-        except ValueError, e:
+        except ValueError as e:
             raise GenericError("Invalid input: {error}", error=e.message)
         
         command_handler.execute(room, client, command_string, args, arg_string)

@@ -26,6 +26,7 @@
                    "spyd.game.room.pause_resume",
                    "spyd.game.commands.pause.execute",
                    "spyd.game.commands.resume.execute",
+                   "spyd.game.commands.resumedelay.execute",
                    "spyd.game.room.*.relinquish_master"
                    ]
     },

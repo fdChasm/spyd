@@ -108,6 +108,7 @@ class GameClock(object):
         '''Resume the clock. If a delay is specified, the timer will resume after that number of seconds.'''
         if self.is_resuming:
             self._resume_countdown.cancel()
+            self._resume_countdown = None
         elif not self.is_started:
             pass
         elif not self.is_paused:
@@ -125,10 +126,9 @@ class GameClock(object):
         if self.is_resuming:
             self._resume_countdown.cancel()
             self._resume_countdown = None
+            self._state = states.PAUSED
         elif not self.is_paused:
             self._paused()
-        else:
-            return
 
     def _remove_scheduled_callback_wrapper(self, scheduled_callback_wrapper):
         if scheduled_callback_wrapper in self._scheduled_callback_wrappers:
