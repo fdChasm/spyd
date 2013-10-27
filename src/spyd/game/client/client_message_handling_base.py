@@ -34,8 +34,10 @@ class ClientMessageHandlingBase(object):
     def __init__(self):
         self._ignored_preconnect_message_types = ("N_POS", "N_PING")
         self._allowed_preconnect_message_types = ("N_CONNECT", "N_AUTHANS")
+        self._ignore_client_messages = False
 
     def _message_received(self, message_type, message):
+        if self._ignore_client_messages: return
         try:
             if (not self.is_connected) and (message_type in self._ignored_preconnect_message_types):
                 pass
@@ -60,6 +62,8 @@ class ClientMessageHandlingBase(object):
                     print "Client received unhandled message type:", message_type, message
         except:
             traceback.print_exc()
+            self.disconnect(disconnect_types.DISC_MSGERR)
+            self._ignore_client_messages = True
 
     def N_CONNECT(self, message):
             if not self.is_connected:
