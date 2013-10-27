@@ -32,3 +32,5 @@ class SpydSetPlayerRoomMessageHandler(object):
 
         if player_message:
             client.send_server_message(str(player_message))
+
+        gep_client.send({"msgtype": "gep.status", "status": "success"}, message.get('reqid'))
