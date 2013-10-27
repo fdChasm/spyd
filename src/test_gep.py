@@ -106,6 +106,10 @@ class GEPProtocol(NetstringReceiver):
 
         reactor.callLater(2, self.request, {'msgtype': 'gep.set_player_room', 'room': 'xyz', 'player': player_uuid, 'message': 'get used to it.'}, self._on_room_info_response)
 
+        reactor.callLater(5, self.request, {'msgtype': 'gep.set_room_paused', 'room': 'xyz', 'pause': 1, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
+
+        reactor.callLater(10, self.request, {'msgtype': 'gep.set_room_paused', 'room': 'xyz', 'pause': 0, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
+
 
 class GEPClientFactory(ClientFactory):
 
