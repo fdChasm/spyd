@@ -7,6 +7,7 @@ packages = [
         'spyd.authentication.services',
         'spyd.authentication.services.vanilla',
         'spyd.game',
+        'spyd.game.awards',
         'spyd.game.client',
         'spyd.game.command',
         'spyd.game.command.commands',
