@@ -1,5 +1,3 @@
-import time
-
 from spyd.game.player.player import Player
 from spyd.permissions.functionality import Functionality
 from spyd.registry_manager import register
@@ -14,7 +12,10 @@ class SpydGetPlayerInfoMessageHandler(object):
     def handle_message(cls, spyd_server, gep_client, message):
         player_uuid = message['player']
 
-        player = Player.instances_by_uuid[player_uuid]
+        player = Player.instances_by_uuid.get(player_uuid, None)
+
+        if player is None:
+            raise Exception("Unknown player.")
 
         state = player.state
 

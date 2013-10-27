@@ -21,7 +21,7 @@ class RoomManager(object):
             name_match = match_fuzzy(name, self.rooms.keys())
             return self.rooms.get(name_match, None)
 
-    def client_change_room(self, client, target_room):
+    def client_change_room(self, client, target_room, announce_follow=True):
         player = client.get_player()
         
         try:
@@ -29,7 +29,8 @@ class RoomManager(object):
         except RoomEntryFailure as e:
             raise GenericError(e.message)
         
-        client.room._broadcaster.server_message(info("{name#client} is leaving to join {room#room}. Use {action#follow} to go there too.", client=client, room=target_room, follow="follow"), exclude=[client])
+        if announce_follow:
+            client.room._broadcaster.server_message(info("{name#client} is leaving to join {room#room}. Use {action#follow} to go there too.", client=client, room=target_room, follow="follow"), exclude=[client])
         
         old_room = client.room
 

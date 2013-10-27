@@ -92,12 +92,19 @@ class GEPProtocol(NetstringReceiver):
         print "ping response: cts: {:.4f} ms, stc: {:.4f} ms, rnd: {:.4f} ms".format(cts, stc, rnd)
 
     def _on_player_info_response(self, message):
-        # print json.dumps(message)
+        pass
+
+    def _on_room_info_response(self, message):
         pass
 
     def _on_event_spyd_game_player_connect(self, message, event_data):
         player_uuid = event_data['player']
         reactor.callLater(1, self.request, {'msgtype': 'gep.get_player_info', 'player': player_uuid}, self._on_player_info_response)
+
+        room_name = event_data['room']
+        reactor.callLater(1, self.request, {'msgtype': 'gep.get_room_info', 'room': room_name}, self._on_room_info_response)
+
+        reactor.callLater(2, self.request, {'msgtype': 'gep.set_player_room', 'room': 'xyz', 'player': player_uuid, 'message': 'get used to it.'}, self._on_room_info_response)
 
 
 class GEPClientFactory(ClientFactory):

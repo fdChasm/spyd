@@ -1,7 +1,10 @@
+import traceback
+
 from twisted.internet import reactor
 
 from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
 from cube2common.cube_data_stream import CubeDataStream
+from spyd.game.awards import display_awards
 from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError, StateError
 from spyd.game.gamemode import get_mode_name_from_num
 from spyd.game.room.client_collection import ClientCollection
@@ -11,13 +14,13 @@ from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
 from spyd.game.server_message_formatter import smf, info
 from spyd.game.timing.game_clock import GameClock
+from spyd.permissions.functionality import Functionality
 from spyd.protocol import swh
+from spyd.server.metrics.execution_timer import ExecutionTimer
 from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
-from spyd.permissions.functionality import Functionality
-from spyd.server.metrics.execution_timer import ExecutionTimer
-import traceback
+import math
 
 
 class Room(object):
@@ -29,7 +32,7 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None):
+    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None, show_awards=True):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
 
@@ -56,6 +59,8 @@ class Room(object):
 
         self.temporary = False
         self.decommissioned = False
+
+        self.show_awards = show_awards
 
         self.mastermask = 0 if self.temporary else -1
         self.mastermode = 0
@@ -147,7 +152,7 @@ class Room(object):
 
     @property
     def timeleft(self):
-        return self._game_clock.timeleft
+        return int(math.ceil(self._game_clock.timeleft))
 
     @timeleft.setter
     def timeleft(self, seconds):
@@ -231,6 +236,9 @@ class Room(object):
     @property
     def broadcastbuffer(self):
         return self._broadcaster.broadcastbuffer
+
+    def server_message(self, message, exclude=()):
+        self._broadcaster.server_message(message, exclude)
 
     ###########################################################################
     #######################  Client event handling  ###########################
@@ -516,14 +524,15 @@ class Room(object):
         self._broadcaster.pause()
 
     def _on_game_clock_resume_countdown_tick(self, seconds):
-        self._broadcaster.server_message("Resuming in {} seconds...".format(seconds))
+        self._broadcaster.server_message(smf.format("Resuming in {value#seconds}...", seconds=seconds))
 
     def _on_game_clock_timeleft_altered(self, seconds):
-        self._broadcaster.time_left(seconds)
+        self._broadcaster.time_left(int(math.ceil(seconds)))
 
     def _on_game_clock_intermission(self):
-        self._broadcaster.server_message("Intermission has started.")
         self._broadcaster.intermission()
+        if self.show_awards:
+            display_awards(self)
 
     def _on_game_clock_intermission_ended(self):
         self._broadcaster.server_message("Intermission has ended.")
