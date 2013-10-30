@@ -2,7 +2,8 @@ import traceback
 
 from twisted.internet import reactor
 
-from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
+from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges, \
+    weapon_types
 from cube2common.cube_data_stream import CubeDataStream
 from spyd.game.awards import display_awards
 from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError, StateError
@@ -21,6 +22,7 @@ from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
 import math
+from spyd.utils.constrain import constrain_range
 
 
 class Room(object):
@@ -394,6 +396,7 @@ class Room(object):
     ###########################################################################
 
     def on_player_switch_model(self, player, playermodel):
+        constrain_range(playermodel, 0, 4, "playermodels")
         player.playermodel = playermodel
         swh.put_switchmodel(player.state.messages, playermodel)
 
@@ -423,18 +426,22 @@ class Room(object):
         self._broadcaster.player_died(player, player)
 
     def on_player_shoot(self, player, shot_id, gun, from_pos, to_pos, hits):
+        constrain_range(gun, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
         self.gamemode.on_player_shoot(player, shot_id, gun, from_pos, to_pos, hits)
 
     def on_player_explode(self, player, cmillis, gun, explode_id, hits):
+        constrain_range(gun, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
         self.gamemode.on_player_explode(player, cmillis, gun, explode_id, hits)
 
     def on_player_request_spawn(self, player):
         self.gamemode.on_player_request_spawn(player)
 
     def on_player_spawn(self, player, lifesequence, gunselect):
+        constrain_range(gunselect, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
         player.state.on_respawn(lifesequence, gunselect)
 
     def on_player_gunselect(self, player, gunselect):
+        constrain_range(gunselect, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
         player.state.gunselect = gunselect
         swh.put_gunselect(player.state.messages, gunselect)
 

@@ -8,6 +8,7 @@ from spyd.game.server_message_formatter import info, denied, error, smf, state_e
 from spyd.protocol import swh
 from spyd.utils.dictionary_get import dictget
 from spyd.utils.filtertext import filtertext
+from spyd.utils.constrain import ConstraintViolation
 
 
 class GenericError(Exception):
@@ -58,6 +59,10 @@ class ClientMessageHandlingBase(object):
                         self.send_server_message(usage_error(e.message))
                     except GenericError as e:
                         self.send_server_message(error(e.message))
+                    except ConstraintViolation as e:
+                        print "Disconnecting client {} due to constraint violation {}.".format(self.host, e.constraint_name)
+                        self.disconnect(disconnect_types.DISC_MSGERR)
+                        return
                 else:
                     print "Client received unhandled message type:", message_type, message
         except:
