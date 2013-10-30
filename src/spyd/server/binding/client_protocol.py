@@ -6,6 +6,7 @@ from twisted.internet.protocol import connectionDone
 from cube2common.constants import disconnect_types
 from spyd.utils.rate_limiter import RateLimiter
 from txENet.enet_client_protocol import ENetClientProtocol
+import enet
 
 
 class ClientProtocol(ENetClientProtocol):
@@ -22,6 +23,10 @@ class ClientProtocol(ENetClientProtocol):
         self._client = self._client_factory.build_client(self, self.transport.connected_port)
         self.factory.protocol_connected(self)
         self._client.connected()
+
+    def receiveEventReceived(self, event):
+        if event.packet.flags & enet.PACKET_FLAG_UNSEQUENCED: return
+        self.dataReceived(event.channelID, event.packet.data)
 
     def dataReceived(self, channel, data):
         try:

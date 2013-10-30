@@ -24,21 +24,25 @@ class ENetHost(object):
         while True:
             event = self._enet_host.service(0)
 
-            if not event.type in handled_enet_events: return
+            # if not event.type in handled_enet_events: return
+            event_type = event.type
+            if event_type < 1 or event_type > 3:
+                return
 
             identifier = event.peer.incomingSessionID, event.peer.incomingPeerID
 
-            if event.type == enet.EVENT_TYPE_CONNECT:
+            if event_type == enet.EVENT_TYPE_CONNECT:
                 client_protocol = self._client_protocol_factory.buildProtocol(event)
+                print "connect:", identifier
                 self._client_protocols[identifier] = client_protocol
 
-            elif event.type == enet.EVENT_TYPE_DISCONNECT:
+            elif event_type == enet.EVENT_TYPE_DISCONNECT:
                 if identifier in self._client_protocols:
                     client_protocol = self._client_protocols[identifier]
                     del self._client_protocols[identifier]
                     client_protocol.connectionLost(None)
 
-            elif event.type == enet.EVENT_TYPE_RECEIVE:
+            elif event_type == enet.EVENT_TYPE_RECEIVE:
                 if identifier in self._client_protocols:
                     client_protocol = self._client_protocols[identifier]
                     client_protocol.receiveEventReceived(event)

@@ -31,7 +31,6 @@ class ENetServerEndpoint(object):
 
         self._enet_host = ENetHost(enet_host, factory)
 
-        print self._enet_host.duplicate_peers
         self._enet_host.duplicate_peers = self._max_duplicate_peers
 
         log.msg("%s starting on %s" % (self._getLogPrefix(), self._port))

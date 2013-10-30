@@ -6,7 +6,7 @@
         "bored": {
             "maxclients": 127,
             "maxdown": 0,
-            "interface": "127.0.0.1",
+            "interface": "0.0.0.0",
             "maxup": 0,
             "port": 10000,
             "maxplayers": 32,
@@ -15,7 +15,7 @@
         "lobby": {
             "maxclients": 127,
             "maxdown": 0,
-            "interface": "127.0.0.1",
+            "interface": "0.0.0.0",
             "maxup": 0,
             "port": 28785,
             "maxplayers": 24
