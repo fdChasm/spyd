@@ -4,7 +4,7 @@ class KPD(object):
         self.deaths = deaths
 
         if self.deaths > 0:
-            self.value = float(self.frags)/float(self.deaths)
+            self.value = float(self.frags) / float(self.deaths)
         else:
             self.value = Ellipsis
 
