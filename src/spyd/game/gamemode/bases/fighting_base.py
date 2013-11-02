@@ -12,7 +12,8 @@ class FightingBase(object):
         self._game_clock = room._game_clock
     
     def on_player_shoot(self, player, shot_id, gun, from_pos, to_pos, hits):
-        if not player.state.can_shoot: return
+        if self.room.is_paused: return
+        if self.room.is_intermission: return
 
         pfrom = from_pos.copy().div(DMF)
         pto = to_pos.copy().div(DMF)

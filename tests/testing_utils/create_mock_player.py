@@ -63,6 +63,7 @@ def create_mock_player(test_case, cn):
         player.client.players = {cn: player}
         player.isai = False
         player.cn = cn
+        player.pn = cn
         player.state = PlayerState()
         
         player_test_context = PlayerTestContext(test_case, player)

@@ -89,7 +89,7 @@ class PlayerState(object):
     @property
     def millis_since_death(self):
         if self.death_timer is None: return None
-        return self.playing_timer.time_elapsed * 1000
+        return self.death_timer.time_elapsed * 1000
 
     def check_alive(self, threshold=None):
         if threshold is None: return self.is_alive

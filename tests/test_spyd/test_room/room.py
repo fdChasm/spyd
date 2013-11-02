@@ -13,6 +13,7 @@ from spyd.game.gamemode import gamemodes
 from cube2common.constants import INTERMISSIONLEN
 from twisted.internet.defer import setDebugging
 from mock import MagicMock
+from cube2common.vec import vec
 
 
 class TestRoom(unittest.TestCase):
@@ -269,3 +270,35 @@ class TestRoom(unittest.TestCase):
             player_test_context1.assertHasReceivedMessageOfType('N_TIMEUP')
             messages = player_test_context1.get_received_messages_of_type('N_TIMEUP')
             self.assertEqual(messages[0]['timeleft'], ffa.timeout)
+
+    def test_two_players_kill_eachother_simultaneously_results_in_two_deaths(self):
+        with mock_server_write_helper() as stack:
+            player_test_context1 = stack.enter_context(create_mock_player(self, 0))
+            player_test_context2 = stack.enter_context(create_mock_player(self, 1))
+
+            room = spyd.game.room.room.Room(map_meta_data_accessor={})
+            room.change_map_mode('complex', 'instactf')
+
+            player_test_context1.enter_room(room)
+            player_test_context2.enter_room(room)
+
+            room.on_player_spawn(player_test_context1.player, player_test_context1.player.state.lifesequence, gunselect=4)
+            room.on_player_spawn(player_test_context2.player, player_test_context2.player.state.lifesequence, gunselect=4)
+
+            hits = [
+                {'target_cn': player_test_context2.player.cn, 'lifesequence': player_test_context2.player.state.lifesequence, 'distance': 0, 'rays': 1, 'dx': 0, 'dy': 0, 'dz': 0}
+            ]
+
+            room.on_player_shoot(player=player_test_context1.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
+
+            hits = [
+                {'target_cn': player_test_context1.player.cn, 'lifesequence': player_test_context1.player.state.lifesequence, 'distance': 0, 'rays': 1, 'dx': 0, 'dy': 0, 'dz': 0}
+            ]
+
+            room.on_player_shoot(player=player_test_context2.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
+
+            messages1 = player_test_context1.get_received_messages_of_type('N_DIED')
+            messages2 = player_test_context2.get_received_messages_of_type('N_DIED')
+
+            self.assertEqual(len(messages1), 2)
+            self.assertEqual(len(messages2), 2)

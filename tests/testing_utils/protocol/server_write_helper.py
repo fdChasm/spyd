@@ -282,19 +282,14 @@ def put_teleport(data_stream, client, teleport, teledest):
     message = ('N_TELEPORT', message_data)
     data_stream.append(message)
     
-def put_shotfx(data_stream, client, gun, shot_id, fx, fy, fz, tx, ty, tz):
+def put_shotfx(data_stream, client, gun, shot_id, from_pos, to_pos):
     message_data = {
         'client':    client,
         'gun':       gun,
         'shot_id':   shot_id,
         
-        'fx':        fx,
-        'fy':        fy,
-        'fz':        fz,
-        
-        'tx':        tx,
-        'ty':        ty,
-        'tz':        tz,
+        'from_pos':  from_pos,
+        'to_pos':    to_pos,
     }
     message = ('N_SHOTFX', message_data)
     data_stream.append(message)
