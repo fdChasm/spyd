@@ -94,8 +94,6 @@ class TestRoomFFA(unittest.TestCase):
 
             self.clock.advance(0.1)
 
-            print player_test_context.sendbuffers
-
             self.assertEqual(itemTypeSpawnCount(player_test_context, item_types.I_GREENARMOUR), 1)
             self.assertEqual(itemTypeSpawnCount(player_test_context, item_types.I_YELLOWARMOUR), 1)
 
@@ -163,7 +161,6 @@ class TestRoomFFA(unittest.TestCase):
             self.clock.advance(2)
 
             room.change_map_mode('complex', 'insta')
-            print "Map change happened just before here"
 
             player_test_context.clear_received_messages()
 

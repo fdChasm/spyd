@@ -16,7 +16,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=max_length, chunks=chunks)
 
@@ -27,7 +27,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=max_length, chunks=chunks)
 
@@ -38,7 +38,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=max_length, chunks=chunks)
 
@@ -49,7 +49,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=max_length, chunks=chunks)
 
@@ -60,7 +60,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=512, chunks=chunks)
 
@@ -71,7 +71,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=512, chunks=chunks)
 
@@ -82,10 +82,6 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        print chunks
+        # print chunks
 
         self.assertChunksOk(max_length=512, chunks=chunks)
-
-
-
-
