@@ -5,8 +5,9 @@
 		"efficctf": "file://ctf_maps.json",
 		"ffa": "file://ffa_maps.json",
 		"insta": "file://ffa_maps.json",
-		"effic": "file://ffa_maps.json"
+		"effic": "file://ffa_maps.json",
+		"traitors": "file://ffa_maps.json"
 	},
-	"modes": ["ctf", "instactf", "efficctf", "ffa", "insta", "effic"],
+	"modes": ["traitors", "ctf", "instactf", "efficctf", "ffa", "insta", "effic"],
 	"rotate_modes": false
 }

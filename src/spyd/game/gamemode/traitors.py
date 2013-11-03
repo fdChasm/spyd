@@ -34,7 +34,7 @@ class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
     spawnhealth = 1
     spawndelay = 0
 
-    min_players = 2
+    min_players = 4
 
     @property
     def spawnammo(self):
@@ -67,7 +67,7 @@ class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
         self._start_info_message()
         self._tist_state = tist_states.WAITING_TRAITOR
         self._tist_traitor_waiting_deferred = self.room._game_clock.schedule_callback(5)
-        self._tist_traitor_waiting_deferred.addCallback(self._waiting_traitor_timeout)
+        self._tist_traitor_waiting_deferred.add_timeup_callback(self._waiting_traitor_timeout)
 
     def _waiting_traitor_timeout(self, *args):
         traitor = random.choice(list(self.room.players))
@@ -106,7 +106,7 @@ class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
                 self._start_tist()
             else:
                 reactor.callLater(0, self._waiting_players_message)
-                
+
     def on_player_disconnected(self, player):
         if self._tist_state == tist_states.WAITING_TRAITOR:
             if self.room.playing_count < self.min_players:
@@ -120,16 +120,16 @@ class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
                 self._ended()
             else:
                 alive_non_traitorous_players = filter(lambda p: p.state.is_alive and p is not self._tist_traitor, self.room.players)
-                
+
                 if len(alive_non_traitorous_players) == 0:
                     self.room._broadcaster.server_message(info('The the last living innocent player, {name#player}, has left the game. The traitor, {name#traitor}, is victorious.', traitor=self._tist_traitor, player=player))
 
     def on_player_death(self, player, killer):
         if self._tist_state == tist_states.PLAYING:
             player.client.send_server_message(info('You have been betrayed, choose your friends more wisely.'))
-    
+
             alive_non_traitorous_players = filter(lambda p: p.state.is_alive and p is not self._tist_traitor, self.room.players)
-    
+
             if player is self._tist_traitor:
                 if player is killer:
                     self.room._broadcaster.server_message(info('The traitor, {name#traitor}, has suicided.', traitor=player))
@@ -149,8 +149,8 @@ class Traitors(ModeBase, FightingBase, SpawningBase, SpectatingBase):
     def _ended(self):
         self.room._broadcaster.time_left(0)
         self._tist_intermission_end_deferred = self.room._game_clock.schedule_callback(10)
-        self._tist_intermission_end_deferred.addCallback(self._intermission_end)
-        
+        self._tist_intermission_end_deferred.add_timeup_callback(self._intermission_end)
+
     def _intermission_end(self, *args, **kwargs):
         try:
             self.room.rotate_map_mode()
