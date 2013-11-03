@@ -43,7 +43,7 @@ class CtfBase(object):
             player.team = None
         
     def initialize_player(self, cds, player):
-        if player.state.state == client_states.CS_SPECTATOR: return
+        if player.state.is_spectator: return
         smallest_team = min(self.teams, key=lambda t: t.size)
         player.team = smallest_team
         player.team.size += 1

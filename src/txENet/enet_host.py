@@ -33,7 +33,6 @@ class ENetHost(object):
 
             if event_type == enet.EVENT_TYPE_CONNECT:
                 client_protocol = self._client_protocol_factory.buildProtocol(event)
-                print "connect:", identifier
                 self._client_protocols[identifier] = client_protocol
 
             elif event_type == enet.EVENT_TYPE_DISCONNECT:

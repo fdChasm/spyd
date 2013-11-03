@@ -41,12 +41,14 @@ class Client(ClientBase, ClientNetworkBase, ClientAuthableBase, ClientMessageHan
         return smf.format(fmt, player=player)
     
     def connected(self):
+        print "connect:", self.host
         with self.sendbuffer(1, True) as cds:
             swh.put_servinfo(cds, self, haspwd=False, description="", domain=self._servinfo_domain)
             
         self.connect_timeout_deferred = reactor.callLater(1, self.connect_timeout)
 
     def disconnected(self):
+        print "disconnect:", self.host
         if self.is_connected:
             self.room.client_leave(self)
             self.event_subscription_fulfiller.publish('spyd.game.player.disconnect', {'player': self.uuid, 'room': self.room.name})

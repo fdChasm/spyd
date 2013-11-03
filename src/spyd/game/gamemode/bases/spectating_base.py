@@ -19,5 +19,4 @@ class SpectatingBase(object):
             player.state.is_spectator = False
             self.initialize_player(cds, player)
             self.on_player_connected(player)
-            player.state.respawn(self)
             swh.put_spectator(cds, player)

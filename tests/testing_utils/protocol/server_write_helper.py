@@ -77,10 +77,10 @@ def put_pausegame(data_stream, paused, client=None):
     message = ('N_PAUSEGAME', message_data)
     data_stream.append(message)
     
-def put_spectator(data_stream, client, spectated):
+def put_spectator(data_stream, client):
     message_data = {
         'client':        client,
-        'spectated':     spectated,
+        'spectated':     client.state.is_spectator,
     }
     message = ('N_SPECTATOR', message_data)
     data_stream.append(message)

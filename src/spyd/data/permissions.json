@@ -43,6 +43,10 @@
         "allows": ["spyd.game.room.*.claim_auth"],
         "priority": 3
     },
+    "chasm@localhost": {
+        "allows": ["*"],
+        "priority": 10
+    },
     "org.sauerbraten.punitive.ban": {
         "denies": ["spyd.server.connect"]
     },

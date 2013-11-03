@@ -235,6 +235,10 @@ class Room(object):
         self._map_mode_state.rotate_map_mode()
         self._new_map_mode_initialize()
 
+    def set_mastermode(self, mastermode):
+        self.mastermode = mastermode
+        self._update_current_masters()
+
     @property
     def broadcastbuffer(self):
         return self._broadcaster.broadcastbuffer
@@ -265,8 +269,7 @@ class Room(object):
         if mastermode < mastermodes.MM_OPEN or mastermode > mastermodes.MM_PRIVATE:
             raise GenericError("Mastermode out of allowed range.")
 
-        self.mastermode = mastermode
-        self._update_current_masters()
+        self.set_mastermode(mastermode)
 
     set_others_teams_functionality = Functionality("spyd.game.room.set_others_teams", 'Insufficient permissions to change other players teams.')
 
@@ -282,6 +285,7 @@ class Room(object):
 
     set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change your spectator status.')
     set_other_spectator_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to change who is spectating.')
+    set_self_not_spectator_locked_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to unspectate when mastermode is locked.')
     
     def on_client_set_spectator(self, client, target_pn, spectate):
         player = self.get_player(target_pn)
@@ -291,6 +295,8 @@ class Room(object):
         if client.get_player() is player:
             if not client.allowed(Room.set_spectator_functionality):
                 raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
+            if not spectate and not client.allowed(Room.set_self_not_spectator_locked_functionality):
+                raise InsufficientPermissions(Room.set_self_not_spectator_locked_functionality.denied_message)
         else:
             if not client.allowed(Room.set_other_spectator_functionality):
                 raise InsufficientPermissions(Room.set_other_spectator_functionality.denied_message)
@@ -568,6 +574,10 @@ class Room(object):
 
         if self.is_paused:
             swh.put_pausegame(cds, 1)
+
+        if self.mastermode >= mastermodes.MM_LOCKED:
+            player.state.is_spectator = True
+            swh.put_spectator(cds, player)
 
         self.gamemode.initialize_player(cds, player)
 
