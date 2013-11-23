@@ -25,19 +25,19 @@ class Test(unittest.TestCase):
         self.clock.advance(0)
         self.assertFalse(game_clock.is_paused)
         
-    def test_time_elapsed_before_resume(self):
+    def test_timeleft_before_resume(self):
         game_clock = GameClock()
         game_clock.start(600, 10)
         self.assertAlmostEqual(game_clock.timeleft, 600)
         
-    def test_time_elapsed_after_resume(self):
+    def test_timeleft_after_resume(self):
         game_clock = GameClock()
         game_clock.start(600, 10)
         game_clock.resume(0)
         self.clock.advance(0)
         self.assertAlmostEqual(game_clock.timeleft, 600)
         
-    def test_time_elapsed_after_resume_and_20_sec(self):
+    def test_timeleft_after_resume_and_20_sec(self):
         game_clock = GameClock()
         game_clock.start(600, 10)
         game_clock.resume(0)

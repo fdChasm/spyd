@@ -12,6 +12,7 @@ class MasterClientProtocol(basic.LineReceiver):
     delimiter = "\n"
 
     def lineReceived(self, line):
+        line = line.strip('\r')
         logger.debug("Received master server command: {!r}".format(line))
         args = line.split(' ')
         if not len(args): return

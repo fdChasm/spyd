@@ -23,6 +23,8 @@ from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
 import math
 from spyd.utils.constrain import constrain_range
+import contextlib
+from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
 
 
 class Room(object):
@@ -34,7 +36,7 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None, show_awards=True):
+    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None, show_awards=True, demo_recorder=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
 
@@ -54,7 +56,7 @@ class Room(object):
 
         self.command_executer = command_executer
         self.command_context = {}
-        
+
         self.event_subscription_fulfiller = event_subscription_fulfiller
 
         self.maxplayers = maxplayers
@@ -63,6 +65,8 @@ class Room(object):
         self.decommissioned = False
 
         self.show_awards = show_awards
+
+        self.demo_recorder = demo_recorder or NoOpDemoRecorder()
 
         self.mastermask = 0 if self.temporary else -1
         self.mastermode = 0
@@ -143,7 +147,7 @@ class Room(object):
     @property
     def is_paused(self):
         return self._game_clock.is_paused
-    
+
     @property
     def is_resuming(self):
         return self._game_clock.is_resuming
@@ -159,6 +163,10 @@ class Room(object):
     @timeleft.setter
     def timeleft(self, seconds):
         self._game_clock.timeleft = seconds
+
+    @property
+    def gamemillis(self):
+        return int(self._game_clock.time_elapsed * 1000)
 
     @property
     def gamemode(self):
@@ -178,6 +186,12 @@ class Room(object):
 
     def is_name_duplicate(self, name):
         return self._players.is_name_duplicate(name)
+
+    @contextlib.contextmanager
+    def demobuffer(self, channel):
+        cds = self.demo_recorder.buffer_class()
+        yield cds
+        self.demo_recorder.record(self.gamemillis, channel, str(cds))
 
     ###########################################################################
     #######################         Setters         ###########################
@@ -226,9 +240,12 @@ class Room(object):
         self._game_clock.timeleft = 0
 
     def change_map_mode(self, map_name, mode_name):
+        if not self.is_intermission:
+            self._finalize_demo_recording()
         self._game_clock.cancel()
         self._map_mode_state.change_map_mode(map_name, mode_name)
         self._new_map_mode_initialize()
+        self._initialize_demo_recording()
 
     def rotate_map_mode(self):
         self._game_clock.cancel()
@@ -286,12 +303,12 @@ class Room(object):
     set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change your spectator status.')
     set_other_spectator_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to change who is spectating.')
     set_self_not_spectator_locked_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to unspectate when mastermode is locked.')
-    
+
     def on_client_set_spectator(self, client, target_pn, spectate):
         player = self.get_player(target_pn)
         if player is None:
             raise UnknownPlayer(cn=target_pn)
-        
+
         if client.get_player() is player:
             if not client.allowed(Room.set_spectator_functionality):
                 raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
@@ -543,6 +560,7 @@ class Room(object):
         self._broadcaster.time_left(int(math.ceil(seconds)))
 
     def _on_game_clock_intermission(self):
+        self._finalize_demo_recording()
         self._broadcaster.intermission()
         if self.show_awards:
             display_awards(self)
@@ -621,10 +639,10 @@ class Room(object):
 
         for client in self.clients:
             with client.sendbuffer(1, True) as cds:
-        
+
                 if self.gamemode.timed and self.timeleft is not None:
                     swh.put_timeup(cds, self.timeleft)
-        
+
                 if self.is_paused:
                     swh.put_pausegame(cds, 1)
 
@@ -738,3 +756,25 @@ class Room(object):
 
     def _update_current_masters(self):
         self._broadcaster.current_masters(self.mastermode, self.clients)
+
+    def _finalize_demo_recording(self):
+        self.demo_recorder.write("/tmp/abaracada.dmo")
+
+    def _initialize_demo_recording(self):
+        self.demo_recorder.clear()
+        with self.demobuffer(1) as cds:
+            swh.put_welcome(cds)
+
+            swh.put_currentmaster(cds, self.mastermode, self._clients.to_iterator())
+
+            swh.put_mapchange(cds, self._map_mode_state.map_name, self._map_mode_state.mode_num, hasitems=False)
+
+            if self.gamemode.timed and self.timeleft is not None:
+                swh.put_timeup(cds, self.timeleft)
+
+            if self.is_paused:
+                swh.put_pausegame(cds, 1)
+
+            existing_players = list(self.players)
+            swh.put_initclients(cds, existing_players)
+            swh.put_resume(cds, existing_players)
