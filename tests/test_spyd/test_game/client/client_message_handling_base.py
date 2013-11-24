@@ -14,17 +14,16 @@ message_handler_method_pattern = re.compile("^N_")
 
 class TestClientMessageHandlers(unittest.TestCase):
     def setUp(self):
-        pass
+        self.client_message_handling_base = ClientMessageHandlingBase()
+        self.handled_message_types = self.client_message_handling_base._message_handlers.keys()
 
     def test_all_message_types_handled(self):
-        handled_message_types = filter(message_handler_method_pattern.match, dir(ClientMessageHandlingBase))
+
         for message_type in sauerbraten_stream_spec.message_types.iterkeys():
             message_type_name = message_types.by_value(message_type)
-            self.assertIn(message_type_name, handled_message_types, "No handler for message type {}".format(message_type_name))
+            self.assertIn(message_type_name, self.handled_message_types, "No handler for message type {}".format(message_type_name))
             
     def test_all_message_handlers_call_valid_room_handlers(self):
-        handled_message_types = filter(message_handler_method_pattern.match, dir(ClientMessageHandlingBase))
-
         client = MagicMock(spec=Client)
         
         room = MagicMock(name="Room", spec=Room)
@@ -32,8 +31,7 @@ class TestClientMessageHandlers(unittest.TestCase):
         client.room = room
         client.ping_buffer = MagicMock(spec=PingBuffer)
 
-        for handled_message_type in handled_message_types:
+        for handled_message_type in self.handled_message_types:
             message = MagicMock(spec_set=dict)
             
-            handler = getattr(ClientMessageHandlingBase, handled_message_type)
-            handler(client, message)
+            self.client_message_handling_base._message_received(handled_message_type, message)

@@ -6,7 +6,6 @@ from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MA
     weapon_types
 from cube2common.cube_data_stream import CubeDataStream
 from spyd.game.awards import display_awards
-from spyd.game.client.client_message_handling_base import InsufficientPermissions, UnknownPlayer, GenericError, StateError
 from spyd.game.gamemode import get_mode_name_from_num
 from spyd.game.room.client_collection import ClientCollection
 from spyd.game.room.player_collection import PlayerCollection
@@ -25,6 +24,8 @@ import math
 from spyd.utils.constrain import constrain_range
 import contextlib
 from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
+from spyd.game.client.exceptions import InsufficientPermissions, GenericError, \
+    UnknownPlayer, StateError
 
 
 class Room(object):
