@@ -1,17 +1,16 @@
 import uuid
 
-from spyd.game.player.player_network_base import PlayerNetworkBase
 from spyd.game.player.player_state import PlayerState
 from spyd.game.server_message_formatter import smf
 from spyd.protocol import swh
 
 
-class Player(PlayerNetworkBase):
+class Player(object):
 
     instances_by_uuid = {}
 
     def __init__(self, client, playernum, name, playermodel):
-        PlayerNetworkBase.__init__(self, client)
+        self.client = client
         self._pn = playernum
         self.name = name
         self.playermodel = playermodel
@@ -86,3 +85,13 @@ class Player(PlayerNetworkBase):
 
     def cleanup(self):
         Player.instances_by_uuid.pop(self.uuid, None)
+
+    def send(self, channel, data, reliable):
+        return self.client.send(channel, data, reliable)
+
+    def send_server_message(self, message):
+        self.client.send_server_message(message)
+
+    @property
+    def sendbuffer(self):
+        return self.client.sendbuffer

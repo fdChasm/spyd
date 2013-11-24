@@ -1,6 +1,6 @@
 import re
 
-from spyd.game.client.client_message_handling_base import GenericError
+from spyd.game.client.exceptions import GenericError
 from spyd.game.command.command_base import CommandBase
 from spyd.registry_manager import register
 from spyd.permissions.functionality import Functionality

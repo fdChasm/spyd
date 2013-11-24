@@ -2,7 +2,7 @@ from spyd.game.command.command_base import CommandBase
 from spyd.permissions.functionality import Functionality
 from spyd.registry_manager import register
 from spyd.game.server_message_formatter import info
-from spyd.game.client.client_message_handling_base import UsageError
+from spyd.game.client.exceptions import UsageError
 
 
 @register("command")

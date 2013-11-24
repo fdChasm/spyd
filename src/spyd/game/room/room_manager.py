@@ -1,6 +1,6 @@
 from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.game.room.exceptions import RoomEntryFailure
-from spyd.game.client.client_message_handling_base import GenericError
+from spyd.game.client.exceptions import GenericError
 from spyd.game.server_message_formatter import info
 
 class RoomManager(object):

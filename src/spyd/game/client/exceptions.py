@@ -1,5 +1,7 @@
 from spyd.game.server_message_formatter import smf
 
+class InvalidPlayerNumberReference(Exception): pass
+
 class GenericError(Exception):
     def __init__(self, message_fmt, *fmt_args, **fmt_kwargs):
         self.message = smf.vformat(message_fmt, fmt_args, fmt_kwargs)

@@ -1,9 +1,9 @@
 import re
 
-from spyd.game.client.client_message_handling_base import GenericError, InsufficientPermissions
 import spyd.game.command.commands # @UnusedImport
 from spyd.game.command.command_finder import CommandFinder
 import shlex
+from spyd.game.client.exceptions import GenericError, InsufficientPermissions
 
 
 command_pattern = re.compile("^#(?P<command_string>[\w-]+)(\s(?P<arg_string>.*))?$")

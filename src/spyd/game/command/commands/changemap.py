@@ -1,4 +1,4 @@
-from spyd.game.client.client_message_handling_base import InsufficientPermissions, GenericError
+from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.command.command_base import CommandBase
 from spyd.game.gamemode import gamemodes
 from spyd.game.room.room import Room
