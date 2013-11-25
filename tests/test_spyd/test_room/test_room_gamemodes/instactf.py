@@ -42,19 +42,19 @@ class TestRoomInstactf(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_spawn(player_test_context.player, player_test_context.player.state.lifesequence, gunselect=4)
+            room.handle_player_event('spawn', player_test_context.player, player_test_context.player.state.lifesequence, gunselect=4)
 
             player_test_context.clear_received_messages()
 
             room.on_player_suicide(player)
 
-            room.on_player_request_spawn(player)
+            room.handle_player_event('request_spawn', player)
 
             player_test_context.assertHasNotReceivedMessageOfType('N_SPAWNSTATE')
 
             self.clock.advance(5)
 
-            room.on_player_request_spawn(player)
+            room.handle_player_event('request_spawn', player)
 
             player_test_context.assertHasReceivedMessageOfType('N_SPAWNSTATE')
 

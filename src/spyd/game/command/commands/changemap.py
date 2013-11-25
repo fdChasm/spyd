@@ -1,7 +1,7 @@
 from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.command.command_base import CommandBase
 from spyd.game.gamemode import gamemodes
-from spyd.game.room.room import Room
+from spyd.game.room.client_event_handlers import set_map_mode_functionality
 from spyd.permissions.functionality import Functionality
 from spyd.registry_manager import register
 from spyd.utils.match_fuzzy import match_fuzzy
@@ -20,8 +20,8 @@ class ResumeCommand(CommandBase):
 
     @classmethod
     def execute(cls, room, client, command_string, arguments, raw_args):
-        if not client.allowed(Room.set_map_mode_functionality):
-            raise InsufficientPermissions(Room.set_map_mode_functionality.denied_message)
+        if not client.allowed(set_map_mode_functionality):
+            raise InsufficientPermissions(set_map_mode_functionality.denied_message)
 
         mode_name = command_string
         map_name = arguments[0]

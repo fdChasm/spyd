@@ -186,7 +186,7 @@ class TestRoom(unittest.TestCase):
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
 
-            room.on_player_suicide(player1)
+            room.handle_player_event('suicide', player1)
 
             player_test_context1.assertHasReceivedMessageOfType('N_DIED')
             player_test_context2.assertHasReceivedMessageOfType('N_DIED')
@@ -199,7 +199,7 @@ class TestRoom(unittest.TestCase):
             room = spyd.game.room.room.Room(map_meta_data_accessor={})
             player_test_context.enter_room(room)
 
-            room.on_player_suicide(player)
+            room.handle_player_event('suicide', player)
 
             self.assertFalse(player.state.is_alive)
 
@@ -298,8 +298,10 @@ class TestRoom(unittest.TestCase):
             player_test_context1.enter_room(room)
             player_test_context2.enter_room(room)
 
-            room.on_player_spawn(player_test_context1.player, player_test_context1.player.state.lifesequence, gunselect=4)
-            room.on_player_spawn(player_test_context2.player, player_test_context2.player.state.lifesequence, gunselect=4)
+            room.handle_player_event('spawn', player_test_context1.player, player_test_context1.player.state.lifesequence, gunselect=4)
+            room.handle_player_event('spawn', player_test_context2.player, player_test_context2.player.state.lifesequence, gunselect=4)
+
+
 
             hits = [
                 {'target_cn': player_test_context2.player.cn, 'lifesequence': player_test_context2.player.state.lifesequence, 'distance': 0, 'rays': 1, 'dx': 0, 'dy': 0, 'dz': 0}
@@ -351,4 +353,4 @@ class TestRoom(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_game_chat(player_test_context.player, "#effic dust2")
+            room.handle_player_event('game_chat', player_test_context.player, "#effic dust2")
