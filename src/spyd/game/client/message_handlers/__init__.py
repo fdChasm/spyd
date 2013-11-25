@@ -57,7 +57,7 @@ class SoundHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_sound(player, message['sound'])
+        room.handle_player_event('sound', player, message['sound'])
 
 
 @register('client_message_handler')
@@ -67,7 +67,7 @@ class SpawnHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_spawn(player, message['lifesequence'], message['gunselect'])
+        room.handle_player_event('spawn', player, message['lifesequence'], message['gunselect'])
 
 
 @register('client_message_handler')
@@ -77,7 +77,7 @@ class SwitchmodelHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_switch_model(player, message['playermodel'])
+        room.handle_player_event('switch_model', player, message['playermodel'])
 
 
 @register('client_message_handler')
@@ -90,7 +90,7 @@ class SwitchnameHandler(object):
         name = filtertext(message['name'], False, MAXNAMELEN)
         if len(name) <= 0:
             name = "unnamed"
-        room.on_player_switch_name(player, name)
+        room.handle_player_event('switch_name', player, name)
 
 
 @register('client_message_handler')
@@ -101,7 +101,7 @@ class SwitchteamHandler(object):
     def handle(client, room, message):
         player = client.get_player(-1)
         team_name = filtertext(message['team'], False, MAXTEAMLEN)
-        room.on_player_switch_team(player, team_name)
+        room.handle_player_event('switch_team', player, team_name)
 
 
 @register('client_message_handler')
@@ -111,7 +111,7 @@ class SetteamHandler(object):
     @staticmethod
     def handle(client, room, message):
         team_name = filtertext(message['team'], False, MAXTEAMLEN)
-        room.on_client_set_team(client, message['target_cn'], team_name)
+        room.handle_client_event('set_team', client, message['target_cn'], team_name)
 
 
 @register('client_message_handler')
@@ -120,7 +120,7 @@ class SpectatorHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_spectator(client, message['target_cn'], bool(message['value']))
+        room.handle_client_event('set_spectator', client, message['target_cn'], bool(message['value']))
 
 
 @register('client_message_handler')
@@ -129,7 +129,7 @@ class MapvoteHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_map_vote(client, message['map_name'], message['mode_num'])
+        room.handle_client_event('map_vote', client, message['map_name'], message['mode_num'])
 
 
 @register('client_message_handler')
@@ -138,7 +138,7 @@ class MapchangeHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_map_vote(client, message['map_name'], message['mode_num'])
+        room.handle_client_event('map_vote', client, message['map_name'], message['mode_num'])
 
 
 @register('client_message_handler')
@@ -147,7 +147,7 @@ class MapcrcHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_map_crc(client, message['mapcrc'])
+        room.handle_client_event('map_crc', client, message['mapcrc'])
 
 
 @register('client_message_handler')
@@ -186,7 +186,7 @@ class AuthkickHandler(object):
         reason = message['reason']
 
         deferred = client.auth(authdomain, authname)
-        deferred.addCallback(lambda a: room.on_client_kick(client, target_pn, reason))
+        deferred.handle_client_event('kick', client, target_pn, reason)
 
 
 @register('client_message_handler')
@@ -195,7 +195,7 @@ class ItemlistHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_item_list(client, message['items'])
+        room.handle_client_event('item_list', client, message['items'])
 
 
 @register('client_message_handler')
@@ -204,7 +204,7 @@ class BasesHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_base_list(client, message['bases'])
+        room.handle_client_event('base_list', client, message['bases'])
 
 
 @register('client_message_handler')
@@ -213,7 +213,7 @@ class InitflagsHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_flag_list(client, message['flags'])
+        room.handle_client_event('flag_list', client, message['flags'])
 
 
 @register('client_message_handler')
@@ -223,7 +223,7 @@ class GunselectHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_gunselect(player, message['gunselect'])
+        room.handle_player_event('gunselect', player, message['gunselect'])
 
 
 @register('client_message_handler')
@@ -238,7 +238,7 @@ class ShootHandler(object):
         from_pos = vec(*dictget(message, 'fx', 'fy', 'fz'))
         to_pos = vec(*dictget(message, 'tx', 'ty', 'tz'))
         hits = message['hits']
-        room.on_player_shoot(player, shot_id, gun, from_pos, to_pos, hits)
+        room.handle_player_event('shoot', player, shot_id, gun, from_pos, to_pos, hits)
 
 
 @register('client_message_handler')
@@ -252,7 +252,7 @@ class ExplodeHandler(object):
         gun = message['gun']
         explode_id = message['explode_id']
         hits = message['hits']
-        room.on_player_explode(player, cmillis, gun, explode_id, hits)
+        room.handle_player_event('explode', player, cmillis, gun, explode_id, hits)
 
 
 @register('client_message_handler')
@@ -262,7 +262,7 @@ class ItempickupHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_pickup_item(player, message['item_index'])
+        room.handle_player_event('pickup_item', player, message['item_index'])
 
 
 @register('client_message_handler')
@@ -272,7 +272,7 @@ class RepammoHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_replenish_ammo(player)
+        room.handle_player_event('replenish_ammo', player)
 
 
 @register('client_message_handler')
@@ -282,7 +282,7 @@ class TakeflagHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_take_flag(player, message['flag'], message['version'])
+        room.handle_player_event('take_flag', player, message['flag'], message['version'])
 
 
 @register('client_message_handler')
@@ -292,7 +292,7 @@ class TrydropflagHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_try_drop_flag(player)
+        room.handle_player_event('try_drop_flag', player)
 
 
 @register('client_message_handler')
@@ -301,7 +301,7 @@ class PausegameHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_pause_game(client, message['value'])
+        room.handle_client_event('pause_game', client, message['value'])
 
 
 @register('client_message_handler')
@@ -311,7 +311,7 @@ class TextHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player()
-        room.on_player_game_chat(player, message['text'])
+        room.handle_player_event('game_chat', player, message['text'])
 
 
 @register('client_message_handler')
@@ -321,7 +321,7 @@ class SayteamHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player()
-        room.on_player_team_chat(player, message['text'])
+        room.handle_player_event('team_chat', player, message['text'])
 
 
 @register('client_message_handler')
@@ -331,7 +331,7 @@ class SuicideHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_suicide(player)
+        room.handle_player_event('suicide', player)
 
 
 @register('client_message_handler')
@@ -341,7 +341,7 @@ class TryspawnHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_request_spawn(player)
+        room.handle_player_event('request_spawn', player)
 
 
 @register('client_message_handler')
@@ -351,7 +351,7 @@ class TauntHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player()
-        room.on_player_taunt(player)
+        room.handle_player_event('taunt', player)
 
 
 @register('client_message_handler')
@@ -370,7 +370,7 @@ class TeleportHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_teleport(player, message['teleport'], message['teledest'])
+        room.handle_player_event('teleport', player, message['teleport'], message['teledest'])
 
 
 @register('client_message_handler')
@@ -380,7 +380,7 @@ class JumppadHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player(message['aiclientnum'])
-        room.on_player_jumppad(player, message['jumppad'])
+        room.handle_player_event('jumppad', player, message['jumppad'])
 
 
 @register('client_message_handler')
@@ -390,7 +390,7 @@ class EditmodeHandler(object):
     @staticmethod
     def handle(client, room, message):
         player = client.get_player()
-        room.on_player_edit_mode(player, message['value'])
+        room.handle_player_event('edit_mode', player, message['value'])
 
 
 @register('client_message_handler')
@@ -404,7 +404,7 @@ class EditentHandler(object):
         entity_type = message['type']
         x, y, z = dictget(message, 'x', 'y', 'z')
         attrs = message['attrs']
-        room.on_player_edit_entity(player, entity_id, entity_type, x, y, z, attrs)
+        room.handle_player_event('edit_entity', player, entity_id, entity_type, x, y, z, attrs)
 
 
 @register('client_message_handler')
@@ -418,7 +418,7 @@ class EditfHandler(object):
         selection = Selection.from_message(message)
         direction = message['direction']
         mode = message['mode']
-        room.on_player_edit_face(player, selection, direction, mode)
+        room.handle_player_event('edit_face', player, selection, direction, mode)
 
 
 @register('client_message_handler')
@@ -432,7 +432,7 @@ class EdittHandler(object):
         selection = Selection.from_message(message)
         texture = message['texture']
         all_faces = message['all_faces']
-        room.on_player_edit_texture(player, selection, texture, all_faces)
+        room.handle_player_event('edit_texture', player, selection, texture, all_faces)
 
 
 @register('client_message_handler')
@@ -446,7 +446,7 @@ class EditmHandler(object):
         selection = Selection.from_message(message)
         material = message['material']
         material_filter = message['material_filter']
-        room.on_player_edit_material(player, selection, material, material_filter)
+        room.handle_player_event('edit_material', player, selection, material, material_filter)
 
 
 @register('client_message_handler')
@@ -458,7 +458,7 @@ class FlipHandler(object):
         del message['aiclientnum']
         player = client.get_player()
         selection = Selection.from_message(message)
-        room.on_player_edit_flip(player, selection)
+        room.handle_player_event('edit_flip', player, selection)
 
 
 @register('client_message_handler')
@@ -470,7 +470,7 @@ class CopyHandler(object):
         del message['aiclientnum']
         player = client.get_player()
         selection = Selection.from_message(message)
-        room.on_player_edit_copy(player, selection)
+        room.handle_player_event('edit_copy', player, selection)
 
 
 @register('client_message_handler')
@@ -482,7 +482,7 @@ class PasteHandler(object):
         del message['aiclientnum']
         player = client.get_player()
         selection = Selection.from_message(message)
-        room.on_player_edit_paste(player, selection)
+        room.handle_player_event('edit_paste', player, selection)
 
 
 @register('client_message_handler')
@@ -494,7 +494,7 @@ class DelcubeHandler(object):
         del message['aiclientnum']
         player = client.get_player()
         selection = Selection.from_message(message)
-        room.on_player_edit_delete_cubes(player, selection)
+        room.handle_player_event('edit_delete_cubes', player, selection)
 
 
 @register('client_message_handler')
@@ -507,7 +507,7 @@ class RotateHandler(object):
         player = client.get_player()
         selection = Selection.from_message(message)
         axis = message['axis']
-        room.on_player_edit_rotate(player, selection, axis)
+        room.handle_player_event('edit_rotate', player, selection, axis)
 
 
 @register('client_message_handler')
@@ -522,7 +522,7 @@ class ReplaceHandler(object):
         texture = message['texture']
         new_texture = message['new_texture']
         in_selection = message['in_selection']
-        room.on_player_edit_replace(player, selection, texture, new_texture, in_selection)
+        room.handle_player_event('edit_replace', player, selection, texture, new_texture, in_selection)
 
 
 @register('client_message_handler')
@@ -531,7 +531,7 @@ class RemipHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_edit_remip(client)
+        room.handle_client_event('edit_remip', client)
 
 
 @register('client_message_handler')
@@ -540,7 +540,7 @@ class NewmapHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_edit_new_map(client, message['size'])
+        room.handle_client_event('edit_new_map', client, message['size'])
 
 
 @register('client_message_handler')
@@ -549,7 +549,7 @@ class GetmapHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_edit_get_map(client)
+        room.handle_client_event('edit_get_map', client)
 
 
 @register('client_message_handler')
@@ -576,7 +576,7 @@ class MastermodeHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_master_mode(client, message['mastermode'])
+        room.handle_client_event('set_master_mode', client, message['mastermode'])
 
 
 @register('client_message_handler')
@@ -585,7 +585,7 @@ class KickHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_kick(client, message['target_cn'], message['reason'])
+        room.handle_client_event('kick', client, message['target_cn'], message['reason'])
 
 
 @register('client_message_handler')
@@ -594,7 +594,7 @@ class ClearbansHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_clear_bans(client)
+        room.handle_client_event('clear_bans', client)
 
 
 @register('client_message_handler')
@@ -603,7 +603,7 @@ class SetmasterHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_master(client, message['target_cn'], message['pwdhash'], message['value'])
+        room.handle_client_event('set_master', client, message['target_cn'], message['pwdhash'], message['value'])
 
 
 @register('client_message_handler')
@@ -612,7 +612,7 @@ class ListdemosHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_list_demos(client)
+        room.handle_client_event('list_demos', client)
 
 
 @register('client_message_handler')
@@ -621,7 +621,7 @@ class CleardemosHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_clear_demo(client, message['demonum'])
+        room.handle_client_event('clear_demo', client, message['demonum'])
 
 
 @register('client_message_handler')
@@ -630,7 +630,7 @@ class GetdemoHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_get_demo(client, message['demonum'])
+        room.handle_client_event('get_demo', client, message['demonum'])
 
 
 @register('client_message_handler')
@@ -639,7 +639,7 @@ class RecorddemoHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_demo_recording(client, message['value'])
+        room.handle_client_event('set_demo_recording', client, message['value'])
 
 
 @register('client_message_handler')
@@ -648,7 +648,7 @@ class StopdemoHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_stop_demo_recording(client)
+        room.handle_client_event('stop_demo_recording', client)
 
 
 @register('client_message_handler')
@@ -657,7 +657,7 @@ class GamespeedHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_game_speed(client, message['value'])
+        room.handle_client_event('set_game_speed', client, message['value'])
 
 
 @register('client_message_handler')
@@ -666,7 +666,7 @@ class AddbotHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_add_bot(client, message['skill'])
+        room.handle_client_event('add_bot', client, message['skill'])
 
 
 @register('client_message_handler')
@@ -675,7 +675,7 @@ class DelbotHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_delete_bot(client)
+        room.handle_client_event('delete_bot', client)
 
 
 @register('client_message_handler')
@@ -684,7 +684,7 @@ class BotlimitHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_bot_limit(client, message['limit'])
+        room.handle_client_event('set_bot_limit', client, message['limit'])
 
 
 @register('client_message_handler')
@@ -693,7 +693,7 @@ class BotbalanceHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_set_bot_balance(client, message['balance'])
+        room.handle_client_event('set_bot_balance', client, message['balance'])
 
 
 @register('client_message_handler')
@@ -702,7 +702,7 @@ class CheckmapsHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_check_maps(client)
+        room.handle_client_event('check_maps', client)
 
 
 @register('client_message_handler')
@@ -711,5 +711,5 @@ class ServcmdHandler(object):
 
     @staticmethod
     def handle(client, room, message):
-        room.on_client_command(client, message['command'])
+        room.handle_client_event('command', client, message['command'])
 

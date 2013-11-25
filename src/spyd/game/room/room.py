@@ -1,31 +1,28 @@
+import contextlib
+import math
 import traceback
 
 from twisted.internet import reactor
 
-from cube2common.constants import INTERMISSIONLEN, client_states, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges, \
-    weapon_types
-from cube2common.cube_data_stream import CubeDataStream
+from cube2common.constants import INTERMISSIONLEN, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
+from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
 from spyd.game.awards import display_awards
-from spyd.game.gamemode import get_mode_name_from_num
+from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.room.client_collection import ClientCollection
 from spyd.game.room.player_collection import PlayerCollection
+import spyd.game.room.client_event_handlers  # @UnusedImport
+import spyd.game.room.player_event_handlers  # @UnusedImport
 from spyd.game.room.room_broadcaster import RoomBroadcaster
 from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
-from spyd.game.server_message_formatter import smf, info
+from spyd.game.server_message_formatter import smf
 from spyd.game.timing.game_clock import GameClock
 from spyd.permissions.functionality import Functionality
 from spyd.protocol import swh
 from spyd.server.metrics.execution_timer import ExecutionTimer
-from spyd.utils.match_fuzzy import match_fuzzy
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
-import math
-from spyd.utils.constrain import constrain_range
-import contextlib
-from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
-from spyd.game.client.exceptions import InsufficientPermissions, GenericError, \
-    UnknownPlayer, StateError
+from spyd.registry_manager import RegistryManager
 
 
 class Room(object):
@@ -79,6 +76,18 @@ class Room(object):
         self.masters = set()
         self.auths = set()
         self.admins = set()
+
+        self._client_event_handlers = {}
+        for registered_event_handler in RegistryManager.get_registrations('room_client_event_handler'):
+            event_handler = registered_event_handler.registered_object
+            event_type = event_handler.event_type
+            self._client_event_handlers[event_type] = event_handler
+
+        self._player_event_handlers = {}
+        for registered_event_handler in RegistryManager.get_registrations('room_player_event_handler'):
+            event_handler = registered_event_handler.registered_object
+            event_type = event_handler.event_type
+            self._player_event_handlers[event_type] = event_handler
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
@@ -268,271 +277,23 @@ class Room(object):
     #######################  Client event handling  ###########################
     ###########################################################################
 
-    def on_client_set_master(self, client, target_cn, password_hash, requested_privilege):
-        target = self.get_client(target_cn)
-        if target is None:
-            raise UnknownPlayer(cn=target_cn)
-
-        self._client_try_set_privilege(client, target, requested_privilege)
-
-    temporary_set_mastermode_functionality = Functionality("spyd.game.room.temporary.set_mastermode")
-    set_mastermode_functionality = Functionality("spyd.game.room.set_mastermode")
-
-    def on_client_set_master_mode(self, client, mastermode):
-        allowed_set_mastermode = client.allowed(Room.set_mastermode_functionality) or (self.temporary and client.allowed(Room.temporary_set_mastermode_functionality))
-
-        if not allowed_set_mastermode:
-            raise InsufficientPermissions('Insufficient permissions to change mastermode.')
-
-        if mastermode < mastermodes.MM_OPEN or mastermode > mastermodes.MM_PRIVATE:
-            raise GenericError("Mastermode out of allowed range.")
-
-        self.set_mastermode(mastermode)
-
-    set_others_teams_functionality = Functionality("spyd.game.room.set_others_teams", 'Insufficient permissions to change other players teams.')
-
-    def on_client_set_team(self, client, target_pn, team_name):
-        if not client.allowed(Room.set_others_teams_functionality):
-            raise InsufficientPermissions(Room.set_others_teams_functionality.denied_message)
-
-        player = self.get_player(target_pn)
-        if player is None:
-            raise UnknownPlayer(cn=target_pn)
-
-        self.gamemode.on_player_try_set_team(client.get_player(), player, player.team.name, team_name)
-
-    set_spectator_functionality = Functionality("spyd.game.room.set_spectator", 'Insufficient permissions to change your spectator status.')
-    set_other_spectator_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to change who is spectating.')
-    set_self_not_spectator_locked_functionality = Functionality("spyd.game.room.set_other_spectator", 'Insufficient permissions to unspectate when mastermode is locked.')
-
-    def on_client_set_spectator(self, client, target_pn, spectate):
-        player = self.get_player(target_pn)
-        if player is None:
-            raise UnknownPlayer(cn=target_pn)
-
-        if client.get_player() is player:
-            if not client.allowed(Room.set_spectator_functionality):
-                raise InsufficientPermissions(Room.set_spectator_functionality.denied_message)
-            if not spectate and not client.allowed(Room.set_self_not_spectator_locked_functionality):
-                raise InsufficientPermissions(Room.set_self_not_spectator_locked_functionality.denied_message)
+    def handle_client_event(self, event_name, *args, **kwargs):
+        if event_name in self._client_event_handlers:
+            event_handler = self._client_event_handlers[event_name]
+            event_handler.handle(self, *args, **kwargs)
         else:
-            if not client.allowed(Room.set_other_spectator_functionality):
-                raise InsufficientPermissions(Room.set_other_spectator_functionality.denied_message)
-
-        self._set_player_spectator(player, spectate)
-
-    def on_client_kick(self, client, target_pn, reason):
-        # TODO: Implement kicking of players and insertion of bans
-        pass
-
-    def on_client_clear_bans(self, client):
-        # TODO: Implement clearing of bans
-        pass
-
-    set_map_mode_functionality = Functionality("spyd.game.room.set_map_mode", 'Insufficient permissions to force a map/mode change.')
-
-    def on_client_map_vote(self, client, map_name, mode_num):
-        if not client.allowed(Room.set_map_mode_functionality):
-            raise InsufficientPermissions(Room.set_map_mode_functionality.denied_message)
-
-        mode_name = get_mode_name_from_num(mode_num)
-        valid_map_names = self._map_mode_state.get_map_names()
-        map_name_match = match_fuzzy(map_name, valid_map_names)
-        if map_name_match is None:
-            raise GenericError('Could not resolve map name to valid map. Please try again.')
-        self.change_map_mode(map_name_match, mode_name)
-
-    def on_client_map_crc(self, client, crc):
-        # TODO: Implement optional spectating of clients without valid map CRC's
-        pass
-
-    def on_client_item_list(self, client, item_list):
-        self.gamemode.on_client_item_list(client, item_list)
-
-    def on_client_base_list(self, client, base_list):
-        self.gamemode.on_client_base_list(client, base_list)
-
-    def on_client_flag_list(self, client, flag_list):
-        self.gamemode.on_client_flag_list(client, flag_list)
-
-    pause_resume_functionality = Functionality("spyd.game.room.pause_resume", 'Insufficient permissions to pause or resume the game.')
-
-    def on_client_pause_game(self, client, pause):
-        if not client.allowed(Room.pause_resume_functionality):
-            raise InsufficientPermissions(Room.pause_resume_functionality.denied_message)
-
-        if pause:
-            if self.is_paused and not self.is_resuming: raise StateError('The game is already paused.')
-            self.pause()
-            self._broadcaster.server_message(info("{name#client} has paused the game.", client=client))
-        elif not pause:
-            if not self.is_paused: raise StateError('The game is already resumed.')
-            self.resume()
-            self._broadcaster.server_message(info("{name#client} has resumed the game.", client=client))
-
-    def on_client_set_demo_recording(self, client, value):
-        pass
-
-    def on_client_stop_demo_recording(self, client):
-        pass
-
-    def on_client_clear_demo(self, client, demo_id):
-        pass
-
-    def on_client_list_demos(self, client):
-        pass
-
-    def on_client_get_demo(self, client, demo_id):
-        pass
-
-    def on_client_add_bot(self, client, skill):
-        pass
-
-    def on_client_delete_bot(self, client):
-        pass
-
-    def on_client_set_bot_balance(self, client, balance):
-        pass
-
-    def on_client_set_bot_limit(self, client, limit):
-        pass
-
-    def on_client_check_maps(self, client):
-        pass
-
-    def on_client_set_game_speed(self, client, speed):
-        pass
-
-    def on_client_edit_get_map(self, client):
-        pass
-
-    def on_client_edit_new_map(self, client, size):
-        pass
-
-    def on_client_edit_remip(self, client):
-        pass
-
-    def on_client_command(self, client, command):
-        pass
+            print "Unhandled client event: {} with args: {}, {}".format(event_name, args, kwargs)
 
     ###########################################################################
     #######################  Player event handling  ###########################
     ###########################################################################
 
-    def on_player_switch_model(self, player, playermodel):
-        constrain_range(playermodel, 0, 4, "playermodels")
-        player.playermodel = playermodel
-        swh.put_switchmodel(player.state.messages, playermodel)
-
-    def on_player_switch_name(self, player, name):
-        player.name = name
-        swh.put_switchname(player.state.messages, name)
-        # with self.broadcastbuffer(1, True) as cds:
-        #    tm = CubeDataStream()
-        #    swh.put_switchname(tm, "aaaaa")
-        #    swh.put_clientdata(cds, player.client, str(tm))
-
-    def on_player_switch_team(self, player, team_name):
-        self.gamemode.on_player_try_set_team(player, player, player.team.name, team_name)
-
-    def on_player_taunt(self, player):
-        self.gamemode.on_player_taunt(player)
-
-    def on_player_teleport(self, player, teleport, teledest):
-        self._broadcaster.teleport(player, teleport, teledest)
-
-    def on_player_jumppad(self, player, jumppad):
-        self._broadcaster.jumppad(player, jumppad)
-
-    def on_player_suicide(self, player):
-        player.state.state = client_states.CS_DEAD
-        self.gamemode.on_player_death(player, player)
-        self._broadcaster.player_died(player, player)
-
-    def on_player_shoot(self, player, shot_id, gun, from_pos, to_pos, hits):
-        constrain_range(gun, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
-        self.gamemode.on_player_shoot(player, shot_id, gun, from_pos, to_pos, hits)
-
-    def on_player_explode(self, player, cmillis, gun, explode_id, hits):
-        constrain_range(gun, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
-        self.gamemode.on_player_explode(player, cmillis, gun, explode_id, hits)
-
-    def on_player_request_spawn(self, player):
-        self.gamemode.on_player_request_spawn(player)
-
-    def on_player_spawn(self, player, lifesequence, gunselect):
-        constrain_range(gunselect, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
-        player.state.on_respawn(lifesequence, gunselect)
-
-    def on_player_gunselect(self, player, gunselect):
-        constrain_range(gunselect, weapon_types.GUN_FIST, weapon_types.GUN_PISTOL, "weapon_types")
-        player.state.gunselect = gunselect
-        swh.put_gunselect(player.state.messages, gunselect)
-
-    def on_player_sound(self, player, sound):
-        swh.put_sound(player.state.messages, sound)
-
-    def on_player_pickup_item(self, player, item_index):
-        self.gamemode.on_player_pickup_item(player, item_index)
-
-    def on_player_replenish_ammo(self, player):
-        pass
-
-    def on_player_take_flag(self, player, flag, version):
-        self.gamemode.on_player_take_flag(player, flag, version)
-
-    def on_player_try_drop_flag(self, player):
-        self.gamemode.on_player_try_drop_flag(player)
-
-    def on_player_game_chat(self, player, text):
-        if text[0] == "#":
-            self.command_executer.execute(self, player.client, text)
+    def handle_player_event(self, event_name, *args, **kwargs):
+        if event_name in self._player_event_handlers:
+            event_handler = self._player_event_handlers[event_name]
+            event_handler.handle(self, *args, **kwargs)
         else:
-            swh.put_text(player.state.messages, text)
-            self.event_subscription_fulfiller.publish('spyd.game.player.chat', {'player': player.uuid, 'room': self.name, 'text': text, 'scope': 'room'})
-
-    def on_player_team_chat(self, player, text):
-        if player.isai: return
-        clients = filter(lambda c: c.get_player().team == player.team, self.clients)
-        with self.broadcastbuffer(1, True, [player.client], clients) as cds:
-            swh.put_sayteam(cds, player.client, text)
-        self.event_subscription_fulfiller.publish('spyd.game.player.chat', {'player': player.uuid, 'room': self.name, 'text': text, 'scope': 'team'})
-
-    def on_player_edit_mode(self, player, editmode):
-        with self.broadcastbuffer(1, True, [player]) as cds:
-            tm = CubeDataStream()
-            swh.put_editmode(tm, editmode)
-            swh.put_clientdata(cds, player.client, str(tm))
-
-    def on_player_edit_entity(self, player, entity_id, entity_type, x, y, z, attrs):
-        pass
-
-    def on_player_edit_face(self, selection, direction, mode):
-        pass
-
-    def on_player_edit_material(self, selection, material, material_filter):
-        pass
-
-    def on_player_edit_texture(self, selection, texture, all_faces):
-        pass
-
-    def on_player_edit_copy(self, selection):
-        pass
-
-    def on_player_edit_paste(self, selection):
-        pass
-
-    def on_player_edit_flip(self, selection):
-        pass
-
-    def on_player_edit_delete_cubes(self, selection):
-        pass
-
-    def on_player_edit_rotate(self, selection, axis):
-        pass
-
-    def on_player_edit_replace(self, selection, texture, new_texture, in_selection):
-        pass
+            print "Unhandled player event: {} with args: {}, {}".format(event_name, args, kwargs)
 
     ###########################################################################
     #####################  Game clock event handling  #########################
