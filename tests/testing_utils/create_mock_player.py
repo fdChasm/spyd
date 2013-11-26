@@ -60,7 +60,7 @@ def create_mock_player(test_case, cn):
         player.client = MagicMock(spec=Client)
         player.client.cn = cn
         player.client.get_player = lambda: player
-        player.client.players = {cn: player}
+        player.client.player_iter = lambda: [player]
         player.isai = False
         player.cn = cn
         player.pn = cn

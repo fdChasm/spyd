@@ -1,4 +1,4 @@
-from spyd.registry_manager import register
+from spyd.registry_manager import register, RegistryManager
 
 from cube2common.constants import disconnect_types, MAXNAMELEN, MAXTEAMLEN
 from cube2common.vec import vec
@@ -713,3 +713,10 @@ class ServcmdHandler(object):
     def handle(client, room, message):
         room.handle_client_event('command', client, message['command'])
 
+def get_message_handlers():
+    message_handlers = {}
+    for registered_message_handler in RegistryManager.get_registrations('client_message_handler'):
+        message_handler = registered_message_handler.registered_object
+        message_type = message_handler.message_type
+        message_handlers[message_type] = message_handler
+    return message_handlers

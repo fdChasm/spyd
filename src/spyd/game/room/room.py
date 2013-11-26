@@ -226,7 +226,7 @@ class Room(object):
 
     def client_leave(self, client):
         self._clients.remove(client)
-        for player in client.players.itervalues():
+        for player in client.player_iter():
             self._player_disconnected(player)
 
         if client in self.masters or client in self.admins:
@@ -408,7 +408,7 @@ class Room(object):
                 if self.is_paused:
                     swh.put_pausegame(cds, 1)
 
-                for player in client.players.itervalues():
+                for player in client.player_iter():
                     if not player.state.is_spectator:
                         swh.put_spawnstate(cds, player)
 
