@@ -307,13 +307,13 @@ class TestRoom(unittest.TestCase):
                 {'target_cn': player_test_context2.player.cn, 'lifesequence': player_test_context2.player.state.lifesequence, 'distance': 0, 'rays': 1, 'dx': 0, 'dy': 0, 'dz': 0}
             ]
 
-            room.on_player_shoot(player=player_test_context1.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
+            room.handle_player_event('shoot', player=player_test_context1.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
 
             hits = [
                 {'target_cn': player_test_context1.player.cn, 'lifesequence': player_test_context1.player.state.lifesequence, 'distance': 0, 'rays': 1, 'dx': 0, 'dy': 0, 'dz': 0}
             ]
 
-            room.on_player_shoot(player=player_test_context2.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
+            room.handle_player_event('shoot', player=player_test_context2.player, shot_id=0, gun=4, from_pos=vec(0, 0, 0), to_pos=vec(0, 0, 0), hits=hits)
 
             messages1 = player_test_context1.get_received_messages_of_type('N_DIED')
             messages2 = player_test_context2.get_received_messages_of_type('N_DIED')

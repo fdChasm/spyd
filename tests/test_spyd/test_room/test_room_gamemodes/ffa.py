@@ -106,7 +106,7 @@ class TestRoomFFA(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_pickup_item(player_test_context.player, item_index=79)
+            room.handle_player_event('pickup_item', player_test_context.player, item_index=79)
 
             player_test_context.assertHasReceivedMessageOfType('N_ITEMACC')
 
@@ -119,7 +119,7 @@ class TestRoomFFA(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_pickup_item(player_test_context.player, item_index=79)
+            room.handle_player_event('pickup_item', player_test_context.player, item_index=79)
 
             self.clock.advance(15.9)
 
@@ -139,7 +139,7 @@ class TestRoomFFA(unittest.TestCase):
 
             player_test_context1.enter_room(room)
 
-            room.on_player_pickup_item(player_test_context1.player, item_index=79)
+            room.handle_player_event('pickup_item', player_test_context1.player, item_index=79)
 
             player_test_context2.enter_room(room)
             

@@ -46,7 +46,7 @@ class TestRoomInstactf(unittest.TestCase):
 
             player_test_context.clear_received_messages()
 
-            room.on_player_suicide(player)
+            room.handle_player_event('suicide', player)
 
             room.handle_player_event('request_spawn', player)
 
@@ -68,9 +68,9 @@ class TestRoomInstactf(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_take_flag(player, 1, 0)
+            room.handle_player_event('take_flag', player, 1, 0)
             player_test_context.assertHasReceivedMessageOfType('N_TAKEFLAG')
-            room.on_player_take_flag(player, 0, 0)
+            room.handle_player_event('take_flag', player, 0, 0)
             player_test_context.assertHasReceivedMessageOfType('N_SCOREFLAG')
 
     def test_suicide_drops_flag(self):
@@ -83,8 +83,8 @@ class TestRoomInstactf(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_take_flag(player, 1, 0)
-            room.on_player_suicide(player)
+            room.handle_player_event('take_flag', player, 1, 0)
+            room.handle_player_event('suicide', player)
             player_test_context.assertHasReceivedMessageOfType('N_DROPFLAG')
             self.clock.advance(10)
             player_test_context.assertHasReceivedMessageOfType('N_RESETFLAG')
@@ -99,8 +99,8 @@ class TestRoomInstactf(unittest.TestCase):
 
             player_test_context.enter_room(room)
 
-            room.on_player_take_flag(player, 1, 0)
-            room.on_player_try_drop_flag(player)
+            room.handle_player_event('take_flag', player, 1, 0)
+            room.handle_player_event('try_drop_flag', player)
             player_test_context.assertHasReceivedMessageOfType('N_DROPFLAG')
             self.clock.advance(10)
             player_test_context.assertHasReceivedMessageOfType('N_RESETFLAG')
@@ -119,9 +119,9 @@ class TestRoomInstactf(unittest.TestCase):
 
             for i in xrange(10):
                 player_test_context.assertHasNotReceivedMessageOfType('N_TIMEUP')
-                room.on_player_take_flag(player, 1, i * 2)
+                room.handle_player_event('take_flag', player, 1, i * 2)
                 player_test_context.assertHasReceivedMessageOfType('N_TAKEFLAG')
-                room.on_player_take_flag(player, 0, 0)
+                room.handle_player_event('take_flag', player, 0, 0)
                 player_test_context.assertHasReceivedMessageOfType('N_SCOREFLAG')
 
             player_test_context.assertHasReceivedMessageOfType('N_TIMEUP')
