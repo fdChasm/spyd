@@ -1,7 +1,7 @@
 from cube2common.constants import weapon_types, client_states
 from cube2common.cube_data_stream import CubeDataStream
 from spyd.protocol import swh
-from spyd.registry_manager import register
+from spyd.registry_manager import register, RegistryManager
 from spyd.utils.constrain import constrain_range
 
 
@@ -272,3 +272,10 @@ class edit_replaceHandler(object):
     def handle(room, selection, texture, new_texture, in_selection):
         pass
 
+def get_player_event_handlers():
+    player_event_handlers = {}
+    for registered_event_handler in RegistryManager.get_registrations('room_player_event_handler'):
+        event_handler = registered_event_handler.registered_object
+        event_type = event_handler.event_type
+        player_event_handlers[event_type] = event_handler
+    return player_event_handlers

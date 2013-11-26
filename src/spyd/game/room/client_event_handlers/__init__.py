@@ -3,7 +3,7 @@ from spyd.game.client.exceptions import UnknownPlayer, InsufficientPermissions, 
 from spyd.game.gamemode import get_mode_name_from_num
 from spyd.game.server_message_formatter import info
 from spyd.permissions.functionality import Functionality
-from spyd.registry_manager import register
+from spyd.registry_manager import register, RegistryManager
 from spyd.utils.match_fuzzy import match_fuzzy
 
 
@@ -289,3 +289,10 @@ class commandHandler(object):
     def handle(room, client, command):
         pass
 
+def get_client_event_handlers():
+    client_event_handlers = {}
+    for registered_event_handler in RegistryManager.get_registrations('room_client_event_handler'):
+        event_handler = registered_event_handler.registered_object
+        event_type = event_handler.event_type
+        client_event_handlers[event_type] = event_handler
+    return client_event_handlers

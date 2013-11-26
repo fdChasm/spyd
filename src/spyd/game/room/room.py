@@ -9,9 +9,9 @@ from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
 from spyd.game.awards import display_awards
 from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.room.client_collection import ClientCollection
+from spyd.game.room.client_event_handlers import get_client_event_handlers
 from spyd.game.room.player_collection import PlayerCollection
-import spyd.game.room.client_event_handlers  # @UnusedImport
-import spyd.game.room.player_event_handlers  # @UnusedImport
+from spyd.game.room.player_event_handlers import get_player_event_handlers
 from spyd.game.room.room_broadcaster import RoomBroadcaster
 from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
@@ -22,7 +22,6 @@ from spyd.protocol import swh
 from spyd.server.metrics.execution_timer import ExecutionTimer
 from spyd.utils.truncate import truncate
 from spyd.utils.value_model import ValueModel
-from spyd.registry_manager import RegistryManager
 
 
 class Room(object):
@@ -77,17 +76,8 @@ class Room(object):
         self.auths = set()
         self.admins = set()
 
-        self._client_event_handlers = {}
-        for registered_event_handler in RegistryManager.get_registrations('room_client_event_handler'):
-            event_handler = registered_event_handler.registered_object
-            event_type = event_handler.event_type
-            self._client_event_handlers[event_type] = event_handler
-
-        self._player_event_handlers = {}
-        for registered_event_handler in RegistryManager.get_registrations('room_player_event_handler'):
-            event_handler = registered_event_handler.registered_object
-            event_type = event_handler.event_type
-            self._player_event_handlers[event_type] = event_handler
+        self._client_event_handlers = get_client_event_handlers()
+        self._player_event_handlers = get_player_event_handlers()
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
