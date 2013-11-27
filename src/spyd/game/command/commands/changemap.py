@@ -1,10 +1,10 @@
 from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.command.command_base import CommandBase
 from spyd.game.gamemode import gamemodes
-from spyd.game.room.client_event_handlers import set_map_mode_functionality
 from spyd.permissions.functionality import Functionality
 from spyd.registry_manager import register
 from spyd.utils.match_fuzzy import match_fuzzy
+from spyd.game.room.client_event_handlers.map_vote_handler import set_map_mode_functionality
 
 
 @register("command")
