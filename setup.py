@@ -40,7 +40,6 @@ packages.extend([
     'spyd',
     'cube2common',
     'cube2common.utils',
-    'cube2crypto',
     'cube2map',
     'txENet',
     'twisted.plugins'
@@ -55,7 +54,7 @@ setup(
         'twisted': ['plugins/spyd_server.py'],
         'spyd': ['data/*.json']
     },
-    install_requires=["twisted", "pycrypto", "txCarbonClient", "pyenet>=0.0.0", "python-Levenshtein", "simplejson", "simple_json", "pyclj"],
+    install_requires=["twisted", "pycube2crypto", "txCarbonClient", "pyenet>=0.0.0", "python-Levenshtein", "simplejson", "simple_json", "pyclj"],
     author="Chasm",
     author_email="fd.chasm@gmail.com",
     url="https://github.com/fdChasm/spyd",
