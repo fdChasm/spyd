@@ -5,7 +5,7 @@ from spyd.registry_manager import register
 
 @register('gep_message_handler')
 class SpydGetPlayerInfoMessageHandler(object):
-    msgtype = 'gep.get_player_info'
+    msgtype = 'get_player_info'
     execute = Functionality(msgtype)
 
     @classmethod
@@ -51,4 +51,4 @@ class SpydGetPlayerInfoMessageHandler(object):
             'game_state': player_game_state
         }
 
-        gep_client.send({'msgtype': 'gep.player_info', 'player': player.uuid, 'player_info': player_info}, message.get('reqid'))
+        gep_client.send({'msgtype': 'player_info', 'player': player.uuid, 'player_info': player_info}, message.get('reqid'))

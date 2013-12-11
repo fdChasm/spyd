@@ -33,7 +33,7 @@ class GEPProtocol(NetstringReceiver):
 
     def connectionMade(self):
         Protocol.connectionMade(self)
-        self.request({"msgtype": "gep.connect", "username": "bob", "domain": "example.com"}, self._on_connect_response)
+        self.request({"msgtype": "connect", "username": "bob", "domain": "example.com"}, self._on_connect_response)
 
     def connectionLost(self, reason):
         print "connection lost"
@@ -51,7 +51,7 @@ class GEPProtocol(NetstringReceiver):
         self.sendString(PACKER.dumps(message))
 
     def _default_callback(self, message):
-        if message['msgtype'] == u'gep.event':
+        if message['msgtype'] == u'event':
             event_data = message['event_data']
             event_stream = message['event_stream']
 
@@ -67,13 +67,13 @@ class GEPProtocol(NetstringReceiver):
     def _on_connect_response(self, message):
         challenge = str(message['challenge'])
         answer = str(cube2crypto.answer_challenge(private_key, challenge))
-        self.request({'msgtype': 'gep.answer', 'answer': answer}, self._on_answer_response)
+        self.request({'msgtype': 'answer', 'answer': answer}, self._on_answer_response)
 
     def _on_answer_response(self, message):
         if message.get('status', None) == u'success':
-            self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
-            self.request({'msgtype': 'gep.subscribe', 'event_stream': 'spyd.game.player.connect'}, self._on_subscribe_response)
-            self.request({'msgtype': 'gep.ping', 'time': int(time.time() * 1000000)}, self._on_ping_response)
+            self.request({'msgtype': 'subscribe', 'event_stream': 'spyd.game.player.chat'}, self._on_subscribe_response)
+            self.request({'msgtype': 'subscribe', 'event_stream': 'spyd.game.player.connect'}, self._on_subscribe_response)
+            self.request({'msgtype': 'ping', 'time': int(time.time() * 1000000)}, self._on_ping_response)
         else:
             self.transport.loseConnection()
 
@@ -99,16 +99,16 @@ class GEPProtocol(NetstringReceiver):
 
     def _on_event_spyd_game_player_connect(self, message, event_data):
         player_uuid = event_data['player']
-        reactor.callLater(1, self.request, {'msgtype': 'gep.get_player_info', 'player': player_uuid}, self._on_player_info_response)
+        reactor.callLater(1, self.request, {'msgtype': 'get_player_info', 'player': player_uuid}, self._on_player_info_response)
 
         room_name = event_data['room']
-        reactor.callLater(1, self.request, {'msgtype': 'gep.get_room_info', 'room': room_name}, self._on_room_info_response)
+        reactor.callLater(1, self.request, {'msgtype': 'get_room_info', 'room': room_name}, self._on_room_info_response)
 
-        reactor.callLater(2, self.request, {'msgtype': 'gep.set_player_room', 'room': 'xyz', 'player': player_uuid, 'message': 'get used to it.'}, self._on_room_info_response)
+        reactor.callLater(2, self.request, {'msgtype': 'set_player_room', 'room': 'xyz', 'player': player_uuid, 'message': 'get used to it.'}, self._on_room_info_response)
 
-        reactor.callLater(5, self.request, {'msgtype': 'gep.set_room_paused', 'room': 'xyz', 'pause': 1, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
+        reactor.callLater(5, self.request, {'msgtype': 'set_room_paused', 'room': 'xyz', 'pause': 1, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
 
-        reactor.callLater(10, self.request, {'msgtype': 'gep.set_room_paused', 'room': 'xyz', 'pause': 0, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
+        reactor.callLater(10, self.request, {'msgtype': 'set_room_paused', 'room': 'xyz', 'pause': 0, 'message': 'Told you guys to get used to it.'}, self._on_room_info_response)
 
 
 class GEPClientFactory(ClientFactory):

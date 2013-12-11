@@ -3,12 +3,13 @@ import os
 
 from twisted.application import service
 from twisted.internet import reactor, defer
+import txCascil
+from txCascil.events import EventSubscriptionFulfiller
 
 from cube2common.constants import disconnect_types
 from server.lan_info.lan_info_service import LanInfoService
 from spyd.authentication.auth_world_view_factory import AuthWorldViewFactory, ANY
 from spyd.authentication.master_client_service_factory import MasterClientServiceFactory
-from spyd.events import EventSubscriptionFulfiller
 from spyd.game.client.client_factory import ClientFactory
 from spyd.game.client.client_number_provider import get_client_number_provider
 from spyd.game.command.command_executer import CommandExecuter
@@ -20,9 +21,10 @@ from spyd.game.server_message_formatter import notice
 from spyd.permissions.permission_resolver import PermissionResolver
 from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
+from spyd.registry_manager import RegistryManager
 from spyd.server.binding.binding_service import BindingService
 from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
-from spyd.server.extension.service_factory import GeneralExtensionServiceFactory
+import spyd.server.gep_message_handlers  # @UnusedImport
 from spyd.server.metrics import get_metrics_service
 from spyd.utils.value_model import ValueModel
 
@@ -108,9 +110,16 @@ class SpydServer(object):
             master_client_service.setServiceParent(self.root_service)
             
     def _initialize_gep_endpoints(self, config):
-        gep_service_factory = GeneralExtensionServiceFactory()
+        message_handlers = {}
+        for message_handler_registration in RegistryManager.get_registrations('gep_message_handler'):
+            message_handler = message_handler_registration.registered_object
+            if message_handler.msgtype in message_handlers:
+                raise Exception("Duplicate message handler registered.")
+            message_handlers[message_handler.msgtype] = message_handler
+
+        gep_service_factory = txCascil.ServerServiceFactory()
         for gep_config in config['gep_endpoints'].itervalues():
-            gep_service = gep_service_factory.build_extension_service(spyd_server=self, config=gep_config)
+            gep_service = gep_service_factory.build_service(self, gep_config, message_handlers, self.permission_resolver, self.event_subscription_fulfiller)
             gep_service.setServiceParent(self.root_service)
 
     def _before_shutdown(self, config):

@@ -5,7 +5,7 @@ from spyd.game.player.player import Player
 
 @register('gep_message_handler')
 class SpydSetPlayerRoomMessageHandler(object):
-    msgtype = 'gep.set_player_room'
+    msgtype = 'set_player_room'
     execute = Functionality(msgtype)
 
     @classmethod
@@ -33,4 +33,4 @@ class SpydSetPlayerRoomMessageHandler(object):
         if player_message:
             client.send_server_message(str(player_message))
 
-        gep_client.send({"msgtype": "gep.status", "status": "success"}, message.get('reqid'))
+        gep_client.send({"msgtype": "status", "status": "success"}, message.get('reqid'))

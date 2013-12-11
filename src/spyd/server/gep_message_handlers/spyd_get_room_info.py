@@ -4,7 +4,7 @@ from spyd.registry_manager import register
 
 @register('gep_message_handler')
 class SpydGetPlayerInfoMessageHandler(object):
-    msgtype = 'gep.get_room_info'
+    msgtype = 'get_room_info'
     execute = Functionality(msgtype)
 
     @classmethod
@@ -32,4 +32,4 @@ class SpydGetPlayerInfoMessageHandler(object):
             'maxplayers': room.maxplayers
         }
 
-        gep_client.send({'msgtype': 'gep.room_info', 'room': room.name, 'room_info': room_info}, message.get('reqid'))
+        gep_client.send({'msgtype': 'room_info', 'room': room.name, 'room_info': room_info}, message.get('reqid'))

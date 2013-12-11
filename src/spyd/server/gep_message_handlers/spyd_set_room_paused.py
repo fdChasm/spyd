@@ -5,7 +5,7 @@ import traceback
 
 @register('gep_message_handler')
 class SpydSetRoomPausedMessageHandler(object):
-    msgtype = 'gep.set_room_paused'
+    msgtype = 'set_room_paused'
     execute = Functionality(msgtype)
 
     @classmethod
@@ -29,4 +29,4 @@ class SpydSetRoomPausedMessageHandler(object):
         except:
             traceback.print_exc()
 
-        gep_client.send({"msgtype": "gep.status", "status": "success"}, message.get('reqid'))
+        gep_client.send({"msgtype": "status", "status": "success"}, message.get('reqid'))
