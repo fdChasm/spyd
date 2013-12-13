@@ -1,4 +1,4 @@
-from cube2common.constants import game_entity_types, RESETFLAGTIME, client_states, DMF
+from cube2common.constants import game_entity_types, RESETFLAGTIME, DMF
 from cube2common.vec import vec
 from spyd.game.map.flag import Flag
 from spyd.game.map.team import Team

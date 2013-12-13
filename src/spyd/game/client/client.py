@@ -6,7 +6,7 @@ from twisted.internet import reactor
 from cube2common.constants import disconnect_types, MAXNAMELEN
 from cube2common.cube_data_stream import CubeDataStream
 from spyd.game.client.client_auth_state import ClientAuthState
-from spyd.game.client.exceptions import InvalidPlayerNumberReference, InsufficientPermissions, StateError, UsageError, GenericError
+from spyd.game.client.exceptions import InsufficientPermissions, StateError, UsageError, GenericError
 from spyd.game.client.message_handlers import get_message_handlers
 from spyd.game.client.client_permissions import ClientPermissions
 from spyd.game.client.room_group_provider import RoomGroupProvider

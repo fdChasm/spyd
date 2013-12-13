@@ -10,4 +10,4 @@ class AuthtryHandler(object):
         authdomain = message['authdomain']
         authname = message['authname']
 
-        deferred = client.auth(authdomain, authname)
+        deferred = client.auth(authdomain, authname)  # @UnusedVariable

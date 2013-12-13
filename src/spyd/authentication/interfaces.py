@@ -8,7 +8,7 @@ class IAuthService(zope.interface.Interface):
         auth_domain : string
         '''
     
-    def try_authenticate(auth_domain, auth_name):
+    def try_authenticate(self, auth_domain, auth_name):
         '''
         Parameters
         ----------
@@ -23,7 +23,7 @@ class IAuthService(zope.interface.Interface):
             Yields IAuthChallenge, errs AuthFailedException
         '''
 
-    def answer_challenge(auth_domain, auth_id, answer):
+    def answer_challenge(self, auth_domain, auth_id, answer):
         '''
         Parameters
         ----------
@@ -53,5 +53,5 @@ class IAuthSuccess(zope.interface.Interface):
     client_message_kwargs = zope.interface.Attribute('Keyword arguments used to populate the client message.')
 
 class IGroupProvider(zope.interface.Interface):
-    def get_group_names():
+    def get_group_names(self):
         '''Returns a list of groups.'''
