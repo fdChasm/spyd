@@ -1,31 +1,33 @@
-import cube2common.cube_data_stream
 import contextlib
+
+from cube2protocol.cube_data_stream import CubeDataStream
 from spyd.game.player.player import Player
+
 
 class ClientCollection(object):
     def __init__(self):
-        #cn: client
+        # cn: client
         self._clients = {}
-        
+
     def add(self, client):
         self._clients[client.cn] = client
-        
+
     def remove(self, client):
         del self._clients[client.cn]
-        
+
     @property
     def count(self):
         return len(self._clients)
-    
+
     def to_list(self):
         return self._clients.values()
-    
+
     def to_iterator(self):
         return self._clients.itervalues()
-    
+
     def by_cn(self, cn):
         return self._clients[cn]
-    
+
     def broadcast(self, channel, data, reliable=False, exclude=None, clients=None):
         clients = clients or self._clients.itervalues()
         exclude = set(exclude or ())
@@ -38,6 +40,6 @@ class ClientCollection(object):
 
     @contextlib.contextmanager
     def broadcastbuffer(self, channel, reliable=False, exclude=[], clients=None):
-        cds = cube2common.cube_data_stream.CubeDataStream()
+        cds = CubeDataStream()
         yield cds
         self.broadcast(channel, cds, reliable, exclude, clients)

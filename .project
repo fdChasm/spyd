@@ -3,6 +3,8 @@
 	<name>spyd</name>
 	<comment></comment>
 	<projects>
+		<project>cube2common</project>
+		<project>cube2protocol</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

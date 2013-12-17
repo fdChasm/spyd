@@ -1,4 +1,4 @@
-from cube2common.cube_data_stream import CubeDataStream
+from cube2protocol.cube_data_stream import CubeDataStream
 from spyd.protocol import swh
 
 

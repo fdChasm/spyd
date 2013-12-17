@@ -1,6 +1,6 @@
 from cube2common.constants import client_states, weapon_types, armor_types, item_types, itemstats
-from cube2common.cube_data_stream import CubeDataStream
 from cube2common.vec import vec
+from cube2protocol.cube_data_stream import CubeDataStream
 from spyd.game.player.kpd import KPD
 from spyd.game.timing.expiry import Expiry
 from spyd.game.timing.timer import Timer

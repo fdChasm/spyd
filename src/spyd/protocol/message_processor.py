@@ -1,6 +1,6 @@
 from cube2common.constants import message_types
-from cube2common.read_cube_data_stream import ReadCubeDataStream
-from spyd.protocol.server_read_stream_protocol import sauerbraten_stream_spec
+from cube2protocol.read_cube_data_stream import ReadCubeDataStream
+from cube2protocol.sauerbraten.collect.server_read_stream_protocol import sauerbraten_stream_spec
 from spyd.server.metrics.execution_timer import ExecutionTimer
 
 

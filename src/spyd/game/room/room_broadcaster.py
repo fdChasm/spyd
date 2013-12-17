@@ -1,17 +1,24 @@
+import contextlib
 import traceback
 
-import cube2common.cube_data_stream
+from cube2protocol.cube_data_stream import CubeDataStream
 from spyd.protocol import swh
-from cube2common.cube_data_stream import CubeDataStream
 
 
 class RoomBroadcaster(object):
-    def __init__(self, client_collection, player_collection):
+    def __init__(self, client_collection, player_collection, demo_recorder):
         self._client_collection = client_collection
         self._player_collection = player_collection
+        self._demo_recorder = demo_recorder
+
+    @contextlib.contextmanager
+    def broadcastbuffer(self, channel, reliable, *args):
+        with self.clientbuffer(channel, reliable, *args) as cds:
+            yield cds
+            self._demo_recorder.record(channel, str(cds))
 
     @property
-    def broadcastbuffer(self):
+    def clientbuffer(self):
         return self._client_collection.broadcastbuffer
 
     def resume(self):
@@ -78,8 +85,8 @@ class RoomBroadcaster(object):
         try:
             for client in self._client_collection.to_iterator():
 
-                room_positions = cube2common.cube_data_stream.CubeDataStream()
-                room_messages = cube2common.cube_data_stream.CubeDataStream()
+                room_positions = CubeDataStream()
+                room_messages = CubeDataStream()
 
                 for player in self._player_collection.to_iterator():
                     if player.client == client: continue

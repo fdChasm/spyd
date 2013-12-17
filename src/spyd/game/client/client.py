@@ -4,11 +4,12 @@ import traceback
 from twisted.internet import reactor
 
 from cube2common.constants import disconnect_types, MAXNAMELEN
-from cube2common.cube_data_stream import CubeDataStream
+from cube2protocol.cube_data_stream import CubeDataStream
 from spyd.game.client.client_auth_state import ClientAuthState
+from spyd.game.client.client_permissions import ClientPermissions
+from spyd.game.client.client_player_collection import ClientPlayerCollection
 from spyd.game.client.exceptions import InsufficientPermissions, StateError, UsageError, GenericError
 from spyd.game.client.message_handlers import get_message_handlers
-from spyd.game.client.client_permissions import ClientPermissions
 from spyd.game.client.room_group_provider import RoomGroupProvider
 from spyd.game.player.player import Player
 from spyd.game.room.exceptions import RoomEntryFailure
@@ -17,7 +18,6 @@ from spyd.protocol import swh
 from spyd.utils.constrain import ConstraintViolation
 from spyd.utils.filtertext import filtertext
 from spyd.utils.ping_buffer import PingBuffer
-from spyd.game.client.client_player_collection import ClientPlayerCollection
 
 
 class Client(object):

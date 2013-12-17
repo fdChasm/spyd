@@ -1,5 +1,7 @@
 from twisted.internet.protocol import DatagramProtocol
-from cube2common.read_cube_data_stream import ReadCubeDataStream
+
+from cube2protocol.read_cube_data_stream import ReadCubeDataStream
+
 
 class LanInfoProtocol(DatagramProtocol):
     def __init__(self, multicast=False):

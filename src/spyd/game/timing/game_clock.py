@@ -201,7 +201,9 @@ class GameClock(object):
         if self.is_paused:
             return self._time_elapsed
         else:
-            return self._time_elapsed + (self.clock.seconds() - self._last_resume_time)
+            time_elapsed = self._time_elapsed or 0.0
+            last_resume_time = self._last_resume_time or self.clock.seconds()
+            return time_elapsed + (self.clock.seconds() - last_resume_time)
 
     def _paused(self):
         self._state = states.PAUSED

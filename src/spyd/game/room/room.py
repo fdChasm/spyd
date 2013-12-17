@@ -1,4 +1,3 @@
-import contextlib
 import math
 import traceback
 
@@ -13,6 +12,7 @@ from spyd.game.room.client_event_handlers import get_client_event_handlers
 from spyd.game.room.player_collection import PlayerCollection
 from spyd.game.room.player_event_handlers import get_player_event_handlers
 from spyd.game.room.room_broadcaster import RoomBroadcaster
+from spyd.game.room.room_demo_recorder import RoomDemoRecorder
 from spyd.game.room.room_entry_context import RoomEntryContext
 from spyd.game.room.room_map_mode_state import RoomMapModeState
 from spyd.game.server_message_formatter import smf
@@ -63,7 +63,7 @@ class Room(object):
 
         self.show_awards = show_awards
 
-        self.demo_recorder = demo_recorder or NoOpDemoRecorder()
+        self.demo_recorder = RoomDemoRecorder(self, demo_recorder or NoOpDemoRecorder())
 
         self.mastermask = 0 if self.temporary else -1
         self.mastermode = 0
@@ -81,7 +81,7 @@ class Room(object):
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
-        self._broadcaster = RoomBroadcaster(self._clients, self._players)
+        self._broadcaster = RoomBroadcaster(self._clients, self._players, self.demo_recorder)
         reactor.addSystemEventTrigger('before', 'flush_bindings', self._flush_messages)
 
     ###########################################################################
@@ -187,12 +187,6 @@ class Room(object):
     def is_name_duplicate(self, name):
         return self._players.is_name_duplicate(name)
 
-    @contextlib.contextmanager
-    def demobuffer(self, channel):
-        cds = self.demo_recorder.buffer_class()
-        yield cds
-        self.demo_recorder.record(self.gamemillis, channel, str(cds))
-
     ###########################################################################
     #######################         Setters         ###########################
     ###########################################################################
@@ -259,6 +253,10 @@ class Room(object):
     @property
     def broadcastbuffer(self):
         return self._broadcaster.broadcastbuffer
+
+    @property
+    def demobuffer(self, channel):
+        return self.demo_recorder.demobuffer
 
     def server_message(self, message, exclude=()):
         self._broadcaster.server_message(message, exclude)
@@ -372,7 +370,7 @@ class Room(object):
             swh.put_resume(cds, existing_players)
 
     def _new_map_mode_initialize(self):
-        with self._broadcaster.broadcastbuffer(1, True) as cds:
+        with self.broadcastbuffer(1, True) as cds:
             swh.put_mapchange(cds, self.map_name, self.gamemode.clientmodenum, hasitems=False)
 
             for player in self.players:
@@ -513,20 +511,4 @@ class Room(object):
         self.demo_recorder.write("/tmp/abaracada.dmo")
 
     def _initialize_demo_recording(self):
-        self.demo_recorder.clear()
-        with self.demobuffer(1) as cds:
-            swh.put_welcome(cds)
-
-            swh.put_currentmaster(cds, self.mastermode, self._clients.to_iterator())
-
-            swh.put_mapchange(cds, self._map_mode_state.map_name, self._map_mode_state.mode_num, hasitems=False)
-
-            if self.gamemode.timed and self.timeleft is not None:
-                swh.put_timeup(cds, self.timeleft)
-
-            if self.is_paused:
-                swh.put_pausegame(cds, 1)
-
-            existing_players = list(self.players)
-            swh.put_initclients(cds, existing_players)
-            swh.put_resume(cds, existing_players)
+        self.demo_recorder.initialize_demo_recording()

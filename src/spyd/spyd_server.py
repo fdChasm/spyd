@@ -7,6 +7,7 @@ import txCascil
 from txCascil.events import EventSubscriptionFulfiller
 
 from cube2common.constants import disconnect_types
+from cube2protocol.sauerbraten.collect.server_read_message_processor import ServerReadMessageProcessor
 from server.lan_info.lan_info_service import LanInfoService
 from spyd.authentication.auth_world_view_factory import AuthWorldViewFactory, ANY
 from spyd.authentication.master_client_service_factory import MasterClientServiceFactory
@@ -19,13 +20,13 @@ from spyd.game.room.room_factory import RoomFactory
 from spyd.game.room.room_manager import RoomManager
 from spyd.game.server_message_formatter import notice
 from spyd.permissions.permission_resolver import PermissionResolver
-from spyd.protocol.message_processor import MessageProcessor
 from spyd.punitive_effects.punitive_model import PunitiveModel
 from spyd.registry_manager import RegistryManager
 from spyd.server.binding.binding_service import BindingService
 from spyd.server.binding.client_protocol_factory import ClientProtocolFactory
 import spyd.server.gep_message_handlers  # @UnusedImport
 from spyd.server.metrics import get_metrics_service
+from spyd.server.metrics.execution_timer import ExecutionTimer
 from spyd.utils.value_model import ValueModel
 
 
@@ -61,14 +62,15 @@ class SpydServer(object):
         self.master_client_service_factory = MasterClientServiceFactory(self.punitive_model)
         self.auth_world_view_factory = AuthWorldViewFactory()
 
-        self.message_processor = MessageProcessor(self.metrics_service)
+        self.message_processor = ServerReadMessageProcessor()
+        message_processing_execution_timer = ExecutionTimer(self.metrics_service, 'process_message', 1.0)
 
         self.connect_auth_domain = config.get('connect_auth_domain', '')
 
         client_number_provider = get_client_number_provider(config)
         self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller, self.connect_auth_domain)
 
-        self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor, config.get('client_message_rate_limit', 200))
+        self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor, config.get('client_message_rate_limit', 200), message_processing_execution_timer)
 
         self.binding_service = BindingService(self.client_protocol_factory, self.metrics_service)
         self.binding_service.setServiceParent(self.root_service)
