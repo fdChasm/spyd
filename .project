@@ -3,8 +3,12 @@
 	<name>spyd</name>
 	<comment></comment>
 	<projects>
-		<project>cube2common</project>
-		<project>cube2protocol</project>
+		<project>pycube2common</project>
+		<project>pycube2crypto</project>
+		<project>pycube2demo</project>
+		<project>pycube2protocol</project>
+		<project>pyenet</project>
+		<project>txCascil</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

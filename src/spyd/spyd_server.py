@@ -12,7 +12,7 @@ from server.lan_info.lan_info_service import LanInfoService
 from spyd.authentication.auth_world_view_factory import AuthWorldViewFactory, ANY
 from spyd.authentication.master_client_service_factory import MasterClientServiceFactory
 from spyd.game.client.client_factory import ClientFactory
-from spyd.game.client.client_number_provider import get_client_number_provider
+from spyd.game.client.client_number_provider import get_client_number_handle_provider
 from spyd.game.command.command_executer import CommandExecuter
 from spyd.game.map.map_meta_data_accessor import MapMetaDataAccessor
 from spyd.game.room.room_bindings import RoomBindings
@@ -67,8 +67,8 @@ class SpydServer(object):
 
         self.connect_auth_domain = config.get('connect_auth_domain', '')
 
-        client_number_provider = get_client_number_provider(config)
-        self.client_factory = ClientFactory(client_number_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller, self.connect_auth_domain)
+        client_number_handle_provider = get_client_number_handle_provider(config)
+        self.client_factory = ClientFactory(client_number_handle_provider, self.room_bindings, self.auth_world_view_factory, self.permission_resolver, self.event_subscription_fulfiller, self.connect_auth_domain)
 
         self.client_protocol_factory = ClientProtocolFactory(self.client_factory, self.message_processor, config.get('client_message_rate_limit', 200), message_processing_execution_timer)
 
