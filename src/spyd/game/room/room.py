@@ -181,6 +181,10 @@ class Room(object):
         return self._map_mode_state.mode_num
 
     @property
+    def is_teammode(self):
+        return self.gamemode.hasteams
+
+    @property
     def mode_name(self):
         return self._map_mode_state.mode_name
 

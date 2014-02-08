@@ -135,6 +135,10 @@ class Client(object):
     def uuid(self):
         return self.get_player().uuid
 
+    @property
+    def ping(self):
+        return self.ping_buffer.avg()
+
     def has_pn(self, pn=-1):
         return self._client_player_collection.has_pn(pn=pn)
 

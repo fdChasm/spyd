@@ -9,4 +9,4 @@ class PingBuffer(object):
             self.pings.pop(0)
             
     def avg(self):
-        return float(sum(self.pings))/len(self.pings)
+        return float(sum(self.pings)) / max(len(self.pings), 1)

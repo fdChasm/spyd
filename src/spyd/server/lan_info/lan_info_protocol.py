@@ -18,9 +18,12 @@ class LanInfoProtocol(DatagramProtocol):
     def datagramReceived(self, data, address):
         rcds = ReadCubeDataStream(data)
         millis = rcds.getint()
-        if not millis == 0:
+        if millis != 0:
             for lan_info_responder in self.lan_info_responders:
                 lan_info_responder.info_request(address, millis)
+        else:
+            for lan_info_responder in self.lan_info_responders:
+                lan_info_responder.ext_info_request(address, rcds.copy())
 
     def send(self, data, address):
         self.transport.write(data, address)

@@ -76,6 +76,14 @@ class PlayerState(object):
         return (100 * self.damage_dealt) / self.damage_spent
 
     @property
+    def acc_percent_int(self):
+        acc = self.acc_percent
+        if acc is Ellipsis:
+            return 0
+        else:
+            return int(acc)
+
+    @property
     def time_playing_this_match(self):
         if self.playing_timer is not None:
             return self.playing_timer.time_elapsed

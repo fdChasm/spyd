@@ -31,6 +31,15 @@ class Player(object):
         return self._pn
 
     @property
+    def ping(self):
+        return self.client.ping
+
+    @property
+    def privilege(self):
+        if self.isai: return 0
+        else: return self.client.privilege
+
+    @property
     def state(self):
         return self._state
 
