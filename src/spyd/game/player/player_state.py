@@ -141,7 +141,7 @@ class PlayerState(object):
         self.pos.v = position
 
     def clear_flushed_state(self):
-        self.messages.clear()
+        self.messages = CubeDataStream()
         self.position = None
 
     def map_change_reset(self):

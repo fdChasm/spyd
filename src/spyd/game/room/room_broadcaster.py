@@ -69,11 +69,11 @@ class RoomBroadcaster(object):
         with self.broadcastbuffer(1, True, [client]) as cds:
             swh.put_resume(cds, [player])
             swh.put_initclients(cds, [player])
-            
+
     def current_masters(self, mastermode, clients):
         with self.broadcastbuffer(1, True) as cds:
             swh.put_currentmaster(cds, mastermode, clients)
-            
+
     def sound(self, sound):
         for client in self._client_collection.to_iterator():
             with client.sendbuffer(1, True) as cds:
@@ -83,20 +83,63 @@ class RoomBroadcaster(object):
 
     def flush_messages(self):
         try:
+            class ClientBufferReference(object):
+                def __init__(self, client, positions_next_byte, positions_size, messages_next_byte, messages_size):
+                    self.client = client
+                    self.positions_next_byte = positions_next_byte
+                    self.positions_size = positions_size
+                    self.messages_next_byte = messages_next_byte
+                    self.messages_size = messages_size
+
+            room_positions = CubeDataStream()
+            room_messages = CubeDataStream()
+
+            references = []
+
+            positions_next_byte = 0
+            messages_next_byte = 0
+
             for client in self._client_collection.to_iterator():
+                player = client.get_player()
 
-                room_positions = CubeDataStream()
-                room_messages = CubeDataStream()
+                positions_first_byte = positions_next_byte
+                messages_first_byte = messages_next_byte
 
-                for player in self._player_collection.to_iterator():
-                    if player.client == client: continue
-                    player.write_state(room_positions, room_messages)
+                player.write_state(room_positions, room_messages)
 
-                if not room_positions.empty():
-                    client.send(0, room_positions, True)
+                positions_next_byte = len(room_positions)
+                messages_next_byte = len(room_messages)
 
-                if not room_messages.empty():
-                    client.send(1, room_messages, True)
+                positions_size = positions_next_byte - positions_first_byte
+                messages_size = messages_next_byte - messages_first_byte
+
+                references.append(ClientBufferReference(client, positions_next_byte, positions_size, messages_next_byte, messages_size))
+
+            positions_len = len(room_positions)
+            messages_len = len(room_messages)
+
+            room_positions.write(room_positions)
+            room_messages.write(room_messages)
+
+            position_data = memoryview(room_positions.data)
+            message_data = memoryview(room_messages.data)
+
+            for ref in references:
+                client = ref.client
+
+                pnb = ref.positions_next_byte
+                mnb = ref.messages_next_byte
+
+                psize = ref.positions_size
+                msize = ref.messages_size
+
+                if positions_len - psize > 0:
+                    # TODO: Use no_allocate option here
+                    client.send(0, position_data[pnb:pnb + (positions_len - psize)], False, False)
+
+                if messages_len - msize > 0:
+                    # TODO: Use no_allocate option here
+                    client.send(1, message_data[mnb:mnb + (messages_len - msize)], True, False)
 
             for player in self._player_collection.to_iterator():
                 player.state.clear_flushed_state()

@@ -147,10 +147,14 @@ class Client(object):
     def player_iter(self):
         return self._client_player_collection.player_iter()
 
-    def send(self, channel, data, reliable):
-        if type(data) != str:
+    def send(self, channel, data, reliable, no_allocate=False):
+        if type(data) == memoryview:
+            data = data.tobytes()
+        elif type(data) == CubeDataStream:
+            data = memoryview(data.data).tobytes()
+        elif type(data) != str:
             data = str(data)
-        self.protocol_wrapper.send(channel, data, reliable)
+        self.protocol_wrapper.send(channel, data, reliable, no_allocate)
 
     @contextlib.contextmanager
     def sendbuffer(self, channel, reliable):

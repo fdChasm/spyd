@@ -62,5 +62,5 @@ class ClientProtocol(ENetClientProtocol):
             self._client.send_server_message(message or 'Goodbye')
         self._disconnecting_later = reactor.callLater(timeout, self.disconnect, disconnect_type)
 
-    def send(self, channel, data, reliable):
-        return self.transport.send(channel, data, reliable)
+    def send(self, channel, data, reliable, no_allocate=False):
+        return self.transport.send(channel, data, reliable, no_allocate)
