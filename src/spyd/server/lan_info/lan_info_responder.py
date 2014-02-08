@@ -22,9 +22,10 @@ def get_ext_info_reply_cds(rcds):
     return cds
 
 class LanInfoResponder(object):
-    def __init__(self, lan_info_protocol, room):
+    def __init__(self, lan_info_protocol, room, ext_info_config):
         self.lan_info_protocol = lan_info_protocol
         self.room = room
+        self.config = ext_info_config
 
     def info_request(self, address, millis):
         cds = CubeDataStream()
@@ -96,24 +97,28 @@ class LanInfoResponder(object):
         cds.putint(EXT_PLAYERSTATS_RESP_STATS)
 
         cds.putint(player.pn)
-        cds.putint(player.ping);
+        cds.putint(player.ping)
         cds.putstring(player.name)
         cds.putstring(player.team_name)
-        cds.putint(player.state.frags);
-        cds.putint(player.state.flags);
-        cds.putint(player.state.deaths);
-        cds.putint(player.state.teamkills);
-        cds.putint(player.state.acc_percent_int);
-        cds.putint(player.state.health);
-        cds.putint(player.state.armour);
-        cds.putint(player.state.gunselect);
-        cds.putint(player.privilege);
-        cds.putint(player.state.state);
+        cds.putint(player.state.frags)
+        cds.putint(player.state.flags)
+        cds.putint(player.state.deaths)
+        cds.putint(player.state.teamkills)
+        cds.putint(player.state.acc_percent_int)
+        cds.putint(player.state.health)
+        cds.putint(player.state.armour)
+        cds.putint(player.state.gunselect)
+        cds.putint(player.privilege)
+        cds.putint(player.state.state)
 
-        # TODO: optionally supply first three ip octets here
-        cds.putbyte(0)
-        cds.putbyte(0)
-        cds.putbyte(0)
+        if self.config.get('send_ips', True):
+            ip = player.client.host
+            octs = ip.split('.')[:3]
+            for i in range(3):
+                cds.putbyte(int(octs[i]))
+        else:
+            for i in range(3):
+                cds.putbyte(0)
 
         self.respond(str(cds), address)
 

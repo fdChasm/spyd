@@ -22,6 +22,10 @@
         }
     },
     "lan_findable": true,
+    "ext_info": {
+        "enabled": true,
+        "send_ips": true
+    },
     "room_types": {
         "default": {
             "map_rotation": "file://map_rotation.json"
@@ -32,10 +36,6 @@
         "temporary": {
             "map_rotation": "file://map_rotation.json"
         }
-    },
-    "logging": {
-        "log_rooms_seperately": true,
-        "log_directory": "logs"
     },
     "permissions": "file://permissions.json",
     "master_servers": "file://master_servers.json",

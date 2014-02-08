@@ -4,9 +4,10 @@ from cube2protocol.read_cube_data_stream import ReadCubeDataStream
 
 
 class LanInfoProtocol(DatagramProtocol):
-    def __init__(self, multicast=False):
+    def __init__(self, multicast=False, ext_info_enabled=True):
         self.lan_info_responders = []
         self.multicast = multicast
+        self.ext_info_enabled = ext_info_enabled
         
     def startProtocol(self):
         if self.multicast:
@@ -21,7 +22,7 @@ class LanInfoProtocol(DatagramProtocol):
         if millis != 0:
             for lan_info_responder in self.lan_info_responders:
                 lan_info_responder.info_request(address, millis)
-        else:
+        elif self.ext_info_enabled:
             for lan_info_responder in self.lan_info_responders:
                 lan_info_responder.ext_info_request(address, rcds.copy())
 

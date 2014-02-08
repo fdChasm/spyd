@@ -75,7 +75,7 @@ class SpydServer(object):
         self.binding_service = BindingService(self.client_protocol_factory, self.metrics_service)
         self.binding_service.setServiceParent(self.root_service)
 
-        self.lan_info_service = LanInfoService(config['lan_findable'])
+        self.lan_info_service = LanInfoService(config['lan_findable'], config['ext_info'])
         self.lan_info_service.setServiceParent(self.root_service)
 
         self._initialize_master_clients(config)
