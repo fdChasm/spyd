@@ -43,6 +43,7 @@ class SpydServer(object):
         self.metrics_service.setServiceParent(self.root_service)
 
         self.server_name_model = ValueModel(config.get('server_name', '123456789ABCD'))
+        self.server_info_model = ValueModel(config.get('server_info', "An Spyd Server!"))
 
         sauerbraten_package_dir = get_package_dir(config)
         map_meta_data_accessor = MapMetaDataAccessor(sauerbraten_package_dir)
@@ -50,7 +51,7 @@ class SpydServer(object):
         
         self.event_subscription_fulfiller = EventSubscriptionFulfiller()
 
-        command_executer = CommandExecuter()
+        command_executer = CommandExecuter(self)
 
         self.room_manager = RoomManager()
         self.room_factory = RoomFactory(config, self.room_manager, self.server_name_model, map_meta_data_accessor, command_executer, self.event_subscription_fulfiller, self.metrics_service)

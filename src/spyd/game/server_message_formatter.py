@@ -2,7 +2,7 @@ from cube2common.colors import color_wrappers, colors
 from spyd.utils.wrapping_string_formatter import WrappingStringFormatter
 
 
-smf = WrappingStringFormatter()
+smf = WrappingStringFormatter(global_fields=colors)
 
 def clientnum_wrapper(cn):
     return color_wrappers.magenta("({})".format(cn))

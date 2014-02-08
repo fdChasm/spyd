@@ -11,5 +11,5 @@ class ResumeCommand(CommandBase):
     description = "Resume the game."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         room.on_client_pause_game(client, pause=0)

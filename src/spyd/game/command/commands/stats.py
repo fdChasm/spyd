@@ -9,14 +9,14 @@ from spyd.utils.prettytime import shortDurationString
 stats_msg = "Name: {name#player}, Frags: {value#player.state.frags}, Deaths: {value#player.state.deaths}, Suicides: {value#player.state.suicides}, Teamkills: {value#player.state.teamkills}, Accuracy: {value#player.state.acc_formatted}, Online: {value#time_online_str}"
 
 @register("command")
-class RoomCommand(CommandBase):
+class StatsCommand(CommandBase):
     name = "stats"
     functionality = Functionality("spyd.game.commands.stats.execute", "You do not have permission to execute {action#command}", command=name)
     usage = "(cn)"
     description = "Displays the stats of the indicated player or yourself."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         if len(arguments):
             player = room.get_player(int(arguments[0]))
         else:

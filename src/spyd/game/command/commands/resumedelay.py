@@ -13,7 +13,7 @@ class ResumeDelayCommand(CommandBase):
     description = "View or set the amount of time to count down before starting or resuming a game."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         if len(arguments):
             try:
                 room.resume_delay = max(0, min(10, int(arguments[0])))

@@ -13,6 +13,6 @@ class CommandBase(object):
         return None
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments):
+    def execute(cls, spyd_server, room, client, command_string, arguments):
         'Actually run the command.'
         raise GenericError('Not Implemented.')

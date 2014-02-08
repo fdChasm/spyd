@@ -18,7 +18,7 @@ class RoomCreateCommand(CommandBase):
     description = "Create a room."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         if len(arguments) < 1:
             raise GenericError("Please specify a room name.")
 

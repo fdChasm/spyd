@@ -1,5 +1,6 @@
 {
     "server_name": "Spyd Server",
+    "server_info": "This server runs Spyd. Use {orange}#commands{white} to see available commands. See {blue}https://github.com/fdChasm/spyd{white} for more info.",
     "packages_directory": "/opt/sauerbraten/packages",
     "default_room": "lobby",
     "room_bindings": {

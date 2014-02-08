@@ -9,8 +9,9 @@ from spyd.game.client.exceptions import GenericError, InsufficientPermissions
 command_pattern = re.compile("^#(?P<command_string>[\w-]+)(\s(?P<arg_string>.*))?$")
 
 class CommandExecuter(object):
-    def __init__(self):
+    def __init__(self, spyd_server):
         self._command_finder = CommandFinder()
+        self._spyd_server = spyd_server
 
     def execute(self, room, client, raw_command_string):
         command_match = command_pattern.match(raw_command_string)
@@ -39,7 +40,7 @@ class CommandExecuter(object):
         except ValueError as e:
             raise GenericError("Invalid input: {error}", error=e.message)
         
-        command_handler.execute(room, client, command_string, args, arg_string)
+        command_handler.execute(self._spyd_server, room, client, command_string, args, arg_string)
 
     def get_available_commands(self, client):
         command_list = self._command_finder.get_command_list()

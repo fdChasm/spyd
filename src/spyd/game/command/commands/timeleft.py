@@ -22,7 +22,7 @@ class TimeleftCommand(CommandBase):
     description = "View or set the amount of time left in the match. Valid time strings could be; +2m -30s 10m 2y"
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         if len(arguments):
             if room.temporary:
                 if not client.allowed(set_temporary_room_timeleft):

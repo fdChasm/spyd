@@ -8,7 +8,7 @@ from spyd.game.room.client_event_handlers.map_vote_handler import set_map_mode_f
 
 
 @register("command")
-class ResumeCommand(CommandBase):
+class ChangeMapCommand(CommandBase):
     name = "<mode>"
     functionality = Functionality("spyd.game.commands.resume.execute", "You do not have permission to execute {action#command}", command=name)
     usage = "<map>"
@@ -19,7 +19,7 @@ class ResumeCommand(CommandBase):
         return command_string in gamemodes
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         if not client.allowed(set_map_mode_functionality):
             raise InsufficientPermissions(set_map_mode_functionality.denied_message)
 

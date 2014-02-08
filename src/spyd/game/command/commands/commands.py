@@ -7,14 +7,14 @@ def format_cmd(command):
     return smf.format("{action#command.name}", command=command)
 
 @register("command")
-class RoomCommand(CommandBase):
+class CommandsCommand(CommandBase):
     name = "commands"
     functionality = Functionality("spyd.game.commands.room.execute", "You do not have permission to execute {action#command}", command=name)
     usage = ""
     description = "Displays the list of commands you are permitted to execute."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         available_commands = room.command_executer.get_available_commands(client)
 
         formatted_command_list = map(format_cmd, available_commands)

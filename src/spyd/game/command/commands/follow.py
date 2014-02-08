@@ -4,14 +4,14 @@ from spyd.game.client.exceptions import GenericError
 from spyd.game.command.command_base import CommandBase
 
 @register("command")
-class RoomCommand(CommandBase):
+class FollowCommand(CommandBase):
     name = "follow"
     functionality = Functionality("spyd.game.commands.room.execute", "You do not have permission to execute {action#command}", command=name)
     usage = ""
     description = "Follow the last player to leave this room."
 
     @classmethod
-    def execute(cls, room, client, command_string, arguments, raw_args):
+    def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
         room_name = room.last_destination_room
         
         if room_name is None:
