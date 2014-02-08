@@ -9,7 +9,7 @@ room_info_msg = "Room: {room#room.name}, Players: {value#room.player_count}, Mod
 @register("command")
 class RoomCommand(CommandBase):
     name = "rooms"
-    functionality = Functionality("spyd.game.commands.room.execute", "You do not have permission to execute {action#command}", command=name)
+    functionality = Functionality("spyd.game.commands.rooms.execute", "You do not have permission to execute {action#command}", command=name)
     usage = "<room name>"
     description = "Displays the rooms on the server, their player counts, modes, and maps."
 

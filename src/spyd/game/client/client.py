@@ -18,6 +18,7 @@ from spyd.protocol import swh
 from spyd.utils.constrain import ConstraintViolation
 from spyd.utils.filtertext import filtertext
 from spyd.utils.ping_buffer import PingBuffer
+import time
 
 
 class Client(object):
@@ -38,6 +39,8 @@ class Client(object):
         self.port = protocol.transport.port
 
         self.ping_buffer = PingBuffer()
+
+        self.connect_time = int(time.time())
 
         self._ignored_preconnect_message_types = ("N_POS", "N_PING")
         self._allowed_preconnect_message_types = ("N_CONNECT", "N_AUTHANS")
@@ -138,6 +141,10 @@ class Client(object):
     @property
     def ping(self):
         return self.ping_buffer.avg()
+
+    @property
+    def time_online(self):
+        return int(time.time()) - self.connect_time
 
     def has_pn(self, pn=-1):
         return self._client_player_collection.has_pn(pn=pn)
