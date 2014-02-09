@@ -9,7 +9,7 @@ from spyd.utils.listjoin import listjoin
 
 class NoOpReadyUpController(object):
     def __init__(self, room):
-        self.room.resume()
+        room.resume()
 
     def on_crc(self, player, crc):
         pass
