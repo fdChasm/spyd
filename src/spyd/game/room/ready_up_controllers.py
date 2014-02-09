@@ -3,7 +3,6 @@ import time
 from twisted.internet import reactor
 
 from spyd.game.server_message_formatter import smf
-from spyd.protocol import swh
 from spyd.utils.listjoin import listjoin
 
 
@@ -36,7 +35,7 @@ class MapLoadReadyUpController(object):
             self.changed = True
             self.done = False
 
-            reactor.callLater(1, self._check_update)
+            reactor.callLater(2, self._check_update)
         else:
             self.room.resume()
             self.wait_clients = set()
@@ -59,7 +58,7 @@ class MapLoadReadyUpController(object):
             self.room.server_message(smf.format("Waiting for {player_name_str} to load the map.", player_name_str=player_name_str))
 
         if len(self.wait_clients):
-            reactor.callLater(1, self._check_update)
+            reactor.callLater(2, self._check_update)
 
     def _check_client(self, client):
         if client in self.wait_clients:

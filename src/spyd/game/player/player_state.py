@@ -124,16 +124,10 @@ class PlayerState(object):
         else:
             print "failed to set is_spectator"
 
-    def respawn(self, gamemode):
+    def respawn(self):
         self._pending_spawn = True
         self.lifesequence = (self.lifesequence + 1) & 0x7F
         self._quadexpiry = None
-        self.health = gamemode.spawnhealth
-        self.armour = gamemode.spawnarmour
-        self.armourtype = gamemode.spawnarmourtype
-        self.gunselect = gamemode.spawngunselect
-        self.ammo = gamemode.spawnammo
-
         self.position = None
 
     def on_respawn(self, lifesequence, gunselect):

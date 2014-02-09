@@ -363,7 +363,8 @@ class Room(object):
         self.gamemode.initialize_player(cds, player)
 
         if not player.state.is_spectator and not self.is_intermission:
-            player.state.respawn(self.gamemode)
+            player.state.respawn()
+            self.gamemode.spawn_loadout(player)
             swh.put_spawnstate(cds, player)
 
     def _initialize_client(self, client):
@@ -398,7 +399,8 @@ class Room(object):
 
         for player in self.players:
             player.state.map_change_reset()
-            player.state.respawn(self.gamemode)
+            player.state.respawn()
+            self.gamemode.spawn_loadout(player)
 
         for client in self.clients:
             with client.sendbuffer(1, True) as cds:
