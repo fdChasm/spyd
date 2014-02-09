@@ -14,6 +14,9 @@ class SpectatingBase(object):
             player.state.is_spectator = True
             swh.put_spectator(cds, player)
 
+        if player.client.cn == player.pn:
+            self.room.ready_up_controller.on_client_spectated(player.client)
+
     def on_player_unspectate(self, player):
         with self.room.broadcastbuffer(1, True) as cds:
             player.state.is_spectator = False

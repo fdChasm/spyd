@@ -29,13 +29,25 @@
     },
     "room_types": {
         "default": {
-            "map_rotation": "file://map_rotation.json"
+            "map_rotation": "file://map_rotation.json",
+            "ready_up": {
+                "type": "map_load",
+                "timeout": 5
+            }
         },
         "permanent": {
-            "map_rotation": "file://map_rotation.json"
+            "map_rotation": "file://map_rotation.json",
+            "ready_up": {
+                "type": "map_load",
+                "timeout": 5
+            }
         },
         "temporary": {
-            "map_rotation": "file://map_rotation.json"
+            "map_rotation": "file://map_rotation.json",
+            "ready_up": {
+                "type": "map_load",
+                "timeout": 5
+            }
         }
     },
     "permissions": "file://permissions.json",

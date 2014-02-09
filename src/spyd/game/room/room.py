@@ -33,7 +33,7 @@ class Room(object):
     * Accessors to query the state of the room.
     * Setters to modify the state of the room.
     '''
-    def __init__(self, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None, show_awards=True, demo_recorder=None):
+    def __init__(self, ready_up_controller_factory, metrics_service=None, room_name=None, room_manager=None, server_name_model=None, map_rotation=None, map_meta_data_accessor=None, command_executer=None, event_subscription_fulfiller=None, maxplayers=None, show_awards=True, demo_recorder=None):
         self._game_clock = GameClock()
         self._attach_game_clock_event_handlers()
 
@@ -78,6 +78,9 @@ class Room(object):
 
         self._client_event_handlers = get_client_event_handlers()
         self._player_event_handlers = get_player_event_handlers()
+
+        self.ready_up_controller_factory = ready_up_controller_factory
+        self.ready_up_controller = None
 
         self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
 
@@ -226,6 +229,8 @@ class Room(object):
             for remaining_client in self._clients.to_iterator():
                 swh.put_cdis(cds, remaining_client)
 
+        self.ready_up_controller.on_client_leave(client)
+
         self.manager.on_room_player_count_changed(self)
 
     def pause(self):
@@ -233,6 +238,10 @@ class Room(object):
 
     def resume(self):
         self._game_clock.resume(self.resume_delay)
+
+    def set_resuming_state(self):
+        "Used to set the game clock into the resuming state pending some external event."
+        self._game_clock.set_resuming_state()
 
     def end_match(self):
         self._game_clock.timeleft = 0
@@ -385,7 +394,7 @@ class Room(object):
         else:
             self._game_clock.start_untimed()
 
-        self._game_clock.resume(self.resume_delay)
+        self.ready_up_controller = self.ready_up_controller_factory.make_ready_up_controller(self)
 
         for player in self.players:
             player.state.map_change_reset()

@@ -102,12 +102,16 @@ class GameClock(object):
     def add_intermission_ended_callback(self, f, *args, **kwargs):
         '''Add a callback which will be called with the specified arguments each the time game clock leaves intermission.'''
         self._intermission_ended_callbacks.append(Callback(f, args, kwargs))
+
+    def set_resuming_state(self):
+        self._state = states.RESUMING
     
     def resume(self, delay=None):
         '''Resume the clock. If a delay is specified, the timer will resume after that number of seconds.'''
         if self.is_resuming:
-            self._resume_countdown.cancel()
-            self._resume_countdown = None
+            if self._resume_countdown is not None:
+                self._resume_countdown.cancel()
+                self._resume_countdown = None
         elif not self.is_started:
             pass
         elif not self.is_paused:

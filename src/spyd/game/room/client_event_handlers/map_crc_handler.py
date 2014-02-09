@@ -7,5 +7,5 @@ class MapCrcHandler(object):
     @staticmethod
     def handle(room, client, crc):
         # TODO: Implement optional spectating of clients without valid map CRC's
-        pass
+        room.ready_up_controller.on_crc(client, crc)
 
