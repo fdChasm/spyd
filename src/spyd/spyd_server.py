@@ -14,7 +14,7 @@ from spyd.authentication.master_client_service_factory import MasterClientServic
 from spyd.game.client.client_factory import ClientFactory
 from spyd.game.client.client_number_provider import get_client_number_handle_provider
 from spyd.game.command.command_executer import CommandExecuter
-from spyd.game.map.map_meta_data_accessor import MapMetaDataAccessor
+from spyd.game.map.async_map_meta_data_accessor import AsyncMapMetaDataAccessor
 from spyd.game.room.room_bindings import RoomBindings
 from spyd.game.room.room_factory import RoomFactory
 from spyd.game.room.room_manager import RoomManager
@@ -46,7 +46,7 @@ class SpydServer(object):
         self.server_info_model = ValueModel(config.get('server_info', "An Spyd Server!"))
 
         sauerbraten_package_dir = get_package_dir(config)
-        map_meta_data_accessor = MapMetaDataAccessor(sauerbraten_package_dir)
+        map_meta_data_accessor = AsyncMapMetaDataAccessor(sauerbraten_package_dir)
         print "Using package directory; {!r}".format(sauerbraten_package_dir)
         
         self.event_subscription_fulfiller = EventSubscriptionFulfiller()

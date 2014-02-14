@@ -19,6 +19,7 @@ from spyd.utils.constrain import ConstraintViolation
 from spyd.utils.filtertext import filtertext
 from spyd.utils.ping_buffer import PingBuffer
 import time
+from twisted.python.failure import Failure
 
 
 class Client(object):
@@ -182,6 +183,24 @@ class Client(object):
     def answer_auth_challenge(self, authdomain, authid, answer):
         return self._client_auth_state.answer_auth_challenge(authdomain, authid, answer)
 
+    def handle_exception(self, e):
+        if isinstance(e, Failure):
+            e = e.value
+
+        try:
+            raise e
+        except InsufficientPermissions as e:
+            self.send_server_message(denied(e.message))
+        except StateError as e:
+            self.send_server_message(state_error(e.message))
+        except UsageError as e:
+            self.send_server_message(usage_error(e.message))
+        except GenericError as e:
+            self.send_server_message(error(e.message))
+        except ConstraintViolation as e:
+            print "Disconnecting client {} due to constraint violation {}.".format(self.host, e.constraint_name)
+            self.disconnect(disconnect_types.DISC_MSGERR)
+
     def _message_received(self, message_type, message):
         if self._ignore_client_messages: return
         try:
@@ -196,20 +215,12 @@ class Client(object):
                     handler = self._message_handlers[message_type]
                     try:
                         handler.handle(self, self.room, message)
-                    except InsufficientPermissions as e:
-                        self.send_server_message(denied(e.message))
-                    except StateError as e:
-                        self.send_server_message(state_error(e.message))
-                    except UsageError as e:
-                        self.send_server_message(usage_error(e.message))
-                    except GenericError as e:
-                        self.send_server_message(error(e.message))
-                    except ConstraintViolation as e:
-                        print "Disconnecting client {} due to constraint violation {}.".format(self.host, e.constraint_name)
-                        self.disconnect(disconnect_types.DISC_MSGERR)
-                        return
+                    except Exception as e:
+                        self.handle_exception(e)
                 else:
                     print "Client received unhandled message type:", message_type, message
+        except ConstraintViolation as e:
+            pass  # Plenty of information already printed.
         except:
             traceback.print_exc()
             self.disconnect(disconnect_types.DISC_MSGERR)

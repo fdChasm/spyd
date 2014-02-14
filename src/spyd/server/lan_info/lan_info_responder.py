@@ -49,13 +49,17 @@ class LanInfoResponder(object):
         cmd = rcds.getint()
 
         if cmd == EXT_UPTIME:
+            if not rcds.empty(): return
             self.ext_uptime_request(address, rcds)
         elif cmd == EXT_PLAYERSTATS:
             cn = rcds.getint()
+            if not rcds.empty(): return
             self.ext_player_stats_request(address, rcds, cn)
         elif cmd == EXT_TEAMSCORE:
+            if not rcds.empty(): return
             self.ext_team_stats_request(address, rcds)
         else:
+            if not rcds.empty(): return
             self.ext_error(address, rcds)
 
     def ext_uptime_request(self, address, rcds):

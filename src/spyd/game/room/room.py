@@ -1,7 +1,7 @@
 import math
 import traceback
 
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 
 from cube2common.constants import INTERMISSIONLEN, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
 from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
@@ -200,20 +200,25 @@ class Room(object):
 
     def client_enter(self, entry_context):
         if not self._map_mode_state.initialized or self._map_mode_state.rotate_on_first_player and len(self.players) == 0:
-            self.rotate_map_mode()
+            deferred = self.rotate_map_mode()
+        else:
+            deferred = defer.succeed()
 
-        client = entry_context.client
-        player = client.get_player()
+        def on_map_ready(result):
+            client = entry_context.client
+            player = client.get_player()
 
-        player.state.use_game_clock(self._game_clock)
+            player.state.use_game_clock(self._game_clock)
 
-        self._initialize_client(client)
-        self._broadcaster.client_connected(client)
+            self._initialize_client(client)
+            self._broadcaster.client_connected(client)
 
-        self._clients.add(client)
-        self._players.add(player)
+            self._clients.add(client)
+            self._players.add(player)
 
-        self.gamemode.on_player_connected(player)
+            self.gamemode.on_player_connected(player)
+
+        deferred.addCallback(on_map_ready)
 
     def client_leave(self, client):
         self._clients.remove(client)
@@ -250,14 +255,11 @@ class Room(object):
         if not self.is_intermission:
             self._finalize_demo_recording()
         self._game_clock.cancel()
-        self._map_mode_state.change_map_mode(map_name, mode_name)
-        self._new_map_mode_initialize()
-        self._initialize_demo_recording()
+        return self._map_mode_state.change_map_mode(map_name, mode_name)
 
     def rotate_map_mode(self):
         self._game_clock.cancel()
-        self._map_mode_state.rotate_map_mode()
-        self._new_map_mode_initialize()
+        return self._map_mode_state.rotate_map_mode()
 
     def set_mastermode(self, mastermode):
         self.mastermode = mastermode
@@ -414,6 +416,8 @@ class Room(object):
                 for player in client.player_iter():
                     if not player.state.is_spectator:
                         swh.put_spawnstate(cds, player)
+
+        self._initialize_demo_recording()
 
     def _player_disconnected(self, player):
         self._players.remove(player)
