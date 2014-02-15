@@ -202,7 +202,7 @@ class Room(object):
         if not self._map_mode_state.initialized or self._map_mode_state.rotate_on_first_player and len(self.players) == 0:
             deferred = self.rotate_map_mode()
         else:
-            deferred = defer.succeed()
+            deferred = defer.succeed(None)
 
         def on_map_ready(result):
             client = entry_context.client

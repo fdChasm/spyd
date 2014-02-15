@@ -187,17 +187,15 @@ class Client(object):
         if isinstance(e, Failure):
             e = e.value
 
-        try:
-            raise e
-        except InsufficientPermissions as e:
+        if isinstance(e, InsufficientPermissions):
             self.send_server_message(denied(e.message))
-        except StateError as e:
+        elif isinstance(e, StateError):
             self.send_server_message(state_error(e.message))
-        except UsageError as e:
+        elif isinstance(e, UsageError):
             self.send_server_message(usage_error(e.message))
-        except GenericError as e:
+        elif isinstance(e, GenericError):
             self.send_server_message(error(e.message))
-        except ConstraintViolation as e:
+        elif isinstance(e, ConstraintViolation):
             print "Disconnecting client {} due to constraint violation {}.".format(self.host, e.constraint_name)
             self.disconnect(disconnect_types.DISC_MSGERR)
 
@@ -215,7 +213,7 @@ class Client(object):
                     handler = self._message_handlers[message_type]
                     try:
                         handler.handle(self, self.room, message)
-                    except Exception as e:
+                    except (InsufficientPermissions, StateError, UsageError, GenericError, ConstraintViolation) as e:
                         self.handle_exception(e)
                 else:
                     print "Client received unhandled message type:", message_type, message
