@@ -1,6 +1,7 @@
 from spyd.game.client.exceptions import GenericError
 from spyd.game.gamemode import gamemodes
 from spyd.game.map.map_rotation import MapRotation
+from twisted.internet import defer
 
 
 class RoomMapModeState(object):
@@ -52,20 +53,18 @@ class RoomMapModeState(object):
         map_name, mode_name = self._map_rotation.next_map_mode(peek=False)
         return self.change_map_mode(map_name, mode_name)
 
+    @defer.inlineCallbacks
     def change_map_mode(self, map_name, mode_name):
         if mode_name not in gamemodes:
             raise GenericError("Unsupported game mode.")
 
         self._map_name = map_name
 
-        def change(map_meta_data):
-            map_meta_data = map_meta_data or {}
-            self._gamemode = gamemodes[mode_name](room=self.room, map_meta_data=map_meta_data)
-            self._initialized = True
-            self.room._new_map_mode_initialize()
+        map_meta_data = yield self._map_meta_data_accessor.get_map_data(self._map_name)
+        map_meta_data = map_meta_data or {}
 
-        deferred = self._map_meta_data_accessor.get_map_data(self._map_name)
+        self._gamemode = gamemodes[mode_name](room=self.room, map_meta_data=map_meta_data)
+        self._initialized = True
+        self.room._new_map_mode_initialize()
 
-        deferred.addCallback(change)
-
-        return deferred
+        defer.returnValue(map_meta_data)

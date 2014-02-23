@@ -198,27 +198,23 @@ class Room(object):
     #######################         Setters         ###########################
     ###########################################################################
 
+    @defer.inlineCallbacks
     def client_enter(self, entry_context):
         if not self._map_mode_state.initialized or self._map_mode_state.rotate_on_first_player and len(self.players) == 0:
-            deferred = self.rotate_map_mode()
-        else:
-            deferred = defer.succeed(None)
+            yield self.rotate_map_mode()
 
-        def on_map_ready(result):
-            client = entry_context.client
-            player = client.get_player()
+        client = entry_context.client
+        player = client.get_player()
 
-            player.state.use_game_clock(self._game_clock)
+        player.state.use_game_clock(self._game_clock)
 
-            self._initialize_client(client)
-            self._broadcaster.client_connected(client)
+        self._initialize_client(client)
+        self._broadcaster.client_connected(client)
 
-            self._clients.add(client)
-            self._players.add(player)
+        self._clients.add(client)
+        self._players.add(player)
 
-            self.gamemode.on_player_connected(player)
-
-        deferred.addCallback(on_map_ready)
+        self.gamemode.on_player_connected(player)
 
     def client_leave(self, client):
         self._clients.remove(client)

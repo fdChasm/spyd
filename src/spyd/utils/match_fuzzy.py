@@ -1,6 +1,7 @@
 import Levenshtein
 
 def match_fuzzy(identifier, possibility_list, allow_ci_check=True):
+        "Returns the nearest match to the text of identifier from a list of possibilities."
         if not len(possibility_list): return None
         threshold = len(identifier) - 1
 
