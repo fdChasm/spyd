@@ -5,6 +5,7 @@ from distutils.core import setup
 packages = [
         'spyd.authentication',
         'spyd.authentication.services',
+        'spyd.authentication.services.maestro',
         'spyd.authentication.services.vanilla',
         'spyd.game',
         'spyd.game.awards',
