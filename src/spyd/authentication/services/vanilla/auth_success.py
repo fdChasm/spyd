@@ -1,13 +1,8 @@
 from zope.interface import implements
 
 from spyd.authentication.interfaces import IGroupProvider, IAuthSuccess
+from spyd.authentication.domain_to_auth_group import domain_to_auth_group
 
-
-def domain_to_auth_group(domain):
-    ns_parts = domain.split('.')
-    ns_parts.reverse()
-    ns_parts.append('auth')
-    return '.'.join(ns_parts)
 
 class VanillaAuthSuccess(object):
     implements(IAuthSuccess)
@@ -32,4 +27,4 @@ class VanillaGroupProvider(object):
         return self._group_names
 
     def __repr__(self):
-        return "<{authentication.auth_name}@{authentication.domain}>".format(authentication=self)
+        return "<VanillaGroupProvider {authentication.auth_name}@{authentication.domain}>".format(authentication=self)

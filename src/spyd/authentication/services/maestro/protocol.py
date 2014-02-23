@@ -35,8 +35,7 @@ class MaestroProtocol(NoCommaNetStringProtocol):
         self.factory.connectionMade(self)
 
     def send_regserv(self, port):
-        request = "regserv {}".format(port)
-        # self.sendRequest(request)
+        pass
 
     def send_reqauth(self, auth_id, auth_name):
         request = {"cmd": "reqauth", "reqid": auth_id, "authname": auth_name}

@@ -18,6 +18,9 @@ logger.setLevel(level=logging.WARN)
 
 
 class MasterClientProtocolFactory(ReconnectingClientFactory):
+
+    clock = reactor
+
     def __init__(self, punitive_model, host, register_port):
         self.host = host
         self.punitive_model = punitive_model
@@ -29,9 +32,6 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
         self._auth_id = itertools.count()
 
         self.active_connection = None
-
-    def startedConnecting(self, connector):
-        logger.debug('Master started to connect.')
 
     def buildProtocol(self, addr):
         logger.debug('Master server connected.')
@@ -55,7 +55,7 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
         context = AuthenticationContext(self._auth_id.next(), auth_domain, authname)
         self.active_connection.send_reqauth(context.auth_id, context.auth_name)
         self.pending_auths[context.auth_id] = context
-        context.timeout_deferred = reactor.callLater(5, self._auth_timeout, context)
+        context.timeout_deferred = self.clock.callLater(5, self._auth_timeout, context)
         return context.deferred
 
     def answer_challenge(self, auth_id, answer):
@@ -73,8 +73,7 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
         return context.deferred
 
     def _auth_timeout(self, context):
-        exception = AuthFailedException("Authentication timed out.")
-        self._auth_failed(context, exception)
+        self._auth_failed(context, AuthFailedException("Authentication timed out."))
 
     def _auth_failed(self, context, exception=None):
         exception = exception or AuthFailedException("Authentication failed.")
@@ -122,8 +121,7 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
 
         if len(challenge) != AUTHCHALLEN:
             logger.error("Master server sent challenge with an invalid length of {}.".format(len(challenge)))
-            exception = AuthFailedException("Master server protocol error.")
-            return self._auth_failed(context, exception)
+            return self._auth_failed(context, AuthFailedException("Master server protocol error."))
 
         context.state = authentication_states.PENDING_ANSWER
         auth_challenge = AuthChallenge(auth_id, context.auth_domain, challenge)
