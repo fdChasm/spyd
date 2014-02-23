@@ -28,7 +28,6 @@ import spyd.server.gep_message_handlers  # @UnusedImport
 from spyd.server.metrics import get_metrics_service
 from spyd.server.metrics.execution_timer import ExecutionTimer
 from spyd.utils.value_model import ValueModel
-from spyd.game.map.map_meta_data_accessor import MapMetaDataAccessor
 
 
 logger = logging.getLogger(__name__)
@@ -47,9 +46,9 @@ class SpydServer(object):
         self.server_info_model = ValueModel(config.get('server_info', "An Spyd Server!"))
 
         sauerbraten_package_dir = get_package_dir(config)
-        map_meta_data_accessor = MapMetaDataAccessor(sauerbraten_package_dir)
+        map_meta_data_accessor = AsyncMapMetaDataAccessor(sauerbraten_package_dir)
         print "Using package directory; {!r}".format(sauerbraten_package_dir)
-        
+
         self.event_subscription_fulfiller = EventSubscriptionFulfiller()
 
         command_executer = CommandExecuter(self)

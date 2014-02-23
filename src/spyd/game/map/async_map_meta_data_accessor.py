@@ -1,93 +1,26 @@
-from twisted.internet import defer, protocol, reactor
-from twisted.protocols.basic import NetstringReceiver
 import json
-import itertools
 import os.path
 import sys
 
-class NetstringParser(NetstringReceiver):
-    def __init__(self):
-        self.received = []
+from twisted.internet import defer, utils
 
-    def stringReceived(self, string):
-        self.received.append(string)
 
-    def popMessage(self):
-        return self.received.pop(0)
+map_data_reader_filename = os.path.join(os.path.dirname(__file__), 'map_data_reader_process.py')
 
-    def hasMessage(self):
-        return len(self.received) > 0
+def run_map_data_reader_process(args):
+    args.insert(0, map_data_reader_filename)
+    deferred = utils.getProcessOutput(sys.executable, args, env={'PYTHONPATH': os.environ['PYTHONPATH']})
+    deferred.addCallback(json.loads)
+    return deferred
 
-class NetStringProcessProtocol(protocol.ProcessProtocol):
-    def __init__(self):
-        self.parser = NetstringParser()
+def get_map_names(map_glob_expression):
+    return run_map_data_reader_process(['-l', map_glob_expression])
 
-    def connectionMade(self):
-        self.parser.makeConnection(self.transport)
-        self.ready()
-
-    def outReceived(self, data):
-        self.parser.dataReceived(data)
-        while self.parser.hasMessage():
-            self.messageReceived(self.parser.popMessage())
-
-    def messageReceived(self, message):
-        raise NotImplementedError()
-
-    def sendMessage(self, message):
-        self.parser.sendString(json.dumps(message))
-
-class JsonRpcProcessProtocol(NetStringProcessProtocol):
-    def __init__(self):
-        NetStringProcessProtocol.__init__(self)
-        self.request_id = itertools.count()
-
-        # reqid: deferred
-        self.requests = {}
-
-    def messageReceived(self, message):
-        message = json.loads(message)
-        reqid = message['reqid']
-        deferred = self.requests.pop(reqid)
-        if message.get('error', None) is not None:
-            deferred.errback(Exception(message['error']))
-        else:
-            deferred.callback(message['result'])
-
-    def callMethod(self, method, *args, **kwargs):
-        reqid = self.request_id.next()
-        self.requests[reqid] = defer.Deferred()
-        self.sendMessage({'method': method, 'args': args, 'kwargs': kwargs, 'reqid': reqid})
-        return self.requests[reqid]
-
-    def ready(self):
-        pass
-
-    def errReceived(self, data):
-        sys.stderr.write(data)
-
-    def inConnectionLost(self):
-        print "inConnectionLost! stdin is closed! (we probably did it)"
-
-    def outConnectionLost(self):
-        print "outConnectionLost! The child closed their stdout!"
-
-    def errConnectionLost(self):
-        print "errConnectionLost! The child closed their stderr."
-
-    def processExited(self, reason):
-        print "processExited, status %d" % (reason.value.exitCode,)
-
-    def processEnded(self, reason):
-        print "processEnded, status %d" % (reason.value.exitCode,)
+def get_map_data(map_path):
+    return run_map_data_reader_process(['-d', map_path])
 
 class AsyncMapMetaDataAccessor(object):
     def __init__(self, package_dir):
-        directory = os.path.dirname(__file__)
-        map_data_reader_filename = os.path.join(directory, 'map_data_reader_process.py')
-        self.map_data_reader_process_procotol = JsonRpcProcessProtocol()
-        reactor.spawnProcess(self.map_data_reader_process_procotol, "python2.7", ["-u", map_data_reader_filename], env={'PYTHONPATH': os.environ['PYTHONPATH']})
-
         self.package_dir = package_dir
 
         self._cached_map_meta = {}
@@ -108,7 +41,7 @@ class AsyncMapMetaDataAccessor(object):
                 self._cached_map_meta[map_name] = map_meta_data
                 return map_meta_data
 
-            deferred = self.call_method('read_map_data', self.get_map_path(map_name))
+            deferred = get_map_data(self.get_map_path(map_name))
             deferred.addCallback(cache_map_meta)
 
             return deferred
@@ -123,7 +56,7 @@ class AsyncMapMetaDataAccessor(object):
 
             map_glob_expression = os.path.join(self.package_dir, "base", "*.ogz")
 
-            deferred = self.call_method('read_map_names', map_glob_expression)
+            deferred = get_map_names(map_glob_expression)
             deferred.addCallback(cache_map_names)
 
             return deferred
