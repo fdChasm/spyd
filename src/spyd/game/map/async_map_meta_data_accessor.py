@@ -9,7 +9,7 @@ map_data_reader_filename = os.path.join(os.path.dirname(__file__), 'map_data_rea
 
 def run_map_data_reader_process(args):
     args.insert(0, map_data_reader_filename)
-    deferred = utils.getProcessOutput(sys.executable, args, env={'PYTHONPATH': os.environ['PYTHONPATH']})
+    deferred = utils.getProcessOutput(sys.executable, args, env={'PYTHONPATH': os.environ.get('PYTHONPATH', '')})
     deferred.addCallback(json.loads)
     return deferred
 
