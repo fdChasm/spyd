@@ -13,7 +13,7 @@ class ClientAuthState(object):
 
     def auth(self, authdomain, authname):
         if self.auth_deferred is not None:
-            self.send_server_message(error("You already have a pending auth request wait for the previous one to complete."))
+            self.client.send_server_message(error("You already have a pending auth request wait for the previous one to complete."))
             return defer.fail(None)
 
         self.auth_deferred = defer.Deferred()
@@ -39,19 +39,19 @@ class ClientAuthState(object):
         auth_domain = auth_challenge.auth_domain
         challenge = auth_challenge.challenge
 
-        with self.sendbuffer(1, True) as cds:
+        with self.client.sendbuffer(1, True) as cds:
             swh.put_authchall(cds, auth_domain, auth_id, challenge)
 
     def on_auth_failure(self, deferred_exception):
-        self.send_server_message(error(deferred_exception.value.message))
+        self.client.send_server_message(error(deferred_exception.value.message))
         self.auth_deferred.errback(deferred_exception)
         self.auth_deferred = None
 
     def on_auth_success(self, auth_success):
         if auth_success is not None:
-            self.add_group_name_provider(auth_success.group_provider)
+            self.client.add_group_name_provider(auth_success.group_provider)
 
-            if auth_success.room_message is not None and self.connection_sequence_complete:
+            if auth_success.room_message is not None and self.client.connection_sequence_complete:
                 auth_success.room_message_kwargs['client'] = self
                 self.room._broadcaster.server_message(info(auth_success.room_message, **auth_success.room_message_kwargs))
 

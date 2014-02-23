@@ -107,9 +107,7 @@ class Client(object):
 
         if len(authname) > 0:
             deferred = self.auth(authdomain, authname)
-
-            deferred.addCallback(self.connection_auth_finished, pwdhash)
-            deferred.addErrback(lambda e: self.connection_auth_finished(None, pwdhash))
+            deferred.addCallbacks(self.connection_auth_finished, lambda e: self.connection_auth_finished(None, pwdhash), (pwdhash,))
         else:
             self.connection_auth_finished(None, pwdhash)
 
