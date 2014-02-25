@@ -1,4 +1,4 @@
-spyd
+spyd [![Build Status](https://travis-ci.org/fdChasm/spyd.png?branch=master)](https://travis-ci.org/fdChasm/spyd)
 ====
 
 A pure Python implementation of the Sauerbraten Cube 2 server using Twisted
