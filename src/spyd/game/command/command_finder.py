@@ -1,5 +1,5 @@
+import spyd.game.command.commands  # @UnusedImport
 from spyd.registry_manager import RegistryManager
-
 
 
 class CommandFinder(object):

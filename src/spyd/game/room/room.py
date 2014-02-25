@@ -213,6 +213,9 @@ class Room(object):
 
         self._clients.add(client)
         self._players.add(player)
+        
+        if client in self.admins or client in self.masters or client in self.auths:
+            self._update_current_masters()
 
         self.gamemode.on_player_connected(player)
 
