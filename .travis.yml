@@ -7,6 +7,6 @@ install:
   - "pip install -r requirements.txt"
 script:
   - "export PYTHONPATH=$(pwd)/src"
-  - "nosetests -w ./tests --with-coverage --cover-package='spyd,txENet,cube2map'"
+  - "nosetests -w ./tests --with-coverage --cover-inclusive"
 after_success:
   coveralls
