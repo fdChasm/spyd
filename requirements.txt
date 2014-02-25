@@ -1,4 +1,3 @@
-Cython
 twisted
 python-Levenshtein
 simplejson
