@@ -1,7 +1,10 @@
 language: python
 python:
   - "2.7"
-# command to install dependencies
-install: "pip install cython && pip install -r requirements.txt"
-# command to run tests
-script: nosetests
+install:
+  - "pip install coveralls"
+  - "pip install cython"
+  - "pip install -r requirements.txt"
+script:
+    nosetests -w ./tests --with-coverage --cover-package="spyd,txENet,cube2map"
+
