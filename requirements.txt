@@ -1,0 +1,4 @@
+twisted
+python-Levenshtein
+simplejson
+simple_json
