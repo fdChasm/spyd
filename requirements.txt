@@ -2,6 +2,7 @@ twisted
 python-Levenshtein
 simplejson
 simple_json
--e git+git://github.com/fdChasm/pycube2common
--e git+git://github.com/fdChasm/pycube2protocol
--e git+git://github.com/fdChasm/pycube2demo
+pycube2crypto
+-e git+git://github.com/fdChasm/pycube2common#egg=pycube2common-0.1.0
+-e git+git://github.com/fdChasm/pycube2protocol#egg=pycube2protocol-0.1.0
+-e git+git://github.com/fdChasm/pycube2demo#egg=pycube2demo-0.1.0
