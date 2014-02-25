@@ -8,4 +8,5 @@ install:
 script:
   - "export PYTHONPATH=$(pwd)/src"
   - "nosetests -w ./tests --with-coverage --cover-package='spyd,txENet,cube2map'"
-
+after_success:
+  coveralls
