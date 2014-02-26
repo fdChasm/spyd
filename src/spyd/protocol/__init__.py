@@ -1,1 +1,1 @@
-from . import server_write_helper as swh
+from server_write_helper import swh

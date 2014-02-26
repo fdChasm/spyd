@@ -191,6 +191,9 @@ class Room(object):
     def mode_name(self):
         return self._map_mode_state.mode_name
 
+    def get_map_names(self):
+        return self._map_mode_state.get_map_names()
+
     def is_name_duplicate(self, name):
         return self._players.is_name_duplicate(name)
 
