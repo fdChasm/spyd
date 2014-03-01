@@ -5,7 +5,7 @@ class PingBuffer(object):
     
     def add(self, ping):
         self.pings.append(ping)
-        if len(self.pings) > PingBuffer.BUFFERSIZE:
+        if len(self.pings) > self.BUFFERSIZE:
             self.pings.pop(0)
             
     def avg(self):

@@ -4,10 +4,12 @@ from spyd.utils.formatted_sauerbraten_message_splitter import FormattedSauerbrat
 max_length = 12
 
 class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
-    def assertChunksOk(self, max_length, chunks):
+    def assertChunksOk(self, max_length, chunks, expected=None):
         for chunk in chunks:
             self.assertEqual(chunk[0], '\f')
             self.assertLessEqual(len(chunk), max_length)
+        if expected is not None:
+            self.assertEqual(chunks, expected)
 
     def test_short_message_no_formatting(self):
         formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
@@ -16,9 +18,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        # print chunks
-
-        self.assertChunksOk(max_length=max_length, chunks=chunks)
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7world'])
 
     def test_overlength_message_no_formatting(self):
         formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
@@ -27,9 +27,7 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        # print chunks
-
-        self.assertChunksOk(max_length=max_length, chunks=chunks)
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7world,', u'\x0c7how are', u'\x0c7you'])
 
     def test_overlength_message_with_formatting_in_first_message(self):
         formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
@@ -38,9 +36,25 @@ class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
 
         chunks = formatted_sauer_message_splitter.split(message)
 
-        # print chunks
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7\x0c2world,', u'\x0c2Goodbye'])
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks)
+    def test_overlength_message_with_color_causing_length_problem(self):
+        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+
+        message = "HelloabcGooffffffff\f3 odbye"
+
+        chunks = formatted_sauer_message_splitter.split(message)
+
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7HelloabcGo', u'\x0c7offffffff', u'\x0c3odbye'])
+
+    def test_restore_without_save(self):
+        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+
+        message = "Hello\fr"
+
+        chunks = formatted_sauer_message_splitter.split(message)
+
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello\x0c7'])
 
     def test_overlength_message_with_save_restore_in_first_message(self):
         formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
