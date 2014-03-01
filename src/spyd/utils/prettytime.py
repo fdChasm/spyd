@@ -1,92 +1,61 @@
 import datetime
+from spyd.utils.listjoin import listjoin
 
 def getComponent(value, identifier):
-	if value <= 0:
-		return ""
-	returnValue = str(value) + " " + str(identifier)
-	if value == 1:
-		return returnValue
-	else:
-		return returnValue + "s"
+    if value <= 0:
+        return ()
+
+    returnValue = "{} {}".format(value, identifier)
+
+    if value == 1:
+        return (returnValue,)
+    else:
+        return (returnValue + "s",)
 
 def createDurationString(seconds):
-	timeObject = datetime.timedelta(seconds=seconds)
+    timeObject = datetime.timedelta(seconds=seconds)
 
-	years = int(timeObject.days / 365)
-	days = int(timeObject.days % 365)
-	hours = int(timeObject.seconds / 3600)
-	minutes = int(int(timeObject.seconds % 3600) / 60)
-	seconds = int(int(timeObject.seconds % 3600) % 60)
+    years = int(timeObject.days / 365)
+    days = int(timeObject.days % 365)
+    hours = int(timeObject.seconds / 3600)
+    minutes = int(int(timeObject.seconds % 3600) / 60)
+    seconds = int(int(timeObject.seconds % 3600) % 60)
 
-	timeList = []
+    timeList = []
 
-	component = getComponent(years, "year")
-	if component != "":
-		timeList.append(component)
+    timeList.extend(getComponent(years, "year"))
+    timeList.extend(getComponent(days, "day"))
+    timeList.extend(getComponent(hours, "hour"))
+    timeList.extend(getComponent(minutes, "minute"))
+    timeList.extend(getComponent(seconds, "second"))
 
-	component = getComponent(days, "day")
-	if component != "":
-		timeList.append(component)
+    if len(timeList) == 0:
+        return "0 seconds"
 
-	component = getComponent(hours, "hour")
-	if component != "":
-		timeList.append(component)
-
-	component = getComponent(minutes, "minute")
-	if component != "":
-		timeList.append(component)
-
-	component = getComponent(seconds, "second")
-	if component != "":
-		timeList.append(component)
-
-	if len(timeList) == 0:
-		return "0 seconds"
-
-	if len(timeList) == 1:
-		return timeList[0]
-
-	if len(timeList) > 2:
-		timeList = [', '.join(timeList[:-1]), timeList[-1]]
-
-	return ', and '.join(timeList)
+    return listjoin(timeList)
 
 def getShortComponent(value, identifier):
-	if value <= 0: return ""
-	return "{}{}".format(value, identifier)
+    if value <= 0: return ()
+    return ("{}{}".format(value, identifier),)
 
 def shortDurationString(seconds):
-	timeObject = datetime.timedelta(seconds=seconds)
+    timeObject = datetime.timedelta(seconds=seconds)
 
-	years = int(timeObject.days / 365)
-	days = int(timeObject.days % 365)
-	hours = int(timeObject.seconds / 3600)
-	minutes = int(int(timeObject.seconds % 3600) / 60)
-	seconds = int(int(timeObject.seconds % 3600) % 60)
+    years = int(timeObject.days / 365)
+    days = int(timeObject.days % 365)
+    hours = int(timeObject.seconds / 3600)
+    minutes = int(int(timeObject.seconds % 3600) / 60)
+    seconds = int(int(timeObject.seconds % 3600) % 60)
 
-	timeList = []
+    timeList = []
 
-	component = getShortComponent(years, "y")
-	if component != "":
-		timeList.append(component)
+    timeList.extend(getShortComponent(years, "y"))
+    timeList.extend(getShortComponent(days, "d"))
+    timeList.extend(getShortComponent(hours, "h"))
+    timeList.extend(getShortComponent(minutes, "m"))
+    timeList.extend(getShortComponent(seconds, "s"))
 
-	component = getShortComponent(days, "d")
-	if component != "":
-		timeList.append(component)
+    if len(timeList) == 0:
+        return "0s"
 
-	component = getShortComponent(hours, "h")
-	if component != "":
-		timeList.append(component)
-
-	component = getShortComponent(minutes, "m")
-	if component != "":
-		timeList.append(component)
-
-	component = getShortComponent(seconds, "s")
-	if component != "":
-		timeList.append(component)
-
-	if len(timeList) == 0:
-		return "0s"
-
-	return ' '.join(timeList)
+    return ' '.join(timeList)

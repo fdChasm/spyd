@@ -15,7 +15,7 @@ def match_fuzzy(identifier, possibility_list, allow_ci_check=True):
         identifier = identifier.lower()
 
         closest_match = min(possibility_list, key=lambda m: Levenshtein.distance(m.lower(), identifier))
-        distance = Levenshtein.distance(closest_match, identifier)
+        distance = Levenshtein.distance(closest_match.lower(), identifier)
 
         if distance <= threshold: return closest_match
 

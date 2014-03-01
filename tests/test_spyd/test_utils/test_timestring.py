@@ -1,5 +1,51 @@
 import unittest
-from spyd.utils.timestring import parseTimeString, simplify
+
+from spyd.utils.timestring import parseTimeString, simplify, MalformedTimeString, isStrictToken
+
+
+class TestIsStrictToken(unittest.TestCase):
+    def test_empty(self):
+        self.assertFalse(isStrictToken(""))
+
+    def test_no_units(self):
+        self.assertFalse(isStrictToken("+33"))
+
+    def test_no_sign(self):
+        self.assertFalse(isStrictToken("33s"))
+
+    def test_no_numbers(self):
+        self.assertFalse(isStrictToken("++s"))
+
+    def test_multiple_signs(self):
+        self.assertFalse(isStrictToken("++s"))
+
+    def test_multiple_units(self):
+        self.assertFalse(isStrictToken("+ss"))
+
+    def test_multiple_decimals(self):
+        self.assertFalse(isStrictToken("+3..3s"))
+
+    def test_simple(self):
+        self.assertTrue(isStrictToken('+3s'))
+        self.assertTrue(isStrictToken('=3s'))
+        self.assertTrue(isStrictToken('-3s'))
+        self.assertTrue(isStrictToken('+333s'))
+        self.assertTrue(isStrictToken('+3m'))
+        self.assertTrue(isStrictToken('+3h'))
+        self.assertTrue(isStrictToken('+3d'))
+        self.assertTrue(isStrictToken('+3y'))
+
+    @unittest.expectedFailure
+    def test_decimals(self):
+        self.assertTrue(isStrictToken('+3.3s'))
+        self.assertTrue(isStrictToken('=3.3s'))
+        self.assertTrue(isStrictToken('-3.3s'))
+        self.assertTrue(isStrictToken('+333.3s'))
+        self.assertTrue(isStrictToken('+3.3m'))
+        self.assertTrue(isStrictToken('+3.3h'))
+        self.assertTrue(isStrictToken('+3.3d'))
+        self.assertTrue(isStrictToken('+3.3y'))
+
 
 class TestSimplify(unittest.TestCase):
     def test_absolute_hours(self):
@@ -77,3 +123,21 @@ class TestParseTimeString(unittest.TestCase):
         self.assertEqual(parseTimeString('=h'), ('=', 3600))
         self.assertEqual(parseTimeString('=m'), ('=', 60))
         self.assertEqual(parseTimeString('=s'), ('=', 1))
+
+    @unittest.expectedFailure
+    def test_decimal_minutes(self):
+        self.assertEqual(parseTimeString('+3.3m'), ('+', 213))
+
+    @unittest.expectedFailure
+    def test_decimal_seconds(self):
+        self.assertEqual(parseTimeString('+3.3s'), ('+', 3))
+
+    @unittest.expectedFailure
+    def test_multiple_decimal_tokens(self):
+        self.assertEqual(parseTimeString('2.5m+3.3s'), ('=', 153))
+
+    def test_invalid_unit(self):
+        self.assertRaises(MalformedTimeString, parseTimeString, "+13z")
+
+    def test_negative_absolute(self):
+        self.assertRaises(MalformedTimeString, parseTimeString, "=1m-61s")
