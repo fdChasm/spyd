@@ -6,7 +6,8 @@ from spyd.server.lan_info.lan_info_responder import LanInfoResponder
 
 
 class LanInfoService(service.Service):
-    def __init__(self, lan_findable, ext_info_config):
+    def __init__(self, room_manager, lan_findable, ext_info_config):
+        self.room_manager = room_manager
         self.rooms_ports = {}
         self.ext_info_config = ext_info_config
         self.broadcast_listener = None
@@ -19,7 +20,7 @@ class LanInfoService(service.Service):
         for room, (interface, port) in self.rooms_ports.iteritems():
             lan_info_protocol = LanInfoProtocol(multicast=False, ext_info_enabled=self.ext_info_config['enabled'])
 
-            lan_info_responder = LanInfoResponder(lan_info_protocol, room, self.ext_info_config)
+            lan_info_responder = LanInfoResponder(self.room_manager, lan_info_protocol, room, self.ext_info_config)
             lan_info_protocol.add_responder(lan_info_responder)
 
             if self.broadcast_listener is not None:

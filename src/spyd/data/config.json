@@ -26,7 +26,8 @@
     "lan_findable": true,
     "ext_info": {
         "enabled": true,
-        "send_ips": true
+        "send_ips": true,
+        "wc_room_workaround": true
     },
     "room_types": {
         "default": {

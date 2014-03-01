@@ -22,7 +22,8 @@ def get_ext_info_reply_cds(rcds):
     return cds
 
 class LanInfoResponder(object):
-    def __init__(self, lan_info_protocol, room, ext_info_config):
+    def __init__(self, room_manager, lan_info_protocol, room, ext_info_config):
+        self.room_manager = room_manager
         self.lan_info_protocol = lan_info_protocol
         self.room = room
         self.config = ext_info_config
@@ -73,7 +74,7 @@ class LanInfoResponder(object):
         player = self.get_player(pn) if pn > 0 else None
 
         if player is None:
-            players = list(self.get_players())
+            players = list(self.get_players(address))
         else:
             players = [player]
 
@@ -153,5 +154,19 @@ class LanInfoResponder(object):
     def get_player(self, pn):
         return self.room.get_player(pn)
 
-    def get_players(self):
-        return self.room.players
+    def get_players(self, address):
+        """
+        Find if there is a room containing a client with this address.
+        If there is then return the clients in that room. Otherwise,
+        return the clients in the room which is associated with this
+        responder.
+        """
+        room = None
+
+        if self.config.get('wc_room_workaround', True):
+            room = self.room_manager.find_room_for_client_ip(address[0])
+
+        if room is None:
+            room = self.room
+
+        return room.players

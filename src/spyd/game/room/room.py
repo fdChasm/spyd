@@ -51,6 +51,9 @@ class Room(object):
         self._clients = ClientCollection()
         self._players = PlayerCollection()
 
+        # '123.321.123.111': {client, client, client}
+        self._client_ips = {}
+
         self.command_executer = command_executer
         self.command_context = {}
 
@@ -196,6 +199,9 @@ class Room(object):
     def is_name_duplicate(self, name):
         return self._players.is_name_duplicate(name)
 
+    def contains_client_with_ip(self, client_ip):
+        return self._client_ips.has_key(client_ip)
+
     ###########################################################################
     #######################         Setters         ###########################
     ###########################################################################
@@ -215,7 +221,11 @@ class Room(object):
 
         self._clients.add(client)
         self._players.add(player)
-        
+
+        if not client.host in self._client_ips:
+            self._client_ips[client.host] = set()
+        self._client_ips[client.host].add(client)
+
         if client in self.admins or client in self.masters or client in self.auths:
             self._update_current_masters()
 
@@ -230,6 +240,11 @@ class Room(object):
             self.masters.discard(client)
             self.auths.discard(client)
             self.admins.discard(client)
+
+        clients_with_ip = self._client_ips.get(client.host, set())
+        clients_with_ip.discard(client)
+        if len(clients_with_ip) == 0:
+            del self._client_ips[client.host]
 
         with client.sendbuffer(1, True) as cds:
             for remaining_client in self._clients.to_iterator():
