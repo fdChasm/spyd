@@ -3,7 +3,7 @@ import traceback
 
 from twisted.internet import reactor, defer
 
-from cube2common.constants import INTERMISSIONLEN, MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
+from cube2common.constants import MAXROOMLEN, MAXSERVERDESCLEN, MAXSERVERLEN, mastermodes, privileges
 from cube2demo.no_op_demo_recorder import NoOpDemoRecorder
 from spyd.game.awards import display_awards
 from spyd.game.client.exceptions import InsufficientPermissions, GenericError
@@ -79,10 +79,9 @@ class Room(object):
         self._client_event_handlers = get_client_event_handlers()
         self._player_event_handlers = get_player_event_handlers()
 
-        self.ready_up_controller_factory = ready_up_controller_factory
         self.ready_up_controller = None
 
-        self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor)
+        self._map_mode_state = RoomMapModeState(self, map_rotation, map_meta_data_accessor, self._game_clock, ready_up_controller_factory)
 
         self._broadcaster = RoomBroadcaster(self._clients, self._players, self.demo_recorder)
         reactor.addSystemEventTrigger('before', 'flush_bindings', self._flush_messages)
@@ -386,40 +385,6 @@ class Room(object):
 
             swh.put_initclients(cds, existing_players)
             swh.put_resume(cds, existing_players)
-
-    def _new_map_mode_initialize(self):
-        with self.broadcastbuffer(1, True) as cds:
-            swh.put_mapchange(cds, self.map_name, self.gamemode.clientmodenum, hasitems=False)
-
-            for player in self.players:
-                self.gamemode.initialize_player(cds, player)
-
-        if self.gamemode.timed:
-            self._game_clock.start(self.gamemode.timeout, INTERMISSIONLEN)
-        else:
-            self._game_clock.start_untimed()
-
-        self.ready_up_controller = self.ready_up_controller_factory.make_ready_up_controller(self)
-
-        for player in self.players:
-            player.state.map_change_reset()
-            player.state.respawn()
-            self.gamemode.spawn_loadout(player)
-
-        for client in self.clients:
-            with client.sendbuffer(1, True) as cds:
-
-                if self.gamemode.timed and self.timeleft is not None:
-                    swh.put_timeup(cds, self.timeleft)
-
-                if self.is_paused:
-                    swh.put_pausegame(cds, 1)
-
-                for player in client.player_iter():
-                    if not player.state.is_spectator:
-                        swh.put_spawnstate(cds, player)
-
-        self._initialize_demo_recording()
 
     def _player_disconnected(self, player):
         self._players.remove(player)

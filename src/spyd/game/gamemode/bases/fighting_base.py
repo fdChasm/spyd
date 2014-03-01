@@ -56,7 +56,7 @@ class FightingBase(object):
 
         for hit in hits:
             self._on_player_hit(player, gun, **hit)
-            
+
     def _on_player_hit(self, player, gun, target_cn, lifesequence, distance, rays, dx, dy, dz):
 
         target = self.room.get_player(target_cn)
