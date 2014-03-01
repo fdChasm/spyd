@@ -25,6 +25,8 @@ class PunitiveModel(object):
 
     def add_effect(self, effect_type, effect_desc, effect_info):
         if type(effect_desc) is tuple:
+            if type(effect_desc[0]) == str:
+                effect_desc = map(dottedQuadToLong, effect_desc)
             long_ip, long_mask = effect_desc
         else:
             long_ip, long_mask = simpleMaskedIpToLongIpAndMask(effect_desc)

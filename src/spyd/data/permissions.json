@@ -40,7 +40,7 @@
     },
     "localhost.auth": {
         "inherits": ["local.client"],
-        "allows": ["spyd.game.room.*.claim_auth"],
+        "allows": ["spyd.game.room.*.claim_auth", "spyd.game.client.bypass_ban"],
         "priority": 3
     },
     "chasm@localhost": {

@@ -1,7 +1,10 @@
 import contextlib
+import logging
+import time
 import traceback
 
 from twisted.internet import reactor
+from twisted.python.failure import Failure
 
 from cube2common.constants import disconnect_types, MAXNAMELEN
 from cube2protocol.cube_data_stream import CubeDataStream
@@ -14,19 +17,22 @@ from spyd.game.client.room_group_provider import RoomGroupProvider
 from spyd.game.player.player import Player
 from spyd.game.room.exceptions import RoomEntryFailure
 from spyd.game.server_message_formatter import error, smf, denied, state_error, usage_error
+from spyd.permissions.functionality import Functionality
 from spyd.protocol import swh
 from spyd.utils.constrain import ConstraintViolation
 from spyd.utils.filtertext import filtertext
 from spyd.utils.ping_buffer import PingBuffer
-import time
-from twisted.python.failure import Failure
 
+
+bypass_ban = Functionality("spyd.game.client.bypass_ban")
+
+logger = logging.getLogger(__name__)
 
 class Client(object):
     '''
     Handles the per client networking, and distributes the messages out to the players (main, bots).
     '''
-    def __init__(self, protocol, clientnum_handle, room, auth_world_view, permission_resolver, event_subscription_fulfiller, servinfo_domain=""):
+    def __init__(self, protocol, clientnum_handle, room, auth_world_view, permission_resolver, event_subscription_fulfiller, servinfo_domain, punitive_model):
 
         self.cn_handle = clientnum_handle
         self.cn = clientnum_handle.cn
@@ -58,6 +64,8 @@ class Client(object):
         self.event_subscription_fulfiller = event_subscription_fulfiller
 
         self._servinfo_domain = servinfo_domain
+
+        self._punitive_model = punitive_model
 
         self.command_context = {}
 
@@ -113,6 +121,10 @@ class Client(object):
 
     def connection_auth_finished(self, authentication, pwdhash):
         player = self.get_player()
+
+        ban_info = self._punitive_model.get_effect('ban', self.host)
+        if ban_info is not None and not self.allowed(bypass_ban) and not ban_info.expired:
+            return self.disconnect(disconnect_types.DISC_IPBAN, error("You are banned."))
 
         try:
             room_entry_context = self.room.get_entry_context(self, player)
