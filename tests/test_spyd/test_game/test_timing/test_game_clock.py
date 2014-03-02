@@ -86,3 +86,11 @@ class Test(unittest.TestCase):
 
         game_clock.timeleft = 300
         self.assertEqual(game_clock.timeleft, 300)
+
+    def test_start_untimed(self):
+        game_clock = GameClock()
+        game_clock.start_untimed()
+        game_clock.resume(None)
+        self.assertEqual(game_clock.timeleft, 0)
+        self.clock.advance(20)
+        self.assertEqual(game_clock.timeleft, 0)

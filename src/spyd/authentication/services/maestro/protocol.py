@@ -6,7 +6,7 @@ from spyd.authentication.services.vanilla.constants import possible_commands
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.DEBUG)
+logger.setLevel(level=logging.WARN)
 
 
 class MaestroProtocol(NoCommaNetStringProtocol):

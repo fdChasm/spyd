@@ -107,11 +107,12 @@ class SpydServer(object):
 
     def _initialize_master_clients(self, config):
         for master_server_config in config['master_servers']:
+            if not master_server_config.get('enabled', True): continue
             register_port = master_server_config.get('register_port', ANY)
             master_client_service = self.master_client_service_factory.build_master_client_service(master_server_config)
             self.auth_world_view_factory.register_auth_service(master_client_service, register_port)
             master_client_service.setServiceParent(self.root_service)
-            
+
     def _initialize_gep_endpoints(self, config):
         message_handlers = {}
         for message_handler_registration in RegistryManager.get_registrations('gep_message_handler'):

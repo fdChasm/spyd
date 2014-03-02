@@ -52,8 +52,8 @@ class ClientAuthState(object):
             self.client.add_group_name_provider(auth_success.group_provider)
 
             if auth_success.room_message is not None and self.client.connection_sequence_complete:
-                auth_success.room_message_kwargs['client'] = self
-                self.room._broadcaster.server_message(info(auth_success.room_message, **auth_success.room_message_kwargs))
+                auth_success.room_message_kwargs['client'] = self.client
+                self.client.room._broadcaster.server_message(info(auth_success.room_message, **auth_success.room_message_kwargs))
 
         self.auth_deferred.callback(auth_success)
         self.auth_deferred = None

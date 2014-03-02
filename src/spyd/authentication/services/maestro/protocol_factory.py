@@ -13,7 +13,7 @@ from spyd.authentication.services.vanilla.constants import authentication_states
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.DEBUG)
+logger.setLevel(level=logging.WARN)
 
 
 class MaestroProtocolFactory(ReconnectingClientFactory):
