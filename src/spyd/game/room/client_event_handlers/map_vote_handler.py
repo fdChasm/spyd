@@ -21,7 +21,7 @@ class MapVoteHandler(object):
         deferred = room._map_mode_state.get_map_names()
 
         def on_map_names(valid_map_names):
-            map_name_match = match_fuzzy(unicode(map_name), valid_map_names)
+            map_name_match = match_fuzzy(map_name, valid_map_names)
             if map_name_match is None:
                 raise GenericError('Could not resolve map name to valid map. Please try again.')
             room.change_map_mode(map_name_match, mode_name)

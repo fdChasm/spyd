@@ -26,9 +26,6 @@ class AsyncMapMetaDataAccessor(object):
         self._cached_map_meta = {}
         self._map_name_cache = None
 
-    def call_method(self, *args, **kwargs):
-        return self.map_data_reader_process_procotol.callMethod(*args, **kwargs)
-
     def get_map_path(self, map_name):
         map_filename = "{}.ogz".format(map_name)
         return os.path.join(self.package_dir, "base", map_filename)
@@ -51,7 +48,7 @@ class AsyncMapMetaDataAccessor(object):
             return defer.succeed(self._map_name_cache)
         else:
             def cache_map_names(map_names):
-                self._map_name_cache = map_names
+                self._map_name_cache = map(str, map_names)
                 return self._map_name_cache
 
             map_glob_expression = os.path.join(self.package_dir, "base", "*.ogz")
