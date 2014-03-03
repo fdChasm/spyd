@@ -1,5 +1,6 @@
 import uuid
 
+from spyd.game.map.team import NullTeam
 from spyd.game.player.player_state import PlayerState
 from spyd.game.server_message_formatter import smf
 from spyd.protocol import swh
@@ -14,7 +15,7 @@ class Player(object):
         self._pn = playernum
         self.name = name
         self.playermodel = playermodel
-        self._team = None
+        self._team = NullTeam()
         self._isai = False
         self._uuid = str(uuid.uuid4())
 
@@ -57,18 +58,15 @@ class Player(object):
 
     @property
     def team(self):
-        if self._state.is_spectator:
-            return None
         return self._team
 
     @team.setter
     def team(self, team):
-        self._team = team
+        self._team = team or NullTeam()
 
     @property
     def team_name(self):
-        if self._team is None: return ''
-        return self._team.name
+        return self.team.name
 
     @property
     def shares_name(self):
