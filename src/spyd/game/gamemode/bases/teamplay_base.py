@@ -37,7 +37,7 @@ class TeamplayBase(object):
 
         self._teamswitch_suicide(target)
         with self.room.broadcastbuffer(1, True) as cds:
-            if player is None:
+            if player is None or player.state.is_spectator:
                 reason = -1
             elif player == target:
                 reason = 0
