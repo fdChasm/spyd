@@ -1,3 +1,5 @@
+from twisted.internet import defer
+
 from spyd.game.client.exceptions import InsufficientPermissions, GenericError
 from spyd.game.gamemode import get_mode_name_from_num
 from spyd.permissions.functionality import Functionality
@@ -12,19 +14,18 @@ class MapVoteHandler(object):
     event_type = 'map_vote'
 
     @staticmethod
+    @defer.inlineCallbacks
     def handle(room, client, map_name, mode_num):
         if not client.allowed(set_map_mode_functionality):
             raise InsufficientPermissions(set_map_mode_functionality.denied_message)
 
         mode_name = get_mode_name_from_num(mode_num)
 
-        deferred = room._map_mode_state.get_map_names()
+        valid_map_names = yield room._map_mode_state.get_map_names()
 
-        def on_map_names(valid_map_names):
-            map_name_match = match_fuzzy(map_name, valid_map_names)
-            if map_name_match is None:
-                raise GenericError('Could not resolve map name to valid map. Please try again.')
-            room.change_map_mode(map_name_match, mode_name)
+        map_name_match = match_fuzzy(map_name, valid_map_names)
 
-        deferred.addCallback(on_map_names)
-        deferred.addErrback(client.handle_exception)
+        if map_name_match is None:
+            raise GenericError('Could not resolve map name to valid map. Please try again.')
+
+        room.change_map_mode(map_name_match, mode_name)

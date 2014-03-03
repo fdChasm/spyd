@@ -296,10 +296,11 @@ class Room(object):
     #######################  Client event handling  ###########################
     ###########################################################################
 
-    def handle_client_event(self, event_name, *args, **kwargs):
+    def handle_client_event(self, event_name, client, *args, **kwargs):
         if event_name in self._client_event_handlers:
             event_handler = self._client_event_handlers[event_name]
-            event_handler.handle(self, *args, **kwargs)
+            deferred = defer.maybeDeferred(event_handler.handle, self, client, *args, **kwargs)
+            deferred.addErrback(client.handle_exception)
         else:
             print "Unhandled client event: {} with args: {}, {}".format(event_name, args, kwargs)
 
@@ -307,10 +308,11 @@ class Room(object):
     #######################  Player event handling  ###########################
     ###########################################################################
 
-    def handle_player_event(self, event_name, *args, **kwargs):
+    def handle_player_event(self, event_name, player, *args, **kwargs):
         if event_name in self._player_event_handlers:
             event_handler = self._player_event_handlers[event_name]
-            event_handler.handle(self, *args, **kwargs)
+            deferred = defer.maybeDeferred(event_handler.handle, self, player, *args, **kwargs)
+            deferred.addErrback(player.client.handle_exception)
         else:
             print "Unhandled player event: {} with args: {}, {}".format(event_name, args, kwargs)
 
