@@ -1,5 +1,3 @@
-import string
-
 def filtertext(src, whitespace, maxlen):
     last_was_ctrl_char = [False]
 
@@ -16,7 +14,6 @@ def filtertext(src, whitespace, maxlen):
             return False
 
         return True
-        # return (c in string.printable)
 
     dst = filter(allowchar, src)
 
