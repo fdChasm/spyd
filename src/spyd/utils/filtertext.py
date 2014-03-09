@@ -15,7 +15,8 @@ def filtertext(src, whitespace, maxlen):
             last_was_ctrl_char[0] = True
             return False
 
-        return (c in string.printable)
+        return True
+        # return (c in string.printable)
 
     dst = filter(allowchar, src)
 

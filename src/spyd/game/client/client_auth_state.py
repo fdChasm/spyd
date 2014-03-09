@@ -16,14 +16,15 @@ class ClientAuthState(object):
             self.client.send_server_message(error("You already have a pending auth request wait for the previous one to complete."))
             return defer.fail(None)
 
-        self.auth_deferred = defer.Deferred()
+        auth_deferred = defer.Deferred()
+        self.auth_deferred = auth_deferred
 
         deferred = self.auth_world_view.try_authenticate(authdomain, authname)
 
         deferred.addCallback(self.on_auth_challenge)
         deferred.addErrback(self.on_auth_failure)
 
-        return self.auth_deferred
+        return auth_deferred
 
     def answer_auth_challenge(self, authdomain, authid, answer):
         if self.auth_deferred is None:

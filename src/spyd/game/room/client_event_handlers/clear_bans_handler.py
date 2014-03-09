@@ -7,5 +7,5 @@ class ClearBansHandler(object):
 
     @staticmethod
     def handle(room, client):
-        # TODO: Implement clearing of bans
-        pass
+        # TODO: Permissions checks
+        client._punitive_model.clear_effects('ban')

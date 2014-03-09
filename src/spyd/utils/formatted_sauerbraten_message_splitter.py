@@ -1,65 +1,108 @@
+import re
+import textwrap
+
+FMT_CTRL = ord('\f')
+SAVE = ord('s')
+RESTORE = ord('r')
+DEFAULT = ord('7')
+COLORS = {ord(c) for c in '01234567'}
+
+adjacent_color_pattern = re.compile(r'\f[0-7](\f[0-7])')
+adjacent_color_replacement = r'\1'
+
+def get_last_color(chunk):
+    pos = chunk.rfind('\f')
+    if pos != -1 and (pos + 1 < len(chunk)):
+        return chunk[pos+1]
+    return DEFAULT
+
 class FormattedSauerbratenMessageSplitter(object):
     def __init__(self, max_length):
         self._max_length = max_length
 
-        self._saved_colors = []
-        self._last_color = "\f7"
-
-    def _push_color(self, color):
-        self._saved_colors.append(color)
-
-    def _pop_color(self):
-        if not len(self._saved_colors):
-            return "\f7"
-        return self._saved_colors.pop()
+        self.text_wrapper = textwrap.TextWrapper(width=max_length - 2, break_long_words=True, drop_whitespace=True, replace_whitespace=False)
 
     def split(self, message):
-        chunks = [bytearray(self._last_color)]
-        chunk = chunks[-1]
+        if isinstance(message, bytearray):
+            message = bytearray(message)
+        else:
+            message = bytearray(message, 'utf_8')
 
-        ix = 0
-        while ix < len(message):
-            if message[ix] == '\f':
-                color = message[ix:ix + 2]
-                ix += 2
-                if color == '\fr':
-                    color = self._pop_color()
-                elif color == '\fs':
-                    self._push_color(self._last_color)
-                    continue
+        message = self.remove_color_saves_restores(message)
+        message = self.remove_redundant_coloring(message).decode('utf_8')
+        chunks = [bytearray(chunk, 'utf_8') for chunk in self.text_wrapper.wrap(message)]
+        return [chunk.decode('utf_8') for chunk in self.colorize_chunks(chunks)]
 
-                self._last_color = color
+    def remove_color_saves_restores(self, message):
+        """Treats the save & restore color codes as pushing to a stack.
+        Resolves these codes to absolute colors."""
+        assert(isinstance(message, bytearray))
 
-                if len(chunk) + len(color) > self._max_length:
-                    chunks.append(bytearray(color))
-                    chunk = chunks[-1]
+        last_color = DEFAULT
+        saved_colors = []
+
+        def push_color(color):
+            saved_colors.append(color)
+
+        def pop_color():
+            if len(saved_colors):
+                return saved_colors.pop()
+            return DEFAULT
+
+        mlen = len(message)
+
+        i = 0
+        while i < mlen:
+            if message[i] == FMT_CTRL and (i + 1) < mlen:
+                if message[i + 1] == SAVE:
+                    push_color(last_color)
+                    del message[i:i + 2]
+                    mlen -= 2
+                elif message[i + 1] == RESTORE:
+                    last_color = pop_color()
+                    message[i + 1] = last_color
+                    i += 2
+                elif message[i + 1] in COLORS:
+                    last_color = message[i + 1]
+                    i += 2
                 else:
-                    chunk.extend(color)
-
+                    del message[i]
+                    mlen -= 1
             else:
+                i += 1
 
-                if len(chunk) + 1 > self._max_length or self._should_split_early(message, len(chunk), ix):
-                    chunks.append(bytearray(self._last_color))
-                    chunk = chunks[-1]
+        return message
 
-                if len(chunk) == 2 and message[ix] == ' ':
-                    ix += 1
-                    continue
+    def remove_redundant_coloring(self, message):
+        "Removes adjacent colors and duplicate successive uses of the same color."
+        assert(isinstance(message, bytearray))
 
-                chunk.append(message[ix])
+        last_color = DEFAULT
 
-                ix += 1
+        mlen = len(message)
 
-        return map(bytearray.decode, chunks)
+        i = 0
+        while i < mlen:
+            if message[i] == FMT_CTRL and (i + 1) < mlen:
+                if message[i + 1] in COLORS:
+                    if message[i + 1] == last_color:
+                        del message[i:i + 2]
+                        mlen -= 2
+                    else:
+                        last_color = message[i + 1]
+                        i += 2
+            else:
+                i += 1
 
-    def _should_split_early(self, message, chunklen, ix):
-        seek_range = min(self._max_length - chunklen, 10)
+        return adjacent_color_pattern.sub(adjacent_color_replacement, message)
 
-        if seek_range > len(message) - ix:
-            return False
+    def colorize_chunks(self, chunks):
+        "Continues coloring from one chunk to the next."
+        ci = 1
+        while ci < len(chunks):
+            previous_chunk_final_color = get_last_color(chunks[ci - 1])
+            if previous_chunk_final_color != DEFAULT:
+                chunks[ci][0:0] = [FMT_CTRL, previous_chunk_final_color]
+            ci += 1
 
-        if message[ix] == ' ' and seek_range < 10:
-            for i in xrange(1, seek_range):
-                if message[ix + i] == ' ':
-                    return False
-            return True
+        return chunks

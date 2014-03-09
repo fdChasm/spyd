@@ -12,4 +12,4 @@ class PauseCommand(CommandBase):
 
     @classmethod
     def execute(cls, spyd_server, room, client, command_string, arguments, raw_args):
-        room.on_client_pause_game(client, pause=1)
+        room.handle_client_event('pause_game', client, 1)

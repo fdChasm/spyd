@@ -52,6 +52,10 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
 
     def try_auth(self, auth_domain, authname):
         logger.debug("Attempting client auth request; authname = {!r}".format(authname))
+
+        if self.active_connection is None:
+            return defer.fail(AuthFailedException("No Master server connection."))
+
         context = AuthenticationContext(self._auth_id.next(), auth_domain, authname)
         self.active_connection.send_reqauth(context.auth_id, context.auth_name)
         self.pending_auths[context.auth_id] = context
@@ -66,6 +70,9 @@ class MasterClientProtocolFactory(ReconnectingClientFactory):
             logger.error("Answer challenge called when another state was expected.")
             exception = AuthFailedException("Master server client protocol error.")
             return self._auth_failed(context, exception)
+
+        if self.active_connection is None:
+            return defer.fail(AuthFailedException("No Master server connection."))
 
         self.active_connection.send_confauth(auth_id, answer)
         context.state = authentication_states.PENDING_RESPONSE

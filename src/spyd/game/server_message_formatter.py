@@ -5,13 +5,13 @@ from spyd.utils.wrapping_string_formatter import WrappingStringFormatter
 smf = WrappingStringFormatter(global_fields=colors)
 
 def clientnum_wrapper(cn):
-    return color_wrappers.magenta("({})".format(cn))
+    return color_wrappers.magenta(u"({})".format(cn))
 
 def room_title_wrapper(title):
-    return "{blue}{title}{white}".format(title=title, **colors)
+    return u"{blue}{title}{white}".format(title=title, **colors)
 
 def action_wrapper(action):
-    return color_wrappers.orange("#{}".format(action))
+    return color_wrappers.orange(u"#{}".format(action))
 
 smf.register_wrapper('name',        color_wrappers.green)
 smf.register_wrapper('cn',          clientnum_wrapper)
@@ -29,7 +29,7 @@ smf.register_wrapper('map',         color_wrappers.grey)
 smf.register_wrapper('mode',        color_wrappers.grey)
 
 def wrapper_function(prefix_wrapper, prefix):
-    prefix_fmt = ''.join(["{", prefix_wrapper,"#prefix}: {msg_fmt}"])
+    prefix_fmt = u''.join(["{", prefix_wrapper, "#prefix}: {msg_fmt}"])
     def function(msg_fmt, *args, **kwargs):
         msg_fmt = smf.format(prefix_fmt, prefix=prefix, msg_fmt=msg_fmt)
         return smf.vformat(msg_fmt, args, kwargs)

@@ -6,96 +6,64 @@ max_length = 12
 class TestFormattedSauerbratenMessageSplitter(unittest.TestCase):
     def assertChunksOk(self, max_length, chunks, expected=None):
         for chunk in chunks:
-            self.assertEqual(chunk[0], '\f')
             self.assertLessEqual(len(chunk), max_length)
         if expected is not None:
-            self.assertEqual(chunks, expected)
+            self.assertEqual(expected, chunks)
 
-    def test_short_message_no_formatting(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.fsms = FormattedSauerbratenMessageSplitter(max_length=max_length)
 
-        message = "Hello world"
+    def test_remove_color_saves_restores_restore_with_no_save(self):
+        message = bytearray(b'\fr')
 
-        chunks = formatted_sauer_message_splitter.split(message)
+        result = self.fsms.remove_color_saves_restores(message)
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7world'])
+        self.assertEqual(bytearray(b'\f7'), result)
 
-    def test_overlength_message_no_formatting(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+    def test_remove_color_saves_restores_save_restore(self):
+        message = bytearray(b'\f1Hi\fs \f2there\fr yo')
 
-        message = "Hello world, how are you"
+        result = self.fsms.remove_color_saves_restores(message)
 
-        chunks = formatted_sauer_message_splitter.split(message)
+        self.assertEqual(bytearray(b'\f1Hi \f2there\f1 yo'), result)
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7world,', u'\x0c7how are', u'\x0c7you'])
+    def test_remove_color_saves_restores_deletes_malformated_format_controls(self):
+        message = bytearray(b'te\fxt')
 
-    def test_overlength_message_with_formatting_in_first_message(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+        result = self.fsms.remove_color_saves_restores(message)
 
-        message = "Hello \f2world, Goodbye"
+        self.assertEqual(bytearray(b'text'), result)
 
-        chunks = formatted_sauer_message_splitter.split(message)
+    def test_remove_redundant_coloring_adjacent_color_format_controls(self):
+        message = bytearray(b'text \f3\f4color')
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello', u'\x0c7\x0c2world,', u'\x0c2Goodbye'])
+        result = self.fsms.remove_redundant_coloring(message)
 
-    def test_overlength_message_with_color_causing_length_problem(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+        self.assertEqual(bytearray(b'text \f4color'), result)
 
-        message = "HelloabcGooffffffff\f3 odbye"
+    def test_remove_redundant_coloring_useless_format_controls(self):
+        message = bytearray(b'\f3text \f3color')
 
-        chunks = formatted_sauer_message_splitter.split(message)
+        result = self.fsms.remove_redundant_coloring(message)
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7HelloabcGo', u'\x0c7offffffff', u'\x0c3odbye'])
+        self.assertEqual(bytearray(b'\f3text color'), result)
 
-    def test_restore_without_save(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
+    def test_split_short_message_no_formatting(self):
+        fsms = FormattedSauerbratenMessageSplitter(max_length=max_length)
 
-        message = "Hello\fr"
+        message = bytearray(b"Hello world")
 
-        chunks = formatted_sauer_message_splitter.split(message)
+        chunks = fsms.split(message)
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'\x0c7Hello\x0c7'])
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[u'Hello', u'world'])
 
-    def test_overlength_message_with_save_restore_in_first_message(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=max_length)
 
-        message = "Hel\fslo \f2wor\frld, Goodbye"
+    def test_split_continued_coloring(self):
+        fsms = FormattedSauerbratenMessageSplitter(max_length=max_length)
 
-        chunks = formatted_sauer_message_splitter.split(message)
+        message = bytearray(b"\f3Hello world")
 
-        # print chunks
+        chunks = fsms.split(message)
 
-        self.assertChunksOk(max_length=max_length, chunks=chunks)
-
-    def test_commands_message_save_reset_colors_correctly(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
-
-        message = 'Commands: \x0cs\x0c6commands\x0cr | \x0cs\x0c6follow\x0cr | \x0cs\x0c6timeleft\x0cr | \x0cs\x0c6room_create\x0cr | \x0cs\x0c6room\x0cr | \x0cs\x0c6rooms\x0cr'
-
-        chunks = formatted_sauer_message_splitter.split(message)
-
-        # print chunks
-
-        self.assertChunksOk(max_length=512, chunks=chunks)
-
-    def test_commands_with_short_word_at_end(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
-
-        message = 'test small chunk with short word at end.'
-
-        chunks = formatted_sauer_message_splitter.split(message)
-
-        # print chunks
-
-        self.assertChunksOk(max_length=512, chunks=chunks)
-
-    def test_save_reset_working_correctly(self):
-        formatted_sauer_message_splitter = FormattedSauerbratenMessageSplitter(max_length=512)
-
-        message = '\x0cs\x0c2Info\x0cr: \x0cs\x0c0\x0cs\x0c0[FD]Chasm\x0cr\x0cr claimed auth as \x0cs\x0c5chasm\x0cr@\x0cs\x0c5localhost\x0cr'
-
-        chunks = formatted_sauer_message_splitter.split(message)
-
-        # print chunks
-
-        self.assertChunksOk(max_length=512, chunks=chunks)
+        self.assertChunksOk(max_length=max_length, chunks=chunks, expected=[b'\f3Hello', b'\f3world'])

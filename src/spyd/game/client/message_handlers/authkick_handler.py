@@ -13,4 +13,5 @@ class AuthkickHandler(object):
         reason = message['reason']
 
         deferred = client.auth(authdomain, authname)
-        deferred.handle_client_event('kick', client, target_pn, reason)
+        callback = lambda r: room.handle_client_event('kick', client, target_pn, reason)
+        deferred.addCallbacks(callback, callback)
