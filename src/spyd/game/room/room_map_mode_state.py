@@ -17,6 +17,8 @@ class RoomMapModeState(object):
         self._game_clock = game_clock
         self._ready_up_controller_factory = ready_up_controller_factory
         self._initialized = False
+        self._initializing = False
+        self._initializing_deferreds = []
 
     @property
     def initialized(self):
@@ -54,6 +56,24 @@ class RoomMapModeState(object):
     def rotate_on_first_player(self):
         return self._map_rotation.rotate_on_first_player
 
+    @defer.inlineCallbacks
+    def await_map_mode_initialized(self, player_count):
+        if self._initializing:
+            deferred = defer.Deferred()
+            self._initializing_deferreds.append(deferred)
+            yield deferred
+        else:
+            if not self.initialized or (self.rotate_on_first_player and player_count == 0):
+                self._initializing = True
+                map_meta_data = yield self.rotate_map_mode()
+                self._initializing = False
+
+                while len(self._initializing_deferreds):
+                    deferred = self._initializing_deferreds.pop()
+                    deferred.callback(map_meta_data)
+
+                defer.returnValue(map_meta_data)
+
     def rotate_map_mode(self):
         map_name, mode_name = self._map_rotation.next_map_mode(peek=False)
         return self.change_map_mode(map_name, mode_name)
@@ -78,13 +98,13 @@ class RoomMapModeState(object):
         with self.room.broadcastbuffer(1, True) as cds:
             swh.put_mapchange(cds, self.map_name, self.gamemode.clientmodenum, hasitems=False)
 
+            if self.gamemode.timed:
+                self._game_clock.start(self.gamemode.timeout, INTERMISSIONLEN)
+            else:
+                self._game_clock.start_untimed()
+
             for player in self.room.players:
                 self.gamemode.initialize_player(cds, player)
-
-        if self.gamemode.timed:
-            self._game_clock.start(self.gamemode.timeout, INTERMISSIONLEN)
-        else:
-            self._game_clock.start_untimed()
 
         self.room.ready_up_controller = self._ready_up_controller_factory.make_ready_up_controller(self.room)
 

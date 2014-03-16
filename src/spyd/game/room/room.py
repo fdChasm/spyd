@@ -208,8 +208,7 @@ class Room(object):
 
     @defer.inlineCallbacks
     def client_enter(self, entry_context):
-        if not self._map_mode_state.initialized or self._map_mode_state.rotate_on_first_player and len(self.players) == 0:
-            yield self.rotate_map_mode()
+        yield self.await_map_mode_initialized()
 
         client = entry_context.client
         player = client.get_player()
@@ -276,6 +275,9 @@ class Room(object):
     def rotate_map_mode(self):
         self._game_clock.cancel()
         return self._map_mode_state.rotate_map_mode()
+
+    def await_map_mode_initialized(self):
+        return self._map_mode_state.await_map_mode_initialized(self.player_count)
 
     def set_mastermode(self, mastermode):
         self.mastermode = mastermode

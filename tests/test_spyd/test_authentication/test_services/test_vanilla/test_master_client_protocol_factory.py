@@ -56,7 +56,7 @@ class TestMasterClientProtocolFactory(unittest.TestCase):
     def test_answer_challenge(self):
         master_client_protocol = Mock()
         self.instance.active_connection = master_client_protocol
-        d = self.instance.try_auth('localhost', 'chasm')
+        self.instance.try_auth('localhost', 'chasm')
 
         self.instance.master_cmd_chalauth(['chalauth', 0, '+a5924762983dd70202bc2d9fca84042cd4507a57e62cff0f'])
 
