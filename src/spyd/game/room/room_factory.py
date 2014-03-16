@@ -24,15 +24,20 @@ class RoomFactory(object):
         self.event_subscription_fulfiller = event_subscription_fulfiller
         self.metrics_service = metrics_service
 
-    def build_room(self, name, room_type='default'):
+    def get_room_config(self, name, room_type='default'):
         room_config = {}
         room_config.update(self.room_types.get(room_type, {}))
         room_config.update(self.room_bindings.get(name, {}))
+        return room_config
+
+    def build_room(self, name, room_type='default', map_rotation=None):
+        room_config = self.get_room_config(name, room_type)
 
         ready_up_controller_factory = ReadyUpControllerFactory(room_config.get('ready_up', {}))
 
-        map_rotation_data = room_config.get('map_rotation', test_rotation_dict)
-        map_rotation = MapRotation.from_dictionary(map_rotation_data)
+        if map_rotation is None:
+            map_rotation_data = room_config.get('map_rotation', test_rotation_dict)
+            map_rotation = MapRotation.from_dictionary(map_rotation_data)
 
         demo_recorder = DemoRecorder()
 

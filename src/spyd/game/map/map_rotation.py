@@ -37,7 +37,7 @@ class MapRotation(object):
         map_index = self.map_index + 1
         mode_index = self.mode_index
         
-        if map_index >= len(this_mode_maps):
+        if map_index < 0 or map_index >= len(this_mode_maps):
             map_index = 0
             if self.rotate_modes:
                 mode_index = (mode_index + 1) % len(self.mode_rotation_list)
@@ -49,3 +49,9 @@ class MapRotation(object):
             self.mode_index = mode_index
     
         return this_mode_maps[map_index], this_mode_name
+
+    def advance_to_map(self, map_name):
+        "Advance the map_index such that the next_map_mode command will cause this map to load."
+        this_mode_name = self.mode_rotation_list[self.mode_index]
+        this_mode_maps = self.map_rotation_dict[this_mode_name]
+        self.map_index = this_mode_maps.index(map_name) - 1

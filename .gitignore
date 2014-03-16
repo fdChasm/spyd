@@ -1,6 +1,7 @@
 packages
 include
 *.cache
+*.pid
 
 *.py[cod]
 
