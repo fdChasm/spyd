@@ -23,7 +23,6 @@
 
 '''
 
-from collections import deque
 import re
 import traceback
 
@@ -126,7 +125,7 @@ def begin_duel(room, client, target, existing_challenge):
     room_config = room_factory.get_room_config(room_name, 'temporary')
     default_map_rotation = room_config.get('map_rotation', {})
 
-    map_names = default_map_rotation.get('rotations', {}).get(mode_name, deque(['complex']))
+    map_names = default_map_rotation.get('rotations', {}).get(mode_name, ['complex'])
 
     map_rotation = MapRotation.from_dictionary({"rotations": {mode_name: map_names}, "modes": [mode_name]})
 

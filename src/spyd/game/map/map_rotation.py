@@ -5,7 +5,7 @@ test_rotation_dict = {
                   'ffa': ['complex'],
                   'coop': ['ot'],
                   'traitors': ['ot'],
-		  'insta': ['ot'],
+                  'insta': ['ot'],
                  },
     'modes': ['insta', 'traitors', 'ffa', 'coop', 'instactf']
 }

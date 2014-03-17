@@ -48,7 +48,7 @@ class AsyncMapMetaDataAccessor(object):
             return defer.succeed(self._map_name_cache)
         else:
             def cache_map_names(map_names):
-                self._map_name_cache = map(str, map_names)
+                self._map_name_cache = map_names
                 return self._map_name_cache
 
             map_glob_expression = os.path.join(self.package_dir, "base", "*.ogz")
