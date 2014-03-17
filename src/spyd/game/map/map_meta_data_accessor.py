@@ -4,6 +4,7 @@ import os.path
 from twisted.internet import defer
 
 from cube2map.read_map_meta_data import read_map_data
+from spyd.utils.list_to_unicode import list_to_unicode
 
 
 def map_filename_to_map_name(map_filename):
@@ -36,5 +37,5 @@ class MapMetaDataAccessor(object):
         if self._map_name_cache is None or refresh:
             map_glob_expression = os.path.join(self.package_dir, "base", "*.ogz")
             map_filenames = glob.glob(map_glob_expression)
-            self._map_name_cache = map(map_filename_to_map_name, map_filenames)
+            self._map_name_cache = list_to_unicode(map(map_filename_to_map_name, map_filenames))
         return defer.succeed(self._map_name_cache)

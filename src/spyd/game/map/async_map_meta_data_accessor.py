@@ -3,6 +3,7 @@ import os.path
 import sys
 
 from twisted.internet import defer, utils
+from spyd.utils.list_to_unicode import list_to_unicode
 
 
 map_data_reader_filename = os.path.join(os.path.dirname(__file__), 'map_data_reader_process.py')
@@ -48,7 +49,7 @@ class AsyncMapMetaDataAccessor(object):
             return defer.succeed(self._map_name_cache)
         else:
             def cache_map_names(map_names):
-                self._map_name_cache = map_names
+                self._map_name_cache = list_to_unicode(map_names)
                 return self._map_name_cache
 
             map_glob_expression = os.path.join(self.package_dir, "base", "*.ogz")
