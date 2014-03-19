@@ -25,6 +25,7 @@ class TacticsBase(object):
         baseammo(ammo, gun2, 2)
 
         ammo[weapon_types.GUN_GL] += 1
+        ammo[weapon_types.GUN_FIST] = 1
 
         player.state.gunselect = gun1
         player.state.ammo = ammo
